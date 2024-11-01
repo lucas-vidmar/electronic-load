@@ -3,6 +3,7 @@
 AnalogSws::AnalogSws() {}
 
 void AnalogSws::init() {
+    // Set the pin modes for the analog switches
     pinMode(ANALOG_SW1_ENABLE, OUTPUT);
     pinMode(ANALOG_SW4_ENABLE, OUTPUT);
     pinMode(DUT_ENABLE, OUTPUT);

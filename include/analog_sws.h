@@ -1,10 +1,23 @@
+
+/**
+ * @file analog_sws.h
+ * @brief Header file for the AnalogSws class.
+ * 
+ * This file contains the definition of the AnalogSws class, which provides methods
+ * to manage analog switches, including enabling/disabling VDAC, setting MOSFET input
+ * modes, and controlling DUT relays.
+ * 
+ * @note This file is part of the Electronic Load project.
+ * 
+ * @date 2023-11-01
+ */
 #pragma once
 
 #include <Arduino.h>
 
-#define ANALOG_SW1_ENABLE GPIO_NUM_1 // ADG1219BRJZ-REEL Analog Switch | Analog SW1 Enable - DAC Enable
-#define ANALOG_SW4_ENABLE GPIO_NUM_19 // ADG1334BRSZ-REEL Analog Switch | Analog SW4 Enable - Power
-#define DUT_ENABLE GPIO_NUM_18 // AHES4191 Relay | DUT Enable
+#define ANALOG_SW1_ENABLE GPIO_NUM_1    // ADG1219BRJZ-REEL Analog Switch | Analog SW1 Enable - DAC Enable
+#define ANALOG_SW4_ENABLE GPIO_NUM_19   // ADG1334BRSZ-REEL Analog Switch | Analog SW4 Enable - Power
+#define DUT_ENABLE GPIO_NUM_18          // AHES4191 Relay | DUT Enable
 
 /**
  * @class AnalogSws

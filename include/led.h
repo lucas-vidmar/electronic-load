@@ -1,3 +1,15 @@
+
+/**
+ * @file led.h
+ * @brief Header file for the BuiltInLed class.
+ * 
+ * This file contains the declaration of the BuiltInLed class, which provides methods
+ * to control the built-in LED on a microcontroller. The class includes functionality
+ * to initialize the LED hardware and to make the LED blink at a specified interval.
+ * 
+ * 
+ * @date 2023-11-01
+ */
 #pragma once
 
 #include <Arduino.h>
@@ -42,5 +54,12 @@ public:
 
 private:
     hw_timer_t *timer;
+
+    /**
+     * @brief Static method to handle timer events.
+     * 
+     * This method is called when a timer event occurs. It is responsible for
+     * executing the necessary actions associated with the timer.
+     */
     static void onTimer();
 };

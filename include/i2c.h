@@ -1,3 +1,16 @@
+/**
+ * @file i2c.h
+ * @brief Header file for the I2C class.
+ * 
+ * This file contains the declaration of the I2C class, which provides methods
+ * for initializing the I2C interface and performing read and write operations
+ * to devices on the I2C bus.
+ * 
+ * @note This class assumes that the underlying hardware and software support
+ *       I2C communication.
+ * 
+ * @date 2023-11-01
+ */
 #pragma once
 
 #include <Arduino.h>

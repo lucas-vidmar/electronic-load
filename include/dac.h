@@ -1,3 +1,19 @@
+
+/**
+ * @file dac.h
+ * @brief Header file for the DAC class.
+ * 
+ * This file contains the definition of the DAC class, which provides methods
+ * to initialize and control a Digital-to-Analog Converter (DAC) over an I2C bus.
+ * It includes functions to set the output voltage and write digital values to the DAC.
+ * 
+ * The DAC class requires an I2C instance for communication.
+ * 
+ * @note The DAC resolution is 12 bits, with a reference voltage of 4.096V.
+ * The maximum output voltage is 0.5V, and the maximum digital value is 83.
+ * 
+ * @date 2023-11-01
+ */
 #pragma once
 
 #include <Wire.h>
@@ -44,7 +60,7 @@ public:
      * 
      * @param i2c_pointer A pointer to an I2C instance used for communication with the DAC.
      */
-    void setup(I2C* i2c_pointer);
+    void init(I2C* i2c_pointer);
 
     /**
      * @brief Sets the output voltage of the DAC.

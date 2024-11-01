@@ -2,7 +2,7 @@
 
 DAC::DAC() : i2c(nullptr) {}
 
-void DAC::setup(I2C* i2c_pointer){
+void DAC::init(I2C* i2c_pointer){
     i2c = i2c_pointer;
     digitalWrite(0); // Set DAC to default value (0V)
 }

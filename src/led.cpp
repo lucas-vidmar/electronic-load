@@ -9,9 +9,9 @@ void BuiltInLed::init() {
 }
 
 void BuiltInLed::blink(int interval) {
-    
+    // Attach the timer interrupt
     timerAttachInterrupt(timer, &onTimer, true);
-    timerAlarmWrite(timer, interval * 1000, true);
+    timerAlarmWrite(timer, interval * 1000, true); // Convert milliseconds to microseconds
     timerAlarmEnable(timer);
 }
 

@@ -2,8 +2,10 @@
 #include <SPI.h>
 #include <TFT_eSPI.h>
 #include "encoder.h"
+#include "led.h"
 
 Encoder encoder = Encoder();
+BuiltInLed led = BuiltInLed();
 TFT_eSPI tft = TFT_eSPI();
 
 #define LED_BUILTIN 2
@@ -26,19 +28,15 @@ void setup() {
   digitalWrite(TFT_BL, HIGH);
 
   encoder.init();
-
-  pinMode(LED_BUILTIN, OUTPUT);
+  led.init();
+  led.blink(500);
 }
 
 void loop() {
-  // print encoder position
-  Serial.println(encoder.getPosition());
   // write in display
   tft.setCursor(0, 20);
+  //clean line
+  tft.fillRect(0, 20, 240, 20, TFT_BLACK);
   tft.print(encoder.getPosition());
-  // blink led
-  digitalWrite(LED_BUILTIN, HIGH);
-  delay(100);
-  digitalWrite(LED_BUILTIN, LOW);
-  delay(100);
+  
 }

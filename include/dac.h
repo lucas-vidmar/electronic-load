@@ -1,5 +1,9 @@
+#pragma once
+
 #include <Wire.h>
 #include <Arduino.h>
+
+#include "i2c.h"
 
 #define MCP4725_ADDR 0x60   /*!< MCP4725 I2C address */
 
@@ -12,51 +16,56 @@
 #define DAC_OUTPUT_VOLTAGE_DIVIDER (DAC_V_MAX / DAC_REF_VOLTAGE)    /*!< Output voltage divider */
 #define DAC_MAX_DIGITAL_VALUE 83
 
+/**
+ * @class DAC
+ * @brief A class to represent a Digital-to-Analog Converter (DAC).
+ * 
+ * The DAC class provides methods to initialize and control a DAC device
+ * over an I2C bus. It allows setting the output voltage and writing digital
+ * values to the DAC.
+ * 
+ * @note This class requires an I2C instance for communication.
+ */
 class DAC {
 public:
-    void setup() {
-        Serial.begin(115200);
-        Wire.begin();
-        dac_setup();
-    }
+    /**
+     * @brief Construct a new DAC object.
+     * 
+     * This constructor initializes a new instance of the DAC class.
+     */
+    DAC();
 
-    void set_voltage(int voltageInMmV) {
-        // Calculate DAC value
-        float value = ((voltageInMmV / 1000.0) / DAC_V_MAX) * DAC_RESOLUTION;
-        Serial.printf("Setting DAC voltage to %d mV\n", voltageInMmV);
-        // Round to nearest integer
-        dac_write((uint16_t)(value + 0.5));
-    }
+    /**
+     * @brief Initializes the DAC with the given I2C pointer.
+     * 
+     * This function sets up the DAC (Digital-to-Analog Converter) using the provided
+     * I2C pointer. It configures the necessary settings to enable communication
+     * with the DAC over the I2C bus.
+     * 
+     * @param i2c_pointer A pointer to an I2C instance used for communication with the DAC.
+     */
+    void setup(I2C* i2c_pointer);
+
+    /**
+     * @brief Sets the output voltage of the DAC.
+     * 
+     * This function sets the output voltage of the DAC (Digital-to-Analog Converter)
+     * to the specified value in millivolts (mV).
+     * 
+     * @param voltageInMmV The desired output voltage in millivolts (mV).
+     */
+    void set_voltage(int voltageInMmV);
+
+    /**
+     * @brief Writes a digital value to the DAC.
+     * 
+     * This function sets the DAC output to the specified digital value.
+     * 
+     * @param value The digital value to write to the DAC. This should be a 
+     *              16-bit unsigned integer representing the desired output level.
+     */
+    void digitalWrite(uint16_t value);
 
 private:
-    void dac_setup() {
-        Serial.println("Adding DAC device");
-        dac_write(0); // Set DAC to default value (0V)
-    }
-
-    void dac_write(uint16_t value) {
-        Serial.printf("Writing value to DAC: %d\n", value);
-        if (value > DAC_MAX_DIGITAL_VALUE) { // Check if value is out of range
-            Serial.println("DAC value out of range");
-            return;
-        }
-
-        // Write value to DAC
-        Wire.beginTransmission(MCP4725_ADDR);
-        Wire.write((value >> 8) & 0x0F);
-        Wire.write(value & 0xFF);
-        Wire.endTransmission();
-    }
+    I2C* i2c;
 };
-
-DAC dac;
-
-void setup() {
-    dac.setup();
-}
-
-void loop() {
-    // Example usage
-    dac.set_voltage(1000); // Set DAC to 1000 mV
-    delay(1000);
-}

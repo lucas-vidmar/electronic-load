@@ -3,9 +3,14 @@
 #include <TFT_eSPI.h>
 #include "encoder.h"
 #include "led.h"
+#include "i2c.h"
+#include "dac.h"
 
 Encoder encoder = Encoder();
 BuiltInLed led = BuiltInLed();
+I2C i2c = I2C();
+DAC dac = DAC();
+
 TFT_eSPI tft = TFT_eSPI();
 
 #define LED_BUILTIN 2
@@ -28,8 +33,16 @@ void setup() {
   digitalWrite(TFT_BL, HIGH);
 
   encoder.init();
+
   led.init();
   led.blink(500);
+
+  i2c.init();
+  
+  dac.setup(&i2c);
+  dac.set_voltage(200); // Set DAC output to 200mV
+
+
 }
 
 void loop() {

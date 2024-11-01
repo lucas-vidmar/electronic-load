@@ -43,13 +43,13 @@ void setup() {
   led.blink(500);
 
   analog_sws.init();
-  //analog_sws.relayDutEnable();
-  analog_sws.vdacDisable();
+  analog_sws.relayDutEnable();
+  analog_sws.mosfetInputCCMode();
+  analog_sws.vdacEnable();
 
   i2c.init();
   
-  //dac.init(&i2c);
-  //dac.set_voltage(200); // Set DAC output to 200mV
+  dac.init(&i2c);
 
   adc.init(&i2c);
 
@@ -57,6 +57,8 @@ void setup() {
 
 void loop() {
   static unsigned long lastTime = 0;
+  static int encoderSet = 0;
+  static int digitalSet = 0;
   unsigned long currentTime = millis();
   
   if (currentTime - lastTime >= 16) { // approximately 60Hz
@@ -64,21 +66,45 @@ void loop() {
 
     // write in display
     tft.setCursor(0, 20);
-    // clean line
     tft.fillRect(0, 20, 240, 20, TFT_BLACK);
     tft.print("Encoder: " + String(encoder.getPosition())); 
 
     tft.setCursor(0, 40);
-    tft.fillRect(0, 40, 240, 20, TFT_BLACK);
-    tft.print("Current: " + String(adc.read_iDUT()) + " A");
+    tft.print("----DUT----");
 
     tft.setCursor(0, 60);
     tft.fillRect(0, 60, 240, 20, TFT_BLACK);
-    tft.print("Voltage: " + String(adc.read_vDUT()) + " V");
+    tft.print("iDUT: " + String(adc.read_iDUT()) + " A");
 
     tft.setCursor(0, 80);
     tft.fillRect(0, 80, 240, 20, TFT_BLACK);
-    tft.print("Temperature: " + String(adc.read_temperature()) + " C");
+    tft.print("vDUT: " + String(adc.read_vDUT()) + " V");
+
+    tft.setCursor(0, 100);
+    tft.fillRect(0, 100, 240, 20, TFT_BLACK);
+    tft.print("Temp: " + String(adc.read_temperature()) + " C");
+
+    tft.setCursor(0, 120);
+    tft.print("----DAC----");
+
+    tft.setCursor(0, 140);
+    tft.fillRect(0, 140, 240, 20, TFT_BLACK);
+    tft.print("vDAC: " + String(encoderSet) + " mV");
+
+    tft.setCursor(0, 160);
+    tft.fillRect(0, 160, 240, 20, TFT_BLACK);
+    digitalSet = (uint16_t)(((encoderSet / 1000.0) / DAC_V_MAX) * DAC_RESOLUTION + 0.5);
+    tft.print("dDAC: " + String(digitalSet));
 
   }
+
+  //if button was pressed, put encoder as voltage in DAC
+  if (encoder.isButtonPressed()) {
+    encoderSet = encoder.getPosition();
+    dac.set_voltage(encoderSet);
+    Serial.println("DAC set to " + String(encoderSet) + " mV");
+  }
+
+  //Delay 10ms
+  delay(10);
 }

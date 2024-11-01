@@ -8,17 +8,17 @@ void ADC::init(I2C* i2c_pointer) {
 
 float ADC::read_iDUT() {
     float voltage = read_voltage(ADC_CHANNEL_IDUT);
-    return (voltage / 5.0) * 20.0;
+    return (voltage / 5.0) * 20.0; // 5V ≡ 20A;
 }
 
 float ADC::read_temperature() {
     float voltage = read_voltage(ADC_CHANNEL_TEMP);
-    return voltage * 100.0;
+    return voltage * 100.0; // 10 mV/°C
 }
 
 float ADC::read_vDUT() {
     float voltage = read_voltage(ADC_CHANNEL_VDUT);
-    return (voltage / 4.0) * 100.0;
+    return (voltage / 4.0) * 100.0; // 4V ≡ 100V
 }
 
 void ADC::read(uint8_t channel, int16_t* value) {
@@ -69,5 +69,6 @@ float ADC::read_voltage(uint8_t channel) {
     int16_t v = 0;
     read(channel, &v);
 
-    return 2 * ADC_PGA * ((float)v) / ((float)ADC_MAX_VALUE);
+    // Convert the ADC value to a voltage
+    return 2 * ADC_PGA * ((float)v) / ((float)ADC_MAX_VALUE); // V = 2 * PGA * ADC / 2^16
 }

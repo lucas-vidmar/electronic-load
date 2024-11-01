@@ -14,7 +14,7 @@ void Encoder::init() {
 
     // Attach interrupts without calling gpio_install_isr_service
     attachInterrupt(digitalPinToInterrupt(ENCODER_CLK), handleInterrupt, CHANGE);
-    //attachInterrupt(digitalPinToInterrupt(ENCODER_SW), handleButtonInterrupt, FALLING);
+    attachInterrupt(digitalPinToInterrupt(ENCODER_SW), handleButtonInterrupt, FALLING);
 }
 
 void IRAM_ATTR Encoder::handleInterrupt() {
@@ -39,9 +39,16 @@ void IRAM_ATTR Encoder::handleInterrupt() {
 }
 
 void IRAM_ATTR Encoder::handleButtonInterrupt() {
-    if (instance) {
-        instance->buttonPressed = true;
+    static unsigned long lastButtonInterruptTime = 0;
+    unsigned long interruptTime = millis();
+    
+    // Debounce: ignore interrupts that occur within 50ms of the last interrupt
+    if (interruptTime - lastButtonInterruptTime > ENCODER_BUTTON_DEBOUNCE) {
+        if (instance) {
+            instance->buttonPressed = true;
+        }
     }
+    lastButtonInterruptTime = interruptTime;
 }
 
 bool Encoder::isButtonPressed() {

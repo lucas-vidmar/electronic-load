@@ -31,7 +31,7 @@ void setup() {
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
   tft.setTextSize(2);
   tft.setCursor(0, 0);
-  tft.println("Carga electronica");
+  tft.println("Carga electrónica");
 
   // turn on backlight
   pinMode(TFT_BL, OUTPUT);
@@ -70,22 +70,22 @@ void loop() {
     tft.print("Encoder: " + String(encoder.getPosition())); 
 
     tft.setCursor(0, 40);
-    tft.print("----DUT----");
+    tft.print("-------DUT-------");
 
     tft.setCursor(0, 60);
     tft.fillRect(0, 60, 240, 20, TFT_BLACK);
-    tft.print("iDUT: " + String(adc.read_iDUT()) + " A");
+    tft.print("iDUT: " + String(adc.read_iDUT(), 3) + " A");
 
     tft.setCursor(0, 80);
     tft.fillRect(0, 80, 240, 20, TFT_BLACK);
-    tft.print("vDUT: " + String(adc.read_vDUT()) + " V");
+    tft.print("vDUT: " + String(adc.read_vDUT(), 3) + " V");
 
     tft.setCursor(0, 100);
     tft.fillRect(0, 100, 240, 20, TFT_BLACK);
     tft.print("Temp: " + String(adc.read_temperature()) + " C");
 
     tft.setCursor(0, 120);
-    tft.print("----DAC----");
+    tft.print("-------DAC-------");
 
     tft.setCursor(0, 140);
     tft.fillRect(0, 140, 240, 20, TFT_BLACK);

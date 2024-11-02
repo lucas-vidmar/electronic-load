@@ -20,9 +20,9 @@ void DAC::digitalWrite(uint16_t value) {
         return;
     }
 
-    // Write value to DAC using II2C library
+    // Write value to DAC using I2C library
     uint8_t data[2];
-    data[0] = (value >> 4) & 0xFF;
-    data[1] = (value << 4) & 0xFF;
+    data[0] = (value >> 8) & 0x0F;
+    data[1] = value & 0xFF;
     i2c->write(MCP4725_ADDR, data, 2);
 }

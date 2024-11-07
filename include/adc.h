@@ -9,7 +9,7 @@
  * 
  * @note This class requires an I2C instance for communication.
  * 
- * @date 2023-11-01
+ * @date 2024-11-01
  */
 #pragma once
 

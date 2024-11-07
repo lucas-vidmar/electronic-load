@@ -9,7 +9,7 @@
  * @note This class assumes that the underlying hardware and software support
  *       I2C communication.
  * 
- * @date 2023-11-01
+ * @date 2024-11-01
  */
 #pragma once
 

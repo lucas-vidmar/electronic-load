@@ -9,7 +9,7 @@
  * 
  * @note This file is part of the Electronic Load project.
  * 
- * @date 2023-11-01
+ * @date 2024-11-01
  */
 #pragma once
 
@@ -52,7 +52,7 @@ public:
      * converting digital values to analog voltages. It is typically used
      * in applications where precise voltage control is required.
      */
-    void vdacEnable();
+    void vDACEnable();
 
     /**
      * @brief Disables the VDAC (Voltage Digital-to-Analog Converter).
@@ -60,7 +60,7 @@ public:
      * This function turns off the VDAC to save power or to stop generating an analog output.
      * It should be called when the VDAC is no longer needed.
      */
-    void vdacDisable();
+    void vDACDisable();
 
     /**
      * @brief Controls the MOSFET input in Constant Current (CC) mode.
@@ -95,7 +95,7 @@ public:
      * This function activates the relay that connects the DUT to the circuit,
      * allowing it to be tested or used in the circuit.
      */
-    void relayDutEnable();
+    void relayDUTEnable();
 
     /**
      * @brief Disables the DUT (Device Under Test) relay.
@@ -103,5 +103,5 @@ public:
      * This function is used to disable the relay connected to the DUT, 
      * effectively disconnecting the DUT from the circuit.
      */
-    void relayDutDisable();
+    void relayDUTDisable();
 };

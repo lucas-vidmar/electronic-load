@@ -12,7 +12,7 @@
  * @note The DAC resolution is 12 bits, with a reference voltage of 4.096V.
  * The maximum output voltage is 0.5V, and the maximum digital value is 83.
  * 
- * @date 2023-11-01
+ * @date 2024-11-01
  */
 #pragma once
 

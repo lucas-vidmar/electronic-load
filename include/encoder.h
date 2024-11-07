@@ -10,7 +10,7 @@
  * @note This class assumes that the underlying hardware supports rotary encoders.
  * @note This class assumes only one encoder is used.
  * 
- * @date 2023-11-01
+ * @date 2024-11-01
  */
 #pragma once
 

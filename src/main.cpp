@@ -5,30 +5,33 @@
 
 TFT_eSPI tft = TFT_eSPI(TFT_HOR_RES , TFT_VER_RES);
 
-/*LVGL draw into this buffer, 1/10 screen size usually works well. The size is in bytes*/
-#define DRAW_BUF_SIZE (TFT_HOR_RES * TFT_VER_RES / 10 * (LV_COLOR_DEPTH / 8)) // 240*320/10 * 16/8 = 240*320*2/10 = 15360
-uint32_t draw_buf[DRAW_BUF_SIZE / 4]; // 15360/4 = 3840
+#define TOTAL_PIXELS (TFT_HOR_RES * TFT_VER_RES) // 240*320 = 76800 pixels
+#define BUFFER_SIZE_PIXELS (TOTAL_PIXELS / 10) // 76800 / 10 = 7680 pixels
+#define COLOR_DEPH_BYTES (LV_COLOR_DEPTH / 8) // 16/8 = 2 bytes
+#define DRAW_BUF_SIZE BUFFER_SIZE_PIXELS * COLOR_DEPH_BYTES // 7680 pixels * 2 bytes = 15360 bytes
 
-void put_px(int32_t x, int32_t y, uint16_t color)
-{
-    tft.drawPixel(x, y, color);
-}
+// uint32_t has 32 bits = 4 bytes
+uint32_t draw_buf[DRAW_BUF_SIZE / 4]; // 15360 bytes / 4 bytes per element = 3840 elements
 
 void flush_lv(lv_display_t * display, const lv_area_t * area, uint8_t * px_map)
 {
-    /* The most simple case (also the slowest) to send all rendered pixels to the
-     * screen one-by-one.  `put_px` is just an example.  It needs to be implemented by you. */
-    uint16_t * buf16 = (uint16_t *)px_map; /* Let's say it's a 16 bit (RGB565) display */
-    int32_t x, y;
-    for(y = area->y1; y <= area->y2; y++) {
-        for(x = area->x1; x <= area->x2; x++) {
-            put_px(x, y, *buf16);
-            buf16++;
-        }
-    }
+    uint16_t x_start = area->x1;
+    uint16_t y_start = area->y1;
+    uint16_t x_end = area->x2;
+    uint16_t y_end = area->y2;
 
-    /* IMPORTANT!!!
-     * Inform LVGL that flushing is complete so buffer can be modified again. */
+    uint16_t width = x_end - x_start + 1;
+    uint16_t height = y_end - y_start + 1;
+
+    Serial.println("x1: " + String(x_start) + " y1: " + String(y_start) +
+                   " x2: " + String(x_end) + " y2: " + String(y_end));
+
+    tft.startWrite();
+    tft.setAddrWindow(x_start, y_start, width, height);
+    tft.pushColors((uint16_t *)px_map, width * height, true);
+    tft.endWrite();
+
+    // Notifica a LVGL que el flushing ha terminado
     lv_display_flush_ready(display);
 }
 
@@ -41,12 +44,11 @@ static uint32_t tick(void)
 
 void setup()
 {
-    // Initialize the display
-    //tft.begin();
-    //tft.setRotation( 0 ); // Set to vertical orientation
+    // Wait 1 second before starting
+    delay(1000);
 
-    String LVGL_Arduino = "Hello Arduino! ";
-    LVGL_Arduino += String('V') + lv_version_major() + "." + lv_version_minor() + "." + lv_version_patch();
+    String LVGL_Arduino = "LGVL Version:";
+    LVGL_Arduino += String('v') + lv_version_major() + "." + lv_version_minor() + "." + lv_version_patch();
 
     Serial.begin( 115200 );
     Serial.println( LVGL_Arduino );
@@ -66,7 +68,7 @@ void setup()
 
 
     lv_obj_t *label = lv_label_create( lv_screen_active() );
-    lv_label_set_text( label, "Hello Arduino, I'm LVGL!" );
+    lv_label_set_text( label, "Probando rotacion" );
     lv_obj_align( label, LV_ALIGN_CENTER, 0, 0 );
 
     Serial.println( "Setup done" );

@@ -8,7 +8,7 @@ void LVGL_LCD::init() {
     // Wait 1 second before starting
     delay(1000);
 
-    String LVGL_Arduino = "LGVL Version:";
+    String LVGL_Arduino = "LGVL Version: ";
     LVGL_Arduino += String('v') + lv_version_major() + "." + lv_version_minor() + "." + lv_version_patch();
     Serial.println(LVGL_Arduino);
 
@@ -28,7 +28,7 @@ void LVGL_LCD::init() {
 
     tft_pointer = &tft;
 
-    Serial.println("Setup done");
+    Serial.println("LVGL Setup done");
 
     // Turn on the display backlight
     pinMode(TFT_BL, OUTPUT);
@@ -48,9 +48,6 @@ void LVGL_LCD::flush_lv(lv_display_t *display, const lv_area_t *area, uint8_t *p
 
     uint16_t width = x_end - x_start + 1;
     uint16_t height = y_end - y_start + 1;
-
-    Serial.println("x1: " + String(x_start) + " y1: " + String(y_start) +
-                    " x2: " + String(x_end) + " y2: " + String(y_end));
 
     tft_pointer->startWrite();
     tft_pointer->setAddrWindow(x_start, y_start, width, height);

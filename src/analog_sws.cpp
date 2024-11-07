@@ -9,9 +9,9 @@ void AnalogSws::init() {
     pinMode(DUT_ENABLE, OUTPUT);
 }
 
-void AnalogSws::vdacEnable() { digitalWrite(ANALOG_SW1_ENABLE, HIGH); }
+void AnalogSws::vDACEnable() { digitalWrite(ANALOG_SW1_ENABLE, HIGH); }
 
-void AnalogSws::vdacDisable() { digitalWrite(ANALOG_SW1_ENABLE, LOW); }
+void AnalogSws::vDACDisable() { digitalWrite(ANALOG_SW1_ENABLE, LOW); }
 
 void AnalogSws::mosfetInputCCMode() { digitalWrite(ANALOG_SW4_ENABLE, HIGH); }
 
@@ -19,6 +19,6 @@ void AnalogSws::mosfetInputCVMode() { digitalWrite(ANALOG_SW4_ENABLE, LOW); }
 
 int AnalogSws::getMosfetInputMode() { return digitalRead(ANALOG_SW4_ENABLE); }
 
-void AnalogSws::relayDutEnable() { digitalWrite(DUT_ENABLE, HIGH); }
+void AnalogSws::relayDUTEnable() { digitalWrite(DUT_ENABLE, HIGH); }
 
-void AnalogSws::relayDutDisable() { digitalWrite(DUT_ENABLE, LOW); }
+void AnalogSws::relayDUTDisable() { digitalWrite(DUT_ENABLE, LOW); }

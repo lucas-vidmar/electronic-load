@@ -5,7 +5,6 @@
 
 // Use hardware SPI
 TFT_eSPI tft = TFT_eSPI();
-#define TFT_BL 27
 
 // With 1024 stars the update rate is ~65 frames per second
 #define NSTARS 1024

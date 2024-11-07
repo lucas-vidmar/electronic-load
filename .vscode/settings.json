@@ -56,6 +56,9 @@
         "streambuf": "cpp",
         "thread": "cpp",
         "cinttypes": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "lv_examples.h": "c",
+        "tft.h": "c",
+        "tft_espi.h": "c"
     }
 }

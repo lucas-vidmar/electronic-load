@@ -1,110 +1,83 @@
 #include <Arduino.h>
+#include <lvgl.h>
 #include <SPI.h>
 #include <TFT_eSPI.h>
 
-#include "encoder.h"
-#include "led.h"
-#include "i2c.h"
-#include "dac.h"
-#include "analog_sws.h"
-#include "adc.h"
+TFT_eSPI tft = TFT_eSPI(TFT_HOR_RES , TFT_VER_RES);
 
-Encoder encoder = Encoder();
-BuiltInLed led = BuiltInLed();
-I2C i2c = I2C();
-DAC dac = DAC();
-ADC adc = ADC();
-AnalogSws analog_sws = AnalogSws();
+/*LVGL draw into this buffer, 1/10 screen size usually works well. The size is in bytes*/
+#define DRAW_BUF_SIZE (TFT_HOR_RES * TFT_VER_RES / 10 * (LV_COLOR_DEPTH / 8)) // 240*320/10 * 16/8 = 240*320*2/10 = 15360
+uint32_t draw_buf[DRAW_BUF_SIZE / 4]; // 15360/4 = 3840
 
-TFT_eSPI tft = TFT_eSPI();
-
-#define LED_BUILTIN 2
-#define TFT_BL 27
-
-void setup() {
-  Serial.begin(115200);
-  Serial.println("Starting...");
-
-  tft.init();
-  tft.setRotation(0);
-  tft.fillScreen(TFT_BLACK);
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.setTextSize(2);
-  tft.setCursor(0, 0);
-  tft.println("Carga electrónica");
-
-  // turn on backlight
-  pinMode(TFT_BL, OUTPUT);
-  digitalWrite(TFT_BL, HIGH);
-
-  encoder.init();
-
-  led.init();
-  led.blink(500);
-
-  analog_sws.init();
-  analog_sws.relayDutEnable();
-  analog_sws.mosfetInputCCMode();
-  analog_sws.vdacEnable();
-
-  i2c.init();
-  
-  dac.init(&i2c);
-
-  adc.init(&i2c);
-
+void put_px(int32_t x, int32_t y, uint16_t color)
+{
+    tft.drawPixel(x, y, color);
 }
 
-void loop() {
-  static unsigned long lastTime = 0;
-  static int encoderSet = 0;
-  static int digitalSet = 0;
-  unsigned long currentTime = millis();
-  
-  if (currentTime - lastTime >= 16) { // approximately 60Hz
-    lastTime = currentTime;
+void flush_lv(lv_display_t * display, const lv_area_t * area, uint8_t * px_map)
+{
+    /* The most simple case (also the slowest) to send all rendered pixels to the
+     * screen one-by-one.  `put_px` is just an example.  It needs to be implemented by you. */
+    uint16_t * buf16 = (uint16_t *)px_map; /* Let's say it's a 16 bit (RGB565) display */
+    int32_t x, y;
+    for(y = area->y1; y <= area->y2; y++) {
+        for(x = area->x1; x <= area->x2; x++) {
+            put_px(x, y, *buf16);
+            buf16++;
+        }
+    }
 
-    // write in display
-    tft.setCursor(0, 20);
-    tft.fillRect(0, 20, 240, 20, TFT_BLACK);
-    tft.print("Encoder: " + String(encoder.getPosition())); 
+    /* IMPORTANT!!!
+     * Inform LVGL that flushing is complete so buffer can be modified again. */
+    lv_display_flush_ready(display);
+}
 
-    tft.setCursor(0, 40);
-    tft.print("-------DUT-------");
 
-    tft.setCursor(0, 60);
-    tft.fillRect(0, 60, 240, 20, TFT_BLACK);
-    tft.print("iDUT: " + String(adc.read_iDUT(), 3) + " A");
+/*use ESP as tick source*/
+static uint32_t tick(void)
+{
+    return esp_timer_get_time() / 1000;
+}
 
-    tft.setCursor(0, 80);
-    tft.fillRect(0, 80, 240, 20, TFT_BLACK);
-    tft.print("vDUT: " + String(adc.read_vDUT(), 3) + " V");
+void setup()
+{
+    // Initialize the display
+    //tft.begin();
+    //tft.setRotation( 0 ); // Set to vertical orientation
 
-    tft.setCursor(0, 100);
-    tft.fillRect(0, 100, 240, 20, TFT_BLACK);
-    tft.print("Temp: " + String(adc.read_temperature()) + " C");
+    String LVGL_Arduino = "Hello Arduino! ";
+    LVGL_Arduino += String('V') + lv_version_major() + "." + lv_version_minor() + "." + lv_version_patch();
 
-    tft.setCursor(0, 120);
-    tft.print("-------DAC-------");
+    Serial.begin( 115200 );
+    Serial.println( LVGL_Arduino );
 
-    tft.setCursor(0, 140);
-    tft.fillRect(0, 140, 240, 20, TFT_BLACK);
-    tft.print("vDAC: " + String(encoderSet) + " mV");
+    lv_init();
 
-    tft.setCursor(0, 160);
-    tft.fillRect(0, 160, 240, 20, TFT_BLACK);
-    digitalSet = (uint16_t)(((encoderSet / 1000.0) / DAC_V_MAX) * DAC_RESOLUTION + 0.5);
-    tft.print("dDAC: " + String(digitalSet));
+    /*Set a tick source so that LVGL will know how much time elapsed. */
+    lv_tick_set_cb(tick);
 
-  }
 
-  //if button was pressed, put encoder as voltage in DAC
-  if (encoder.isButtonPressed()) {
-    encoderSet = encoder.getPosition();
-    dac.set_voltage(encoderSet);
-    Serial.println("DAC set to " + String(encoderSet) + " mV");
-  }
+    lv_display_t * disp;
+    /*TFT_eSPI can be enabled lv_conf.h to initialize the display in a simple way*/
+    disp = lv_tft_espi_create(TFT_HOR_RES, TFT_VER_RES, draw_buf, sizeof(draw_buf));
+    lv_display_set_rotation(disp, TFT_ROTATION);
+    lv_display_set_flush_cb(disp, flush_lv);
 
-  //Delay 10ms
-  delay(10);
+
+
+    lv_obj_t *label = lv_label_create( lv_screen_active() );
+    lv_label_set_text( label, "Hello Arduino, I'm LVGL!" );
+    lv_obj_align( label, LV_ALIGN_CENTER, 0, 0 );
+
+    Serial.println( "Setup done" );
+
+    // Turn on the display backlight
+    pinMode(TFT_BL, OUTPUT);
+    digitalWrite(TFT_BL, HIGH);
+}
+
+void loop()
+{
+    lv_timer_handler(); /* let the GUI do its work */
+    delay(5); /* let this time pass */
 }

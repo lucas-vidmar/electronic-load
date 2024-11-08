@@ -126,7 +126,6 @@ void LVGL_LCD::print_main_menu(int hovered_option)
     }
 
     // Actualizar la opción resaltada sin recrear el menú
-    if (hovered_option > menu_items.size() - 1) hovered_option = menu_items.size() - 1; // Maintain the last option if the encoder is turned too much
     for (int i = 0; i < menu_items.size(); ++i) {
         if (i == hovered_option) {
             lv_obj_add_style(menu_items[i], &style_hovered, LV_PART_MAIN);
@@ -135,6 +134,70 @@ void LVGL_LCD::print_main_menu(int hovered_option)
         } else {
             lv_obj_add_style(menu_items[i], &style_normal, LV_PART_MAIN);
             lv_obj_remove_style(menu_items[i], &style_hovered, LV_PART_MAIN);
+        }
+    }
+}
+
+void LVGL_LCD::close_main_menu() {
+    if (main_menu != nullptr) {
+        lv_obj_del(main_menu); // Eliminar el objeto del menú principal
+        main_menu = nullptr; // Establecer el puntero a nullptr para indicar que no existe
+    }
+}
+
+void LVGL_LCD::print_constant_current(float current, int hovered_digit) {
+    // Inicializar estilos si no se han inicializado
+    static bool styles_initialized = false;
+    if (!styles_initialized) {
+        // Estilo normal para los dígitos
+        lv_style_init(&style_value);
+        lv_style_set_text_color(&style_value, lv_color_black());
+        lv_style_set_text_font(&style_value, &lv_font_montserrat_28);
+
+        // Estilo resaltado para los dígitos hovered
+        lv_style_init(&style_value_hovered);
+        lv_style_set_text_color(&style_value_hovered, lv_color_hex(0xFF0000)); // Resaltado en rojo
+        lv_style_set_text_font(&style_value_hovered, &lv_font_montserrat_28);
+
+        styles_initialized = true;
+    }
+
+    // Verificar si el contenedor de corriente ya existe
+    if (constant_current_display == nullptr) {
+        // Crear un contenedor para el valor de corriente
+        constant_current_display = lv_obj_create(lv_scr_act());
+        lv_obj_set_size(constant_current_display, lv_disp_get_hor_res(NULL), 50); // Tamaño de 50 de alto
+        lv_obj_align(constant_current_display, LV_ALIGN_TOP_MID, 0, 10); // Posicionar en la parte superior
+        lv_obj_set_style_pad_gap(constant_current_display, 5, 0);
+
+        // Establecer el layout del contenedor como fila
+        lv_obj_set_flex_flow(constant_current_display, LV_FLEX_FLOW_ROW);
+        lv_obj_set_flex_align(constant_current_display, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    }
+
+    // Limpiar el contenedor antes de agregar nuevos dígitos
+    lv_obj_clean(constant_current_display);
+
+    // Convertir el valor de corriente a cadena con formato "XX.XXX A"
+    char current_str[10];
+    String format = "%0" + String(TOTAL_DIGITS+1) + ".3f A";
+    snprintf(current_str, sizeof(current_str), format.c_str(), current);
+
+    // Agregar cada carácter como una etiqueta separada
+    int hovered_digit_to_process = hovered_digit;
+    if (hovered_digit > TOTAL_DIGITS-1) hovered_digit_to_process = TOTAL_DIGITS-1; // Limitar el número de dígitos
+    if (hovered_digit >= DIGITS_BEFORE_DECIMAL) hovered_digit_to_process++; // Saltar el punto decimal
+
+    for (int i = 0; current_str[i] != '\0'; ++i) {
+
+        lv_obj_t* label = lv_label_create(constant_current_display);
+        lv_label_set_text_fmt(label, "%c", current_str[i]);
+
+        // Aplicar el estilo resaltado si el carácter es un dígito y es el hovered
+        if (isdigit(current_str[i]) && i == hovered_digit_to_process) {
+            lv_obj_add_style(label, &style_value_hovered, LV_PART_MAIN);
+        } else {
+            lv_obj_add_style(label, &style_value, LV_PART_MAIN);
         }
     }
 }

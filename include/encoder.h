@@ -22,8 +22,6 @@
 #define ENCODER_ROTATION_DEBOUNCE 15
 #define ENCODER_BUTTON_DEBOUNCE 200
 #define ENCODER_BUTTON_LONG_PRESS 1000
-#define ENCODER_MAX_POSITION 10
-#define ENCODER_MIN_POSITION 0
 
 class Encoder {
 public:
@@ -77,6 +75,10 @@ public:
      */
     void resetButton();
 
+    void setMaxPosition(int maxPos);
+
+    void setMinPosition(int minPos);
+
 private:
 
     /**
@@ -102,4 +104,6 @@ private:
     volatile int lastState;         // State of the CLK pin
     volatile int position;          // Encoder position (marked volatile)
     volatile bool buttonPressed;    // Button press status (marked volatile)
+    int encoderMaxPosition;         // Maximum position value for the encoder
+    int encoderMinPosition;         // Minimum position value for the encoder
 };

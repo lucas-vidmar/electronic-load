@@ -12,6 +12,9 @@
 #define COLOR_DEPH_BYTES (LV_COLOR_DEPTH / 8) // 16/8 = 2 bytes
 #define DRAW_BUF_SIZE BUFFER_SIZE_PIXELS * COLOR_DEPH_BYTES // 7680 pixels * 2 bytes = 15360 bytes
 #define PADDING 10
+#define TOTAL_DIGITS (DIGITS_BEFORE_DECIMAL + DIGITS_AFTER_DECIMAL)
+#define DIGITS_BEFORE_DECIMAL 2
+#define DIGITS_AFTER_DECIMAL 3
 
 class LVGL_LCD {
 public:
@@ -22,6 +25,9 @@ public:
     void update();
 
     void print_main_menu(int hovered_option);
+    void close_main_menu();
+
+    void print_constant_current(float current, int hovered_digit);
 
 private:
     TFT_eSPI tft;
@@ -34,11 +40,14 @@ private:
     /*use ESP as tick source*/
     static uint32_t tick();
 
-    lv_obj_t* main_menu = NULL;      // Stores main menu object
-    lv_obj_t* main_page = NULL;      // Stores main page object
+    lv_obj_t* main_menu = nullptr;      // Stores main menu object
+    lv_obj_t* main_page = nullptr;      // Stores main page object
     std::vector<lv_obj_t*> menu_items; // Stores each menu item container
     lv_style_t style_normal;
     lv_style_t style_hovered;
     lv_style_t style_title;
 
+    lv_style_t style_value;
+    lv_style_t style_value_hovered;
+    lv_obj_t* constant_current_display = nullptr;
 };

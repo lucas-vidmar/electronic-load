@@ -2,7 +2,7 @@
 
 Encoder* Encoder::instance = nullptr;
 
-Encoder::Encoder() : lastState(LOW), position(0), buttonPressed(false) { }
+Encoder::Encoder() : lastState(LOW), position(0), buttonPressed(false), encoderMaxPosition(10), encoderMinPosition(1) { }
 
 void Encoder::init() {
     pinMode(ENCODER_CLK, INPUT);
@@ -58,14 +58,22 @@ bool Encoder::isButtonPressed() {
 }
 
 int Encoder::getPosition() {
-    if (position > ENCODER_MAX_POSITION) {
-        setPosition(ENCODER_MAX_POSITION);
-    } else if (position < ENCODER_MIN_POSITION) {
-        setPosition(ENCODER_MIN_POSITION);
+    if (position > encoderMaxPosition) {
+        setPosition(encoderMaxPosition);
+    } else if (position < encoderMinPosition) {
+        setPosition(encoderMinPosition);
     }
     return position;
 }
 
 void Encoder::setPosition(int pos) {
     position = pos;
+}
+
+void Encoder::setMaxPosition(int maxPos) {
+    encoderMaxPosition = maxPos;
+}
+
+void Encoder::setMinPosition(int minPos) {
+    encoderMinPosition = minPos;
 }

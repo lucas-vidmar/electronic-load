@@ -5,11 +5,13 @@
 #include <lvgl.h>
 #include <SPI.h>
 #include <TFT_eSPI.h>
+#include <vector>
 
 #define TOTAL_PIXELS (TFT_HOR_RES * TFT_VER_RES) // 240*320 = 76800 pixels
 #define BUFFER_SIZE_PIXELS (TOTAL_PIXELS / 10) // 76800 / 10 = 7680 pixels
 #define COLOR_DEPH_BYTES (LV_COLOR_DEPTH / 8) // 16/8 = 2 bytes
 #define DRAW_BUF_SIZE BUFFER_SIZE_PIXELS * COLOR_DEPH_BYTES // 7680 pixels * 2 bytes = 15360 bytes
+#define PADDING 10
 
 class LVGL_LCD {
 public:
@@ -18,6 +20,8 @@ public:
     void init();
 
     void update();
+
+    void print_main_menu(int hovered_option);
 
 private:
     TFT_eSPI tft;
@@ -29,4 +33,12 @@ private:
 
     /*use ESP as tick source*/
     static uint32_t tick();
+
+    lv_obj_t* main_menu = NULL;      // Stores main menu object
+    lv_obj_t* main_page = NULL;      // Stores main page object
+    std::vector<lv_obj_t*> menu_items; // Stores each menu item container
+    lv_style_t style_normal;
+    lv_style_t style_hovered;
+    lv_style_t style_title;
+
 };

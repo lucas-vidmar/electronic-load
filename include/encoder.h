@@ -77,6 +77,8 @@ public:
      */
     void resetButton();
 
+private:
+
     /**
      * @brief Interrupt handler for the encoder.
      * 
@@ -95,9 +97,7 @@ public:
      * efficient handling of the button press event.
      */
     static void IRAM_ATTR handleButtonInterrupt();
-    
 
-private:
     static Encoder* instance;       // Global instance pointer
     volatile int lastState;         // State of the CLK pin
     volatile int position;          // Encoder position (marked volatile)

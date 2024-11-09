@@ -145,7 +145,7 @@ void LVGL_LCD::close_main_menu() {
     }
 }
 
-void LVGL_LCD::print_constant_current(float current, int hovered_digit) {
+void LVGL_LCD::print_cx_screen(float current, int hovered_digit, char* unit) {
     // Inicializar estilos si no se han inicializado
     static bool styles_initialized = false;
     if (!styles_initialized) {
@@ -163,24 +163,46 @@ void LVGL_LCD::print_constant_current(float current, int hovered_digit) {
     }
 
     // Verificar si el contenedor de corriente ya existe
-    if (constant_current_display == nullptr) {
+    if (input_display == nullptr) {
         // Crear un contenedor para el valor de corriente
-        constant_current_display = lv_obj_create(lv_scr_act());
-        lv_obj_set_size(constant_current_display, lv_disp_get_hor_res(NULL), 50); // Tamaño de 50 de alto
-        lv_obj_align(constant_current_display, LV_ALIGN_TOP_MID, 0, 10); // Posicionar en la parte superior
-        lv_obj_set_style_pad_gap(constant_current_display, 5, 0);
+        input_display = lv_obj_create(lv_scr_act());
+        lv_obj_set_size(input_display, lv_disp_get_hor_res(NULL), lv_disp_get_ver_res(NULL)/2); // Tamaño de la mitad de la pantalla
+        lv_obj_align(input_display, LV_ALIGN_TOP_MID, 0, PADDING); // Posicionar en la parte superior
+        lv_obj_set_style_pad_gap(input_display, 5, 0);
 
         // Establecer el layout del contenedor como fila
-        lv_obj_set_flex_flow(constant_current_display, LV_FLEX_FLOW_ROW);
-        lv_obj_set_flex_align(constant_current_display, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+        lv_obj_set_flex_flow(input_display, LV_FLEX_FLOW_ROW);
+        lv_obj_set_flex_align(input_display, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+
+        // Agregar título "Input:" en la esquina superior izquierda
+        lv_obj_t* input_title = lv_label_create(input_display);
+        lv_label_set_text(input_title, "Input:");
+        lv_obj_align(input_title, LV_ALIGN_TOP_LEFT, 0, 0);
+    }
+
+    if (output_display == nullptr) {
+        // Crear un contenedor para el valor de salida
+        output_display = lv_obj_create(lv_scr_act());
+        lv_obj_set_size(output_display, lv_disp_get_hor_res(NULL), lv_disp_get_ver_res(NULL)/2); // Tamaño de la mitad de la pantalla
+        lv_obj_align(output_display, LV_ALIGN_BOTTOM_MID, 0, -PADDING); // Posicionar en la parte inferior
+        lv_obj_set_style_pad_gap(output_display, 5, 0);
+
+        // Establecer el layout del contenedor como fila
+        lv_obj_set_flex_flow(output_display, LV_FLEX_FLOW_ROW);
+        lv_obj_set_flex_align(output_display, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+
+        // Agregar título "Output:" en la esquina superior izquierda
+        lv_obj_t* input_title = lv_label_create(input_display);
+        lv_label_set_text(input_title, "Output:");
+        lv_obj_align(input_title, LV_ALIGN_TOP_LEFT, 0, 0);
     }
 
     // Limpiar el contenedor antes de agregar nuevos dígitos
-    lv_obj_clean(constant_current_display);
+    lv_obj_clean(input_display);
 
     // Convertir el valor de corriente a cadena con formato "XX.XXX A"
     char current_str[10];
-    String format = "%0" + String(TOTAL_DIGITS+1) + ".3f A";
+    String format = "%0" + String(TOTAL_DIGITS+1) + ".3f " + String(unit);
     snprintf(current_str, sizeof(current_str), format.c_str(), current);
 
     // Agregar cada carácter como una etiqueta separada
@@ -190,7 +212,7 @@ void LVGL_LCD::print_constant_current(float current, int hovered_digit) {
 
     for (int i = 0; current_str[i] != '\0'; ++i) {
 
-        lv_obj_t* label = lv_label_create(constant_current_display);
+        lv_obj_t* label = lv_label_create(input_display);
         lv_label_set_text_fmt(label, "%c", current_str[i]);
 
         // Aplicar el estilo resaltado si el carácter es un dígito y es el hovered

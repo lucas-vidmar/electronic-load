@@ -27,7 +27,7 @@ public:
     void print_main_menu(int hovered_option);
     void close_main_menu();
 
-    void print_constant_current(float current, int hovered_digit);
+    void print_cx_screen(float current, int hovered_digit, char* unit);
 
 private:
     TFT_eSPI tft;
@@ -49,5 +49,6 @@ private:
 
     lv_style_t style_value;
     lv_style_t style_value_hovered;
-    lv_obj_t* constant_current_display = nullptr;
+    lv_obj_t* input_display = nullptr;
+    lv_obj_t* output_display = nullptr;
 };

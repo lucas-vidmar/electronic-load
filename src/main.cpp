@@ -206,5 +206,5 @@ void constant_current(){
 
   Serial.println("Current: " + String(current, DIGITS_AFTER_DECIMAL));
 
-  lcd.print_cx_screen(current, digit_selected, "A");
+  lcd.print_cx_screen(current, digit_selected, "A", 0.0, 0.0);
 }

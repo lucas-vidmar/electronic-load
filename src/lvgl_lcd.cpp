@@ -65,7 +65,10 @@ uint32_t LVGL_LCD::tick() {
 void LVGL_LCD::print_main_menu(int hovered_option)
 {
     // Inicializar estilos si no se han inicializado
+    static lv_style_t style_normal, style_hovered, style_title;
+    static std::vector<lv_obj_t*> menu_items;
     static bool styles_initialized = false;
+
     if (!styles_initialized) {
         // Estilo para los ítems normales del menú
         lv_style_init(&style_normal);
@@ -145,9 +148,12 @@ void LVGL_LCD::close_main_menu() {
     }
 }
 
-void LVGL_LCD::print_cx_screen(float current, int hovered_digit, char* unit) {
+void LVGL_LCD::print_cx_screen(float current, int hovered_digit, char* unit, float vDUT, float iDUT) {
     // Inicializar estilos si no se han inicializado
     static bool styles_initialized = false;
+    static lv_style_t style_value, style_value_hovered;
+    static lv_obj_t *input_title, *digits, *buttons, *output_button, *back_button, *dut_container, *dut_voltage, *dut_current, *dut_power;
+
     if (!styles_initialized) {
         // Estilo normal para los dígitos
         lv_style_init(&style_value);
@@ -163,60 +169,96 @@ void LVGL_LCD::print_cx_screen(float current, int hovered_digit, char* unit) {
     }
 
     // Verificar si el contenedor de corriente ya existe
-    if (input_display == nullptr) {
-        // Crear un contenedor para el valor de corriente
-        input_display = lv_obj_create(lv_scr_act());
-        lv_obj_set_size(input_display, lv_disp_get_hor_res(NULL), lv_disp_get_ver_res(NULL)/2); // Tamaño de la mitad de la pantalla
-        lv_obj_align(input_display, LV_ALIGN_TOP_MID, 0, PADDING); // Posicionar en la parte superior
-        lv_obj_set_style_pad_gap(input_display, 5, 0);
+    if (input_screen == nullptr) {
+        // INPUT SCREEN
+        input_screen = lv_obj_create(lv_scr_act());
+        lv_obj_set_size(input_screen, lv_disp_get_hor_res(NULL), lv_disp_get_ver_res(NULL)); // Full screen
+        lv_obj_align(input_screen, LV_ALIGN_TOP_LEFT, 0, 0); // Posicionar en la esquina superior izquierda
+        lv_obj_set_flex_flow(input_screen, LV_FLEX_FLOW_COLUMN);
+        lv_obj_set_style_pad_all(input_screen, 0, 0); // Eliminar padding
 
-        // Establecer el layout del contenedor como fila
-        lv_obj_set_flex_flow(input_display, LV_FLEX_FLOW_ROW);
-        lv_obj_set_flex_align(input_display, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-
-        // Agregar título "Input:" en la esquina superior izquierda
-        lv_obj_t* input_title = lv_label_create(input_display);
+        // Input title
+        input_title = lv_label_create(input_screen);
         lv_label_set_text(input_title, "Input:");
         lv_obj_align(input_title, LV_ALIGN_TOP_LEFT, 0, 0);
-    }
+        lv_obj_set_style_pad_hor(input_title, PADDING, 0);
 
-    if (output_display == nullptr) {
-        // Crear un contenedor para el valor de salida
-        output_display = lv_obj_create(lv_scr_act());
-        lv_obj_set_size(output_display, lv_disp_get_hor_res(NULL), lv_disp_get_ver_res(NULL)/2); // Tamaño de la mitad de la pantalla
-        lv_obj_align(output_display, LV_ALIGN_BOTTOM_MID, 0, -PADDING); // Posicionar en la parte inferior
-        lv_obj_set_style_pad_gap(output_display, 5, 0);
+        // Value container
+        digits = lv_obj_create(input_screen);
+        lv_obj_set_size(digits, lv_disp_get_hor_res(NULL), 75); // Altura de 50 píxeles
+        lv_obj_align(digits, LV_ALIGN_TOP_MID, 0, 0); // Posicionar en la parte superior
 
-        // Establecer el layout del contenedor como fila
-        lv_obj_set_flex_flow(output_display, LV_FLEX_FLOW_ROW);
-        lv_obj_set_flex_align(output_display, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+        lv_obj_set_flex_flow(digits, LV_FLEX_FLOW_ROW);
+        lv_obj_set_flex_align(digits, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
 
-        // Agregar título "Output:" en la esquina superior izquierda
-        lv_obj_t* input_title = lv_label_create(input_display);
+        // Button Container
+        buttons = lv_obj_create(input_screen);
+        lv_obj_set_size(buttons, lv_disp_get_hor_res(NULL), 50); // Altura de 50 píxeles
+        lv_obj_align(buttons, LV_ALIGN_TOP_MID, 0, 0); // Posicionar en la parte superior
+        lv_obj_set_style_pad_gap(buttons, 0, 0);
+
+        lv_obj_set_flex_flow(buttons, LV_FLEX_FLOW_ROW);
+        lv_obj_set_flex_align(buttons, LV_FLEX_ALIGN_SPACE_AROUND, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+
+        // Output button as label
+        output_button = lv_label_create(buttons);
+        lv_label_set_text(output_button, "Output");
+
+        // Back button as label
+        back_button = lv_label_create(buttons);
+        lv_label_set_text(back_button, "Back");
+
+        // Output title
+        input_title = lv_label_create(input_screen);
         lv_label_set_text(input_title, "Output:");
         lv_obj_align(input_title, LV_ALIGN_TOP_LEFT, 0, 0);
+
+        // DUT Container
+        dut_container = lv_obj_create(input_screen);
+        lv_obj_set_size(dut_container, lv_disp_get_hor_res(NULL), 100); // Altura de 50 píxeles
+        lv_obj_align(dut_container, LV_ALIGN_TOP_MID, 0, 0); // Posicionar en la parte superior
+        lv_obj_set_style_pad_gap(dut_container, 0, 0);
+        lv_obj_set_flex_flow(dut_container, LV_FLEX_FLOW_COLUMN);
+        lv_obj_set_flex_align(dut_container, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+
+        // DUT Voltage
+        String values = String(vDUT,3) + " V";
+        dut_voltage = lv_label_create(dut_container);
+        lv_label_set_text_fmt(dut_voltage, values.c_str());
+        lv_obj_set_style_text_font(dut_voltage, &lv_font_montserrat_18, 0);
+        // DUT Current
+        values = String(iDUT,3) + " A";
+        dut_current = lv_label_create(dut_container);
+        lv_label_set_text_fmt(dut_current, values.c_str());
+        lv_obj_set_style_text_font(dut_current, &lv_font_montserrat_18, 0);
+        // DUT Power
+        values = String(vDUT*iDUT,3) + " W";
+        dut_power = lv_label_create(dut_container);
+        lv_label_set_text_fmt(dut_power, values.c_str());
+        lv_obj_set_style_text_font(dut_power, &lv_font_montserrat_14, 0);
+
     }
 
     // Limpiar el contenedor antes de agregar nuevos dígitos
-    lv_obj_clean(input_display);
+    lv_obj_clean(digits);
 
     // Convertir el valor de corriente a cadena con formato "XX.XXX A"
-    char current_str[10];
+    char value_str[10];
     String format = "%0" + String(TOTAL_DIGITS+1) + ".3f " + String(unit);
-    snprintf(current_str, sizeof(current_str), format.c_str(), current);
+    snprintf(value_str, sizeof(value_str), format.c_str(), current);
 
     // Agregar cada carácter como una etiqueta separada
     int hovered_digit_to_process = hovered_digit;
     if (hovered_digit > TOTAL_DIGITS-1) hovered_digit_to_process = TOTAL_DIGITS-1; // Limitar el número de dígitos
     if (hovered_digit >= DIGITS_BEFORE_DECIMAL) hovered_digit_to_process++; // Saltar el punto decimal
 
-    for (int i = 0; current_str[i] != '\0'; ++i) {
+    for (int i = 0; value_str[i] != '\0'; ++i) {
 
-        lv_obj_t* label = lv_label_create(input_display);
-        lv_label_set_text_fmt(label, "%c", current_str[i]);
+        lv_obj_t* label = lv_label_create(digits);
+        lv_label_set_text_fmt(label, "%c", value_str[i]);
 
         // Aplicar el estilo resaltado si el carácter es un dígito y es el hovered
-        if (isdigit(current_str[i]) && i == hovered_digit_to_process) {
+        if (isdigit(value_str[i]) && i == hovered_digit_to_process) {
             lv_obj_add_style(label, &style_value_hovered, LV_PART_MAIN);
         } else {
             lv_obj_add_style(label, &style_value, LV_PART_MAIN);

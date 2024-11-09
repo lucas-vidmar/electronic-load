@@ -27,7 +27,7 @@ public:
     void print_main_menu(int hovered_option);
     void close_main_menu();
 
-    void print_cx_screen(float current, int hovered_digit, char* unit);
+    void print_cx_screen(float current, int hovered_digit, char* unit, float vDUT, float iDUT);
 
 private:
     TFT_eSPI tft;
@@ -41,14 +41,5 @@ private:
     static uint32_t tick();
 
     lv_obj_t* main_menu = nullptr;      // Stores main menu object
-    lv_obj_t* main_page = nullptr;      // Stores main page object
-    std::vector<lv_obj_t*> menu_items; // Stores each menu item container
-    lv_style_t style_normal;
-    lv_style_t style_hovered;
-    lv_style_t style_title;
-
-    lv_style_t style_value;
-    lv_style_t style_value_hovered;
-    lv_obj_t* input_display = nullptr;
-    lv_obj_t* output_display = nullptr;
+    lv_obj_t* input_screen = nullptr;   // Stores input screen object
 };

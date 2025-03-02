@@ -9,18 +9,7 @@ AnalogSws analog_sws = AnalogSws();
 LVGL_LCD lcd = LVGL_LCD();
 
 // Electronic Load FSM
-enum FSMState {
-  INIT,
-  MAIN_MENU,
-  CONSTANT_CURRENT,
-  CONSTANT_VOLTAGE,
-  CONSTANT_POWER,
-  CONSTANT_RESISTANCE,
-  ADJUSTMENTS
-};
-FSMState state = MAIN_MENU;
-FSMState lastState = INIT;
-int encoderLastPosition = -1;
+FSM fsm = FSM();
 
 void setup() {
   Serial.begin(115200);
@@ -42,86 +31,66 @@ void setup() {
   adc.init(&i2c);
   // Initialize LVGL Display
   lcd.init();
-
+  // Initialize FSM
+  fsm.init();
 }
 
 void loop() {
   lcd.update();
-  fsm();
   delay(10);
-}
-
-void fsm(){
-  
-  switch (state) {
-    case MAIN_MENU:
-      main_menu();
-      break;
-    case CONSTANT_CURRENT:
-      constant_current();
-      break;
-    case CONSTANT_VOLTAGE:
-      break;
-    case CONSTANT_POWER:
-      break;
-    case CONSTANT_RESISTANCE:
-      break;
-    case ADJUSTMENTS:
-      break;
-    default:
-      break;
-  }
-
-  lastState = state;
-
+  fsm.run();
 }
 
 void main_menu(){
 
-  if (lastState != state){
+  static int pos = 0;
+
+  if (fsm.hasChanged()) { // First time entering main menu
+    Serial.println("Main menu");
     encoder.setMinPosition(0);
-    encoder.setMaxPosition(ADJUSTMENTS-2); // quantity of options - init
+    encoder.setMaxPosition(FSM_STATES::STATE_SETTINGS - FSM_STATES::STATE_CONSTANT_CURRENT); //  quantity of options in main menu
+    encoder.setPosition(0);
+    lcd.print_main_menu(0);
   }
 
-  int pos = encoder.getPosition();
+  if (encoder.hasChanged()) { // Update encoder position if changed
+    Serial.println("Has changed");
+    pos = encoder.getPosition();
+    lcd.print_main_menu(pos);
+  }
 
   // Check if encoder button is pressed
   if (encoder.isButtonPressed()) {
     Serial.println("Button pressed");
     switch (pos) {
       case 0:
-        state = CONSTANT_CURRENT;
+        fsm.changeState(FSM_STATES::STATE_CONSTANT_CURRENT);
         break;
       case 1:
-        state = CONSTANT_VOLTAGE;
+        fsm.changeState(FSM_STATES::STATE_CONSTANT_VOLTAGE);
         break;
       case 2:
-        state = CONSTANT_POWER;
+        fsm.changeState(FSM_STATES::STATE_CONSTANT_POWER);
         break;
       case 3:
-        state = CONSTANT_RESISTANCE;
+        fsm.changeState(FSM_STATES::STATE_CONSTANT_RESISTANCE);
         break;
       case 4:
-        state = ADJUSTMENTS;
+        fsm.changeState(FSM_STATES::STATE_SETTINGS);
         break;
       default:
+        fsm.changeState(FSM_STATES::STATE_EXIT);
         break;
     }
     // Reset vars and close main menu
+    Serial.println("Exiting main menu");
     lcd.close_main_menu();
     encoder.setPosition(0); // Reset encoder position
-    encoderLastPosition = -1; // Reset encoder position
     return;
   }
-
-  // Print menu if encoder is moved
-  if (pos == encoderLastPosition) return;
-  encoderLastPosition = pos;
-  
-  // Print main menu with selected option
-  lcd.print_main_menu(pos);
 }
 
+/*
 void constant_current(){
 
   enum CCState {
@@ -206,5 +175,11 @@ void constant_current(){
 
   Serial.println("Current: " + String(current, DIGITS_AFTER_DECIMAL));
 
-  lcd.print_cx_screen(current, digit_selected, "A", 0.0, 0.0);
+  // Print constant current screen
+  float vDUT = adc.read_vDUT();
+  float iDUT = adc.read_iDUT();
+  Serial.println("vDUT: " + String(vDUT, 3) + " V");
+  Serial.println("iDUT: " + String(iDUT, 3) + " A");
+  lcd.print_cx_screen(current, digit_selected, "A", vDUT, iDUT);
 }
+*/

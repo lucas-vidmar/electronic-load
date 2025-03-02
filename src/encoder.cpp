@@ -2,7 +2,7 @@
 
 Encoder* Encoder::instance = nullptr;
 
-Encoder::Encoder() : lastState(LOW), position(0), buttonPressed(false), encoderMaxPosition(10), encoderMinPosition(1) { }
+Encoder::Encoder() : lastState(LOW), position(0), lastPosition(0), buttonPressed(false), encoderMaxPosition(10), encoderMinPosition(1) { }
 
 void Encoder::init() {
     pinMode(ENCODER_CLK, INPUT);
@@ -26,6 +26,7 @@ void IRAM_ATTR Encoder::handleInterrupt() {
         if (instance) {
             int state = digitalRead(ENCODER_CLK);
             if (state != instance->lastState) { // If state has changed, pulse occurred
+                instance->lastPosition = instance->position; // Save last position
                 if (digitalRead(ENCODER_DT) != state) { // If DT state is different from CLK state
                     instance->position++;
                 } else {
@@ -67,6 +68,7 @@ int Encoder::getPosition() {
 }
 
 void Encoder::setPosition(int pos) {
+    lastPosition = position;
     position = pos;
 }
 
@@ -76,4 +78,10 @@ void Encoder::setMaxPosition(int maxPos) {
 
 void Encoder::setMinPosition(int minPos) {
     encoderMinPosition = minPos;
+}
+
+bool Encoder::hasChanged() {
+    bool changed = lastPosition != position;
+    lastPosition = position;
+    return changed;
 }

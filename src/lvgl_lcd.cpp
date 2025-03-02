@@ -264,4 +264,14 @@ void LVGL_LCD::print_cx_screen(float current, int hovered_digit, char* unit, flo
             lv_obj_add_style(label, &style_value, LV_PART_MAIN);
         }
     }
+
+
+    // Actualizar valores dut
+    String values = String(vDUT,3) + " V";
+    lv_label_set_text_fmt(dut_voltage, values.c_str());
+    values = String(iDUT,3) + " A";
+    lv_label_set_text_fmt(dut_current, values.c_str());
+    values = String(vDUT*iDUT,3) + " W";
+    lv_label_set_text_fmt(dut_power, values.c_str());
+    
 }

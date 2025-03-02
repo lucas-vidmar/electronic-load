@@ -9,7 +9,7 @@
 #include "analog_sws.h"
 #include "adc.h"
 #include "lvgl_lcd.h"
+#include "fsm.h"
 
-void fsm();
 void main_menu();
 void constant_current();

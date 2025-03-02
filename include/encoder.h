@@ -79,6 +79,8 @@ public:
 
     void setMinPosition(int minPos);
 
+    bool hasChanged();
+
 private:
 
     /**
@@ -103,6 +105,7 @@ private:
     static Encoder* instance;       // Global instance pointer
     volatile int lastState;         // State of the CLK pin
     volatile int position;          // Encoder position (marked volatile)
+    volatile int lastPosition;      // Last encoder position (marked volatile)
     volatile bool buttonPressed;    // Button press status (marked volatile)
     int encoderMaxPosition;         // Maximum position value for the encoder
     int encoderMinPosition;         // Minimum position value for the encoder

@@ -3,25 +3,25 @@
 FSM::FSM() {}
 
 void FSM::init() {
-    currentState = FSM_STATES::STATE_MAIN_MENU;
-    lastState = FSM_STATES::STATE_INITAL;
+    currentState = FSM_MAIN_STATES::MAIN_MENU;
+    lastState = FSM_MAIN_STATES::INITAL;
 }
 
 void FSM::run() {
     switch (currentState) {
-        case FSM_STATES::STATE_MAIN_MENU:
+        case FSM_MAIN_STATES::MAIN_MENU:
             main_menu();
             break;
-        case FSM_STATES::STATE_CONSTANT_CURRENT:
+        case FSM_MAIN_STATES::CC:
             //constant_current();
             break;
-        case FSM_STATES::STATE_CONSTANT_VOLTAGE:
+        case FSM_MAIN_STATES::CV:
             break;
-        case FSM_STATES::STATE_CONSTANT_RESISTANCE:
+        case FSM_MAIN_STATES::CR:
             break;
-        case FSM_STATES::STATE_CONSTANT_POWER:
+        case FSM_MAIN_STATES::CW:
             break;
-        case FSM_STATES::STATE_SETTINGS:
+        case FSM_MAIN_STATES::SETTINGS:
             break;
         default:
             break;
@@ -30,7 +30,7 @@ void FSM::run() {
 }
 
 void FSM::changeState(int newState) {
-    if (newState < FSM_STATES::STATE_INITAL || newState > FSM_STATES::STATE_EXIT) return; // Invalid state
+    if (newState < FSM_MAIN_STATES::INITAL || newState > FSM_MAIN_STATES::FINAL) return; // Invalid state
     lastState = currentState;
     currentState = newState;
 }

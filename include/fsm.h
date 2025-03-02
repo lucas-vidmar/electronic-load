@@ -2,15 +2,15 @@
 
 #include "main.h"
 
-enum FSM_STATES {
-    STATE_INITAL,
-    STATE_MAIN_MENU,
-    STATE_CONSTANT_CURRENT,
-    STATE_CONSTANT_VOLTAGE,
-    STATE_CONSTANT_RESISTANCE,
-    STATE_CONSTANT_POWER,
-    STATE_SETTINGS,
-    STATE_EXIT
+enum FSM_MAIN_STATES {
+    INITAL,
+    MAIN_MENU,
+    CC,
+    CV,
+    CR,
+    CW,
+    SETTINGS,
+    FINAL
 };
 
 class FSM {

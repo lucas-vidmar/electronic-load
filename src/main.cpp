@@ -48,12 +48,12 @@ void main_menu(){
   if (fsm.hasChanged()) { // First time entering main menu
     Serial.println("Main menu");
     encoder.setMinPosition(0);
-    encoder.setMaxPosition(FSM_STATES::STATE_SETTINGS - FSM_STATES::STATE_CONSTANT_CURRENT); //  quantity of options in main menu
+    encoder.setMaxPosition(FSM_MAIN_STATES::SETTINGS - FSM_MAIN_STATES::CC); //  quantity of options in main menu
     encoder.setPosition(0);
     lcd.print_main_menu(0);
   }
 
-  if (encoder.hasChanged()) { // Update encoder position if changed
+  if (encoder.hasChanged()) { // Update menu with selected option
     Serial.println("Has changed");
     pos = encoder.getPosition();
     lcd.print_main_menu(pos);
@@ -62,30 +62,10 @@ void main_menu(){
   // Check if encoder button is pressed
   if (encoder.isButtonPressed()) {
     Serial.println("Button pressed");
-    switch (pos) {
-      case 0:
-        fsm.changeState(FSM_STATES::STATE_CONSTANT_CURRENT);
-        break;
-      case 1:
-        fsm.changeState(FSM_STATES::STATE_CONSTANT_VOLTAGE);
-        break;
-      case 2:
-        fsm.changeState(FSM_STATES::STATE_CONSTANT_POWER);
-        break;
-      case 3:
-        fsm.changeState(FSM_STATES::STATE_CONSTANT_RESISTANCE);
-        break;
-      case 4:
-        fsm.changeState(FSM_STATES::STATE_SETTINGS);
-        break;
-      default:
-        fsm.changeState(FSM_STATES::STATE_EXIT);
-        break;
-    }
+    fsm.changeState(FSM_MAIN_STATES::CC + pos); // Change to selected option
     // Reset vars and close main menu
-    Serial.println("Exiting main menu");
+    Serial.println("Exiting main menu to option " + String(FSM_MAIN_STATES::CC + pos));
     lcd.close_main_menu();
-    encoder.setPosition(0); // Reset encoder position
     return;
   }
 }

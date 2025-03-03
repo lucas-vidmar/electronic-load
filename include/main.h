@@ -12,4 +12,4 @@
 #include "fsm.h"
 
 void main_menu();
-void constant_current();
+void constant_x(String unit);

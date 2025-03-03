@@ -94,7 +94,7 @@ float digits_to_number(int digits_values[], int digits_before_decimal, int digit
   return number;
 }
 
-void constant_current(){
+void constant_x(String unit){
 
   enum CC_STATES {
     SELECTING,
@@ -109,18 +109,18 @@ void constant_current(){
   //Serial.println("vDUT: " + String(vDUT, 3) + " V");
   //Serial.println("iDUT: " + String(iDUT, 3) + " A");
 
-  // Digits for constant current
+  // Digits for constant value
   static int digits_values[CC_TOTAL_DIGITS] = {0};  // Valores de los dígitos
   static int selected_digit = 0; // Dígito seleccionado
   static CC_STATES state = CC_STATES::SELECTING; // Estado de la máquina de estados
-  static float current = 0.0;
+  static float value = 0.0;
 
-  // First time entering constant current, reset static vars
+  // First time entering this mode, reset static vars
   if (fsm.hasChanged()) {
     memset(digits_values, 0, sizeof(digits_values));
     selected_digit = 0;
     state = CC_STATES::SELECTING;
-    current = 0.0;
+    value = 0.0;
   }
 
   // Check if encoder button is pressed
@@ -145,18 +145,18 @@ void constant_current(){
         encoder.setPosition(selected_digit);
         selected_digit = 0; // Reset digit selected
         state = CC_STATES::SELECTING;
-        Serial.println("Current: " + String(current, CC_DIGITS_AFTER_DECIMAL));
+        Serial.println("Value: " + String(value, CC_DIGITS_AFTER_DECIMAL));
         break;
       default:
         break;
     }
     switch (state) { // Check if trigger output or exit is pressed
       case CC_STATES::TRIGGER_OUTPUT: // Trigger output and return to selecting digit
-        input = current;
+        input = value;
         Serial.println("Output activated: " + String(input, CC_DIGITS_AFTER_DECIMAL));
         state = CC_STATES::SELECTING;
         break;
-      case CC_STATES::EXIT: // Exit constant current
+      case CC_STATES::EXIT: // Exit mode
         fsm.changeState(FSM_MAIN_STATES::MAIN_MENU);
         input = 0.0; // Reset input
         lcd.close_cx_screen();
@@ -182,10 +182,10 @@ void constant_current(){
       break;
   }
 
-  current = digits_to_number(digits_values, CC_DIGITS_BEFORE_DECIMAL, CC_DIGITS_AFTER_DECIMAL);
+  value = digits_to_number(digits_values, CC_DIGITS_BEFORE_DECIMAL, CC_DIGITS_AFTER_DECIMAL);
 
-  // Print constant current screen
-  lcd.print_cx_screen(current, selected_digit, CC_TOTAL_DIGITS, (char*)"A", vDUT, iDUT, CC_DIGITS_BEFORE_DECIMAL, CC_TOTAL_DIGITS, String(input, CC_DIGITS_AFTER_DECIMAL));
+  // Print constant x screen
+  lcd.print_cx_screen(value, selected_digit, CC_TOTAL_DIGITS, unit, vDUT, iDUT, CC_DIGITS_BEFORE_DECIMAL, CC_TOTAL_DIGITS, String(input, CC_DIGITS_AFTER_DECIMAL));
 
   delay(15);
 }

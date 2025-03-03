@@ -148,7 +148,7 @@ void LVGL_LCD::close_main_menu() {
     }
 }
 
-void LVGL_LCD::print_cx_screen(float current, int selection, int total_items, char* unit, float vDUT, float iDUT, int digits_before_decimal, int total_digits, String selected) {
+void LVGL_LCD::print_cx_screen(float current, int selection, int total_items, String unit, float vDUT, float iDUT, int digits_before_decimal, int total_digits, String selected) {
     // Inicializar estilos si no se han inicializado
     static bool styles_initialized = false;
     static lv_style_t style_value, style_value_hovered;

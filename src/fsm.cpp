@@ -13,13 +13,16 @@ void FSM::run() {
             main_menu();
             break;
         case FSM_MAIN_STATES::CC:
-            constant_current();
+            constant_x(String("A"));
             break;
         case FSM_MAIN_STATES::CV:
+            constant_x(String("V"));
             break;
         case FSM_MAIN_STATES::CR:
+            constant_x(String("R"));
             break;
         case FSM_MAIN_STATES::CW:
+            constant_x(String("W"));
             break;
         case FSM_MAIN_STATES::SETTINGS:
             break;

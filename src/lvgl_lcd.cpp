@@ -174,20 +174,21 @@ void LVGL_LCD::create_cx_screen(float current, int selection, String unit) {
 
     // Button Container
     buttons = lv_obj_create(input_screen);
-    lv_obj_set_size(buttons, lv_pct(100), 55); // Altura de 55 píxeles, ancho del padre
+    lv_obj_set_width(buttons, lv_pct(100)); // Ancho del padre
+    lv_obj_set_height(buttons, LV_SIZE_CONTENT); // Altura basada en el contenido
     lv_obj_set_style_pad_gap(buttons, 0, 0);
+    lv_obj_set_style_border_width(buttons, 0, 0);
 
     lv_obj_set_flex_flow(buttons, LV_FLEX_FLOW_ROW);
-    lv_obj_set_flex_align(buttons, LV_FLEX_ALIGN_SPACE_AROUND, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_set_flex_align(buttons, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_set_style_pad_column(buttons, PADDING, 0); // Espacio entre columnas
 
     // Output button as label
-    output_button = lv_label_create(buttons);
-    lv_label_set_text(output_button, "Push");
+    output_button = create_button("Push", buttons, false);
     lv_obj_set_style_text_font(output_button, &lv_font_montserrat_18, 0);
 
     // Back button as label
-    back_button = lv_label_create(buttons);
-    lv_label_set_text(back_button, "Back");
+    back_button = create_button("Back", buttons, false);
     lv_obj_set_style_text_font(back_button, &lv_font_montserrat_18, 0);
 
     // Current selection title
@@ -258,10 +259,10 @@ void LVGL_LCD::update_cx_screen(float current, int selection, String unit, float
         }
     }
 
-    if (selection == total_digits) lv_obj_add_style(output_button, &style_value_hovered, LV_PART_MAIN); // Resaltado output
-    else lv_obj_add_style(output_button, &style_value, LV_PART_MAIN); // Normal output
-    if (selection == total_digits + 1) lv_obj_add_style(back_button, &style_value_hovered, LV_PART_MAIN); // Resaltado back
-    else lv_obj_add_style(back_button, &style_value, LV_PART_MAIN); // Normal back
+    if (selection == total_digits) update_button(output_button, true); // Resaltado output
+    else update_button(output_button, false); // Normal output
+    if (selection == total_digits + 1) update_button(back_button, true); // Resaltado back
+    else update_button(back_button, false); // Normal back
 
     // Actualizad valor de selected
     lv_label_set_text(cur_selection_label, selected_str.c_str());
@@ -300,9 +301,38 @@ lv_obj_t* LVGL_LCD::create_section_header(String label, lv_obj_t* parent) {
     lv_obj_set_width(obj, lv_pct(100)); // Establecer el ancho al 100% del contenedor padre
     lv_obj_set_style_pad_ver(obj, PADDING, 0);
     lv_obj_set_style_pad_hor(obj, PADDING, 0);
-    lv_obj_set_style_bg_color(obj, lv_color_hex(0xdadada), 0);
-    lv_obj_set_style_bg_opa(obj, LV_OPA_COVER, 0); // Opacidad total
+    lv_obj_set_style_bg_color(obj, lv_color_hex(COLOR_GRAY), 0);
+    lv_obj_set_style_bg_opa(obj, LV_OPA_COVER, 0); // Opaco
     lv_obj_set_style_radius(obj, ROUNDED_CORNER_CURVE, 0);
 
     return obj;
+}
+
+lv_obj_t* LVGL_LCD::create_button(String label, lv_obj_t* parent, bool selected) {
+    lv_obj_t* obj = lv_label_create(parent);
+
+    lv_label_set_text(obj, label.c_str());
+    lv_obj_set_style_pad_ver(obj, PADDING, 0);
+    lv_obj_set_flex_grow(obj, 1); // Crecer en tamaño
+    lv_obj_set_style_radius(obj, ROUNDED_CORNER_CURVE, 0); // Rounded corners
+    lv_obj_set_style_text_align(obj, LV_TEXT_ALIGN_CENTER, 0); // Center text
+    lv_obj_set_style_border_color(obj, lv_color_hex(COLOR_GRAY), 0); // set border color grey
+    lv_obj_set_style_border_width(obj, BORDER_WIDTH, 0); // set border width
+
+    update_button(obj, selected);
+
+    return obj;
+}
+
+void LVGL_LCD::update_button(lv_obj_t* button, bool selected) {
+    if (selected) {
+        lv_obj_set_style_bg_color(button, lv_color_hex(COLOR_GRAY), 0);
+        lv_obj_set_style_bg_opa(button, LV_OPA_COVER, 0); // Opaco
+        lv_obj_set_style_border_opa(button, LV_OPA_COVER, 0); // Opaco
+    }
+    else {
+        lv_obj_set_style_bg_color(button, lv_color_white(), 0);
+        lv_obj_set_style_bg_opa(button, LV_OPA_TRANSP, 0); // Transparente
+        lv_obj_set_style_border_opa(button, LV_OPA_TRANSP, 0); // Transparente
+    }
 }

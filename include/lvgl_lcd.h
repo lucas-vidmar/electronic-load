@@ -14,6 +14,8 @@
 #define DRAW_BUF_SIZE BUFFER_SIZE_PIXELS * COLOR_DEPH_BYTES // 7680 pixels * 2 bytes = 15360 bytes
 #define PADDING 10
 #define ROUNDED_CORNER_CURVE 5
+#define COLOR_GRAY 0xdadada
+#define BORDER_WIDTH 2
 
 class LVGL_LCD {
 public:
@@ -59,4 +61,6 @@ private:
 
     /* Helpers */
     lv_obj_t* create_section_header(String label, lv_obj_t* parent); // Creates section headers
+    lv_obj_t* create_button(String label, lv_obj_t* parent, bool selected); // Creates button
+    void update_button(lv_obj_t* button, bool selected); // Toggles button style
 };

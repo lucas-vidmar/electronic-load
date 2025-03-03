@@ -148,11 +148,12 @@ void LVGL_LCD::close_main_menu() {
     }
 }
 
-void LVGL_LCD::print_cx_screen(float current, int selection, int total_items, char* unit, float vDUT, float iDUT, bool output_activated, int digits_before_decimal, int total_digits) {
+void LVGL_LCD::print_cx_screen(float current, int selection, int total_items, char* unit, float vDUT, float iDUT, int digits_before_decimal, int total_digits, String selected) {
     // Inicializar estilos si no se han inicializado
     static bool styles_initialized = false;
-    static lv_style_t style_value, style_value_hovered, style_activated;
-    static lv_obj_t *input_title, *digits, *buttons, *output_button, *back_button, *dut_container, *dut_voltage, *dut_current, *dut_power;
+    static lv_style_t style_value, style_value_hovered;
+    static lv_obj_t *input_title, *digits, *buttons, *output_button, *back_button, *dut_container, *dut_voltage, *dut_current, *dut_power, *cur_selection, *cur_selection_label;
+    String selected_str = selected + " " + unit;
 
     if (!styles_initialized) {
         // Estilo normal
@@ -162,10 +163,6 @@ void LVGL_LCD::print_cx_screen(float current, int selection, int total_items, ch
         // Estilo resaltado para los dígitos hovered
         lv_style_init(&style_value_hovered);
         lv_style_set_text_color(&style_value_hovered, lv_color_hex(0xFF0000)); // Resaltado en rojo
-
-        // Estilo para el botón de salida
-        lv_style_init(&style_activated);
-        lv_style_set_text_color(&style_activated, lv_color_hex(0x0000FF)); // Resaltado en azul
 
         styles_initialized = true;
     }
@@ -187,7 +184,7 @@ void LVGL_LCD::print_cx_screen(float current, int selection, int total_items, ch
 
         // Value container
         digits = lv_obj_create(input_screen);
-        lv_obj_set_size(digits, lv_disp_get_hor_res(NULL), 75); // Altura de 50 píxeles
+        lv_obj_set_size(digits, lv_disp_get_hor_res(NULL), 75); // Altura de 75 píxeles
         lv_obj_align(digits, LV_ALIGN_TOP_MID, 0, 0); // Posicionar en la parte superior
 
         lv_obj_set_flex_flow(digits, LV_FLEX_FLOW_ROW);
@@ -204,13 +201,32 @@ void LVGL_LCD::print_cx_screen(float current, int selection, int total_items, ch
 
         // Output button as label
         output_button = lv_label_create(buttons);
-        lv_label_set_text(output_button, "OFF");
+        lv_label_set_text(output_button, "Push");
         lv_obj_set_style_text_font(output_button, &lv_font_montserrat_18, 0);
 
         // Back button as label
         back_button = lv_label_create(buttons);
         lv_label_set_text(back_button, "Back");
         lv_obj_set_style_text_font(back_button, &lv_font_montserrat_18, 0);
+
+        // Current selection title
+        input_title = lv_label_create(input_screen);
+        lv_label_set_text(input_title, "Current Selection:");
+        lv_obj_align(input_title, LV_ALIGN_TOP_LEFT, 0, 0);
+
+        // Current selection container
+        cur_selection = lv_obj_create(input_screen);
+        lv_obj_set_size(cur_selection, lv_disp_get_hor_res(NULL), 75); // Altura de 75 píxeles
+        lv_obj_align(cur_selection, LV_ALIGN_TOP_MID, 0, 0); // Posicionar en la parte superior
+
+        lv_obj_set_flex_flow(cur_selection, LV_FLEX_FLOW_ROW);
+        lv_obj_set_flex_align(cur_selection, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+
+        // Current selection label
+        cur_selection_label = lv_label_create(cur_selection);
+        lv_obj_add_style(cur_selection_label, &style_value, LV_PART_MAIN);
+        lv_obj_set_style_text_font(cur_selection_label, &lv_font_montserrat_28, 0);
+        lv_label_set_text(cur_selection_label, selected_str.c_str());
 
         // Output title
         input_title = lv_label_create(input_screen);
@@ -269,19 +285,13 @@ void LVGL_LCD::print_cx_screen(float current, int selection, int total_items, ch
         }
     }
 
-    // Actualizar el estilo del botón de salida si está activado o si es el seleccionado
-    if (output_activated) { // Estilo activado en verde y cambiar label a ON 
-        lv_label_set_text(output_button, "ON");
-        lv_obj_add_style(output_button, &style_activated, LV_PART_MAIN);
-    }
-    else {
-        lv_label_set_text(output_button, "OFF");
-        lv_obj_add_style(output_button, &style_value, LV_PART_MAIN);
-    }
     if (selection == total_digits) lv_obj_add_style(output_button, &style_value_hovered, LV_PART_MAIN); // Resaltado output
     else lv_obj_add_style(output_button, &style_value, LV_PART_MAIN); // Normal output
     if (selection == total_digits + 1) lv_obj_add_style(back_button, &style_value_hovered, LV_PART_MAIN); // Resaltado back
     else lv_obj_add_style(back_button, &style_value, LV_PART_MAIN); // Normal back
+
+    // Actualizad valor de selected
+    lv_label_set_text(cur_selection_label, selected_str.c_str());
 
     // Actualizar valores dut
     String values = String(vDUT,3) + " V";

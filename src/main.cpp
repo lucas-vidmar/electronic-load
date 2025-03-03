@@ -7,6 +7,7 @@ DAC dac = DAC();
 ADC adc = ADC();
 AnalogSws analog_sws = AnalogSws();
 LVGL_LCD lcd = LVGL_LCD();
+float input = 0.0;
 
 // Electronic Load FSM
 FSM fsm = FSM();
@@ -96,7 +97,7 @@ float digits_to_number(int digits_values[], int digits_before_decimal, int digit
 void constant_current(){
 
   enum CC_STATES {
-    SELECTING_DIGIT,
+    SELECTING,
     MODIFYING_DIGIT,
     TRIGGER_OUTPUT,
     EXIT
@@ -111,15 +112,14 @@ void constant_current(){
   // Digits for constant current
   static int digits_values[CC_TOTAL_DIGITS] = {0};  // Valores de los dígitos
   static int selected_digit = 0; // Dígito seleccionado
-  static CC_STATES state = CC_STATES::SELECTING_DIGIT; // Estado de la máquina de estados
+  static CC_STATES state = CC_STATES::SELECTING; // Estado de la máquina de estados
   static float current = 0.0;
-  static bool output_activated = false;
 
   // First time entering constant current, reset static vars
   if (fsm.hasChanged()) {
     digits_values[0] = 0;
     selected_digit = 0;
-    state = CC_STATES::SELECTING_DIGIT;
+    state = CC_STATES::SELECTING;
     current = 0.0;
   }
 
@@ -128,10 +128,9 @@ void constant_current(){
     Serial.println("Button pressed");
     Serial.println("State: " + String(state));
     switch (state) {
-      case CC_STATES::SELECTING_DIGIT: // Start modifying digit
+      case CC_STATES::SELECTING: // Start modifying digit
         Serial.println("Selecting digit");
         if (selected_digit < CC_TOTAL_DIGITS - 1) {
-          selected_digit++;
           state = CC_STATES::MODIFYING_DIGIT;
           encoder.setPosition(digits_values[selected_digit]); // Set encoder position to the value of the selected digit
         } else if (selected_digit == CC_TOTAL_DIGITS) {
@@ -145,13 +144,17 @@ void constant_current(){
         Serial.println("Modifying digit");
         encoder.setPosition(selected_digit);
         selected_digit = 0; // Reset digit selected
-        state = CC_STATES::SELECTING_DIGIT;
+        state = CC_STATES::SELECTING;
         Serial.println("Current: " + String(current, CC_DIGITS_AFTER_DECIMAL));
         break;
+      default:
+        break;
+    }
+    switch (state) { // Check if trigger output or exit is pressed
       case CC_STATES::TRIGGER_OUTPUT: // Trigger output and return to selecting digit
-        output_activated = !output_activated;
-        Serial.println("Output activated: " + String(output_activated));
-        state = CC_STATES::SELECTING_DIGIT;
+        input = current;
+        Serial.println("Output activated: " + String(input, CC_DIGITS_AFTER_DECIMAL));
+        state = CC_STATES::SELECTING;
         break;
       case CC_STATES::EXIT: // Exit constant current
         fsm.changeState(FSM_MAIN_STATES::MAIN_MENU);
@@ -162,7 +165,7 @@ void constant_current(){
   }
 
   switch (state) {
-    case CC_STATES::SELECTING_DIGIT:
+    case CC_STATES::SELECTING:
       encoder.setMinPosition(0);
       encoder.setMaxPosition(CC_TOTAL_DIGITS - 1 + 2); // -1 because it starts from 0, +2 for trigger output and exit
       selected_digit = encoder.getPosition();
@@ -180,7 +183,7 @@ void constant_current(){
   current = digits_to_number(digits_values, CC_DIGITS_BEFORE_DECIMAL, CC_DIGITS_AFTER_DECIMAL);
 
   // Print constant current screen
-  lcd.print_cx_screen(current, selected_digit, CC_TOTAL_DIGITS, (char*)"A", vDUT, iDUT, output_activated, CC_DIGITS_BEFORE_DECIMAL, CC_TOTAL_DIGITS);
+  lcd.print_cx_screen(current, selected_digit, CC_TOTAL_DIGITS, (char*)"A", vDUT, iDUT, CC_DIGITS_BEFORE_DECIMAL, CC_TOTAL_DIGITS, String(input, CC_DIGITS_AFTER_DECIMAL));
 
   delay(15);
 }

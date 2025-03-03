@@ -122,6 +122,7 @@ void constant_x(String unit, int digits_before_decimal, int digits_after_decimal
     selected = 0;
     state = CC_STATES::SELECTING;
     value = 0.0;
+    lcd.create_cx_screen(value, selected, unit);
   }
 
   // Check if encoder button is pressed
@@ -187,7 +188,7 @@ void constant_x(String unit, int digits_before_decimal, int digits_after_decimal
   value = digits_to_number(digits_values, digits_before_decimal, digits_after_decimal, total_digits);
 
   // Print constant x screen
-  lcd.print_cx_screen(value, selected, total_digits, unit, vDUT, iDUT, digits_before_decimal, total_digits, String(input, digits_after_decimal));
+  lcd.update_cx_screen(value, selected, unit, vDUT, iDUT, digits_before_decimal, total_digits, String(input, digits_after_decimal));
 
   delay(15);
 }

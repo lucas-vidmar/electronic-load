@@ -25,7 +25,8 @@ public:
     void print_main_menu(int hovered_option);
     void close_main_menu();
 
-    void print_cx_screen(float current, int selection, int total_items, String unit, float vDUT, float iDUT, int digits_before_decimal, int total_digits, String selected);
+    void create_cx_screen(float current, int selection, String unit);
+    void update_cx_screen(float current, int selection, String unit, float vDUT, float iDUT, int digits_before_decimal, int total_digits, String selected);
     void close_cx_screen();
 
 private:
@@ -50,5 +51,4 @@ private:
     *buttons, *output_button, *back_button, // Buttons
     *dut_container, *dut_voltage, *dut_current, *dut_power, *dut_resistance, // DUT values
     *cur_selection, *cur_selection_label; // current selection
-    bool styles_initialized = false;
 };

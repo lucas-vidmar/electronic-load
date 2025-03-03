@@ -150,9 +150,6 @@ void LVGL_LCD::close_main_menu() {
 
 void LVGL_LCD::print_cx_screen(float current, int selection, int total_items, String unit, float vDUT, float iDUT, int digits_before_decimal, int total_digits, String selected) {
     // Inicializar estilos si no se han inicializado
-    static bool styles_initialized = false;
-    static lv_style_t style_value, style_value_hovered;
-    static lv_obj_t *input_title, *digits, *buttons, *output_button, *back_button, *dut_container, *dut_voltage, *dut_current, *dut_power, *dut_resistance, *cur_selection, *cur_selection_label;
     String selected_str = selected + " " + unit;
 
     if (!styles_initialized) {

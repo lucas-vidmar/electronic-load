@@ -39,6 +39,16 @@ private:
     /*use ESP as tick source*/
     static uint32_t tick();
 
+    /* UI Elements for main_menu */
     lv_obj_t* main_menu = nullptr;      // Stores main menu object
+
+    /* UI Elements for cx_screen */
     lv_obj_t* input_screen = nullptr;   // Stores input screen object
+    lv_style_t style_value, style_value_hovered; // Styles for values
+    lv_obj_t *input_title,
+    *digits,
+    *buttons, *output_button, *back_button, // Buttons
+    *dut_container, *dut_voltage, *dut_current, *dut_power, *dut_resistance, // DUT values
+    *cur_selection, *cur_selection_label; // current selection
+    bool styles_initialized = false;
 };

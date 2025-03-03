@@ -62,83 +62,76 @@ uint32_t LVGL_LCD::tick() {
 }
 
 
-void LVGL_LCD::print_main_menu(int hovered_option)
-{
+void LVGL_LCD::create_main_menu() {
     // Inicializar estilos si no se han inicializado
-    static lv_style_t style_normal, style_hovered, style_title;
-    static std::vector<lv_obj_t*> menu_items;
-    static bool styles_initialized = false;
 
-    if (!styles_initialized) {
-        // Estilo para los ítems normales del menú
-        lv_style_init(&style_normal);
-        lv_style_set_text_color(&style_normal, lv_color_black());
-        lv_style_set_text_font(&style_normal, &lv_font_montserrat_18);
+    // Estilo para los ítems normales del menú
+    lv_style_init(&style_normal);
+    lv_style_set_text_color(&style_normal, lv_color_black());
+    lv_style_set_text_font(&style_normal, &lv_font_montserrat_18);
 
-        // Estilo para el ítem resaltado
-        lv_style_init(&style_hovered);
-        lv_style_set_text_color(&style_hovered, lv_color_hex(0x0000FF));
-        lv_style_set_text_font(&style_normal, &lv_font_montserrat_18);
+    // Estilo para el ítem resaltado
+    lv_style_init(&style_hovered);
+    lv_style_set_text_color(&style_hovered, lv_color_hex(0x0000FF));
 
-        // Estilo para el título
-        lv_style_init(&style_title);
-        lv_style_set_text_color(&style_title, lv_color_black());
-        lv_style_set_text_font(&style_title, &lv_font_montserrat_22); // Usar una fuente más grande para el título
-
-        styles_initialized = true;
-    }
+    // Estilo para el título
+    lv_style_init(&style_title);
+    lv_style_set_text_color(&style_title, lv_color_black());
+    lv_style_set_text_font(&style_title, &lv_font_montserrat_22); // Usar una fuente más grande para el título    
 
     // Verificar si el menú ya existe
-    if (main_menu == NULL) {
-        menu_items.clear(); // Limpiar el vector si el menú se recrea
+    if (main_menu != nullptr) return;
 
-        // Crear un contenedor para el menú
-        main_menu = lv_obj_create(lv_scr_act());
-        lv_obj_set_size(main_menu, lv_disp_get_hor_res(NULL), lv_disp_get_ver_res(NULL));
-        // Posicionar en la esquina superior izquierda
-        lv_obj_align(main_menu, LV_ALIGN_TOP_LEFT, 0, 0);
+    menu_items.clear(); // Limpiar el vector si el menú se recrea
 
-        // Establecer el layout del contenedor como columna
-        lv_obj_set_flex_flow(main_menu, LV_FLEX_FLOW_COLUMN);
-        lv_obj_set_flex_align(main_menu, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+    // Crear un contenedor para el menú
+    main_menu = lv_obj_create(lv_scr_act());
+    lv_obj_set_size(main_menu, lv_disp_get_hor_res(NULL), lv_disp_get_ver_res(NULL)); // Full screen
+    lv_obj_align(main_menu, LV_ALIGN_TOP_LEFT, 0, 0); // Posicionar en la esquina superior izquierda
 
-        // Establecer estilo para el espacio entre elementos
-        lv_obj_set_style_pad_gap(main_menu, PADDING, 0);
+    // Establecer el layout del contenedor como columna
+    lv_obj_set_flex_flow(main_menu, LV_FLEX_FLOW_COLUMN);
+    lv_obj_set_flex_align(main_menu, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
 
-        // Agregar título con fuente más grande
-        lv_obj_t* title_label = lv_label_create(main_menu);
-        lv_label_set_text(title_label, "Carga electronica");
-        lv_obj_add_style(title_label, &style_title, LV_PART_MAIN);
+    // Establecer estilo para el espacio entre elementos
+    lv_obj_set_style_pad_gap(main_menu, PADDING, 0);
 
-        // Agregar un separador
-        lv_obj_t* separator = lv_obj_create(main_menu);
-        lv_obj_set_size(separator, lv_pct(100), 2); // Altura de 2 píxeles
-        lv_obj_set_style_bg_color(separator, lv_color_black(), 0);
-        lv_obj_set_style_border_width(separator, 0, 0);
+    // Agregar título con fuente más grande
+    lv_obj_t* title_label = lv_label_create(main_menu);
+    lv_label_set_text(title_label, "Carga electronica");
+    lv_obj_add_style(title_label, &style_title, LV_PART_MAIN);
 
-        // Items para el menú principal
-        std::vector<std::string> items = {"Corriente Constante", "Voltaje Constante", "Resistencia Constante", "Potencia Constante", "Ajustes"};
-        for (int i = 0; i < items.size(); ++i) {
-            // Crear una etiqueta para cada item
-            lv_obj_t* label = lv_label_create(main_menu);
-            lv_label_set_text(label, items[i].c_str());
-            // Aplicar estilo normal
-            lv_obj_add_style(label, &style_normal, LV_PART_MAIN);
-            menu_items.push_back(label); // Almacenar cada etiqueta para actualizaciones
-        }
+    // Agregar un separador
+    lv_obj_t* separator = lv_obj_create(main_menu);
+    lv_obj_set_size(separator, lv_pct(100), 2); // Altura de 2 píxeles
+    lv_obj_set_style_bg_color(separator, lv_color_black(), 0);
+    lv_obj_set_style_border_width(separator, 0, 0);
+
+    // Items para el menú principal
+    items = {"Corriente Constante", "Voltaje Constante", "Resistencia Constante", "Potencia Constante", "Ajustes"};
+    for (int i = 0; i < items.size(); ++i) {
+        // Crear una etiqueta para cada item
+        lv_obj_t* label = lv_label_create(main_menu);
+        lv_label_set_text(label, items[i].c_str());
+        // Aplicar estilo normal
+        lv_obj_add_style(label, &style_normal, LV_PART_MAIN);
+        menu_items.push_back(label); // Almacenar cada etiqueta para actualizaciones
     }
+}
+
+void LVGL_LCD::update_main_menu(int hovered_option) {
 
     // Actualizar la opción resaltada sin recrear el menú
     for (int i = 0; i < menu_items.size(); ++i) {
         if (i == hovered_option) {
             lv_obj_add_style(menu_items[i], &style_hovered, LV_PART_MAIN);
-            lv_obj_remove_style(menu_items[i], &style_normal, LV_PART_MAIN);
-            Serial.println("Resaltado: " + String(i));
+            lv_label_set_text(menu_items[i], ("> " + items[i]).c_str());
         } else {
             lv_obj_add_style(menu_items[i], &style_normal, LV_PART_MAIN);
-            lv_obj_remove_style(menu_items[i], &style_hovered, LV_PART_MAIN);
+            lv_label_set_text(menu_items[i], items[i].c_str());
         }
     }
+
 }
 
 void LVGL_LCD::close_main_menu() {

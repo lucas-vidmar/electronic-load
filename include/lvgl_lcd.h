@@ -22,7 +22,8 @@ public:
 
     void update();
 
-    void print_main_menu(int hovered_option);
+    void create_main_menu();
+    void update_main_menu(int hovered_option);
     void close_main_menu();
 
     void create_cx_screen(float current, int selection, String unit);
@@ -42,6 +43,9 @@ private:
 
     /* UI Elements for main_menu */
     lv_obj_t* main_menu = nullptr;      // Stores main menu object
+    lv_style_t style_normal, style_hovered, style_title; // Styles for menu items
+    std::vector<lv_obj_t*> menu_items;  // Stores menu items
+    std::vector<std::string> items;
 
     /* UI Elements for cx_screen */
     lv_obj_t* input_screen = nullptr;   // Stores input screen object
@@ -50,5 +54,5 @@ private:
     *digits,
     *buttons, *output_button, *back_button, // Buttons
     *cur_selection, *cur_selection_label, // current selection
-    *dut_container, *dut_voltage, *dut_current, *dut_power, *dut_resistance; // DUT values
+    *dut_container, *dut_voltage, *dut_current, *dut_power, *dut_resistance = nullptr; // DUT values
 };

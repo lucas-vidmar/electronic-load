@@ -51,13 +51,14 @@ void main_menu(){
     encoder.setMinPosition(0);
     encoder.setMaxPosition(FSM_MAIN_STATES::SETTINGS - FSM_MAIN_STATES::CC); //  quantity of options in main menu
     encoder.setPosition(0);
-    lcd.print_main_menu(0);
+    lcd.create_main_menu(); // Create main menu
+    lcd.update_main_menu(0);
   }
 
   if (encoder.hasChanged()) { // Update menu with selected option
     Serial.println("Has changed");
     pos = encoder.getPosition();
-    lcd.print_main_menu(pos);
+    lcd.update_main_menu(pos);
   }
 
   // Check if encoder button is pressed

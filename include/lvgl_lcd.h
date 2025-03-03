@@ -49,6 +49,6 @@ private:
     lv_obj_t *input_title,
     *digits,
     *buttons, *output_button, *back_button, // Buttons
-    *dut_container, *dut_voltage, *dut_current, *dut_power, *dut_resistance, // DUT values
-    *cur_selection, *cur_selection_label; // current selection
+    *cur_selection, *cur_selection_label, // current selection
+    *dut_container, *dut_voltage, *dut_current, *dut_power, *dut_resistance; // DUT values
 };

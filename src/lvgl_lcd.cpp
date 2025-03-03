@@ -283,14 +283,22 @@ void LVGL_LCD::update_cx_screen(float current, int selection, String unit, float
     lv_label_set_text_fmt(dut_current, values.c_str());
     values = String(vDUT*iDUT,CW_DIGITS_AFTER_DECIMAL) + " W";
     lv_label_set_text_fmt(dut_power, values.c_str());
-    iDUT == 0 ? values = "--- R" : values = String(vDUT/iDUT,CR_DIGITS_AFTER_DECIMAL) + " R";
+    values = (iDUT > 0 ? String(vDUT/iDUT,CR_DIGITS_AFTER_DECIMAL) : "---") + + " R";
     lv_label_set_text_fmt(dut_resistance, values.c_str());
     lv_obj_set_style_text_font(dut_resistance, &lv_font_montserrat_14, 0);
 }
 
 void LVGL_LCD::close_cx_screen(){
-    if (input_screen != nullptr) {
-        lv_obj_del(input_screen); // Eliminar el objeto de la pantalla de entrada
-        input_screen = nullptr; // Establecer el puntero a nullptr para indicar que no existe
-    }
+    if (input_screen == nullptr) return; // Ya se ha eliminado
+
+    lv_obj_del(input_screen);
+    input_screen = nullptr;
+    input_title = nullptr;
+    digits = nullptr;
+    buttons = nullptr; output_button = nullptr; back_button = nullptr;
+    cur_selection = nullptr; cur_selection_label = nullptr;
+    dut_container = nullptr; dut_voltage = nullptr; dut_current = nullptr; dut_power = nullptr; dut_resistance = nullptr;
+
+    lv_style_reset(&style_value);
+    lv_style_reset(&style_value_hovered);
 }

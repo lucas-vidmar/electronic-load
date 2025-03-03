@@ -117,7 +117,7 @@ void constant_current(){
 
   // First time entering constant current, reset static vars
   if (fsm.hasChanged()) {
-    digits_values[0] = 0;
+    memset(digits_values, 0, sizeof(digits_values));
     selected_digit = 0;
     state = CC_STATES::SELECTING;
     current = 0.0;
@@ -129,8 +129,8 @@ void constant_current(){
     Serial.println("State: " + String(state));
     switch (state) {
       case CC_STATES::SELECTING: // Start modifying digit
-        Serial.println("Selecting digit");
-        if (selected_digit < CC_TOTAL_DIGITS - 1) {
+        Serial.println("Selecting digit: " + String(selected_digit));
+        if (selected_digit < CC_TOTAL_DIGITS) {
           state = CC_STATES::MODIFYING_DIGIT;
           encoder.setPosition(digits_values[selected_digit]); // Set encoder position to the value of the selected digit
         } else if (selected_digit == CC_TOTAL_DIGITS) {
@@ -158,6 +158,8 @@ void constant_current(){
         break;
       case CC_STATES::EXIT: // Exit constant current
         fsm.changeState(FSM_MAIN_STATES::MAIN_MENU);
+        input = 0.0; // Reset input
+        lcd.close_cx_screen();
         return;
       default:
         break;

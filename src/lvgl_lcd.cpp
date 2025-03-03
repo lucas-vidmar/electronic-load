@@ -302,3 +302,10 @@ void LVGL_LCD::print_cx_screen(float current, int selection, int total_items, ch
     lv_label_set_text_fmt(dut_power, values.c_str());
     
 }
+
+void LVGL_LCD::close_cx_screen(){
+    if (input_screen != nullptr) {
+        lv_obj_del(input_screen); // Eliminar el objeto de la pantalla de entrada
+        input_screen = nullptr; // Establecer el puntero a nullptr para indicar que no existe
+    }
+}

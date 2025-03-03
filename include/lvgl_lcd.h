@@ -28,6 +28,7 @@ public:
     void close_main_menu();
 
     void print_cx_screen(float current, int selection, int total_items, char* unit, float vDUT, float iDUT, int digits_before_decimal, int total_digits, String selected);
+    void close_cx_screen();
 
 private:
     TFT_eSPI tft;

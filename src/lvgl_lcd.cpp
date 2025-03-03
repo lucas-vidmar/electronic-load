@@ -155,21 +155,17 @@ void LVGL_LCD::print_cx_screen(float current, int selection, int total_items, ch
     static lv_obj_t *input_title, *digits, *buttons, *output_button, *back_button, *dut_container, *dut_voltage, *dut_current, *dut_power;
 
     if (!styles_initialized) {
-        // Estilo normal para los dígitos
+        // Estilo normal
         lv_style_init(&style_value);
-        lv_style_set_text_color(&style_value, lv_color_black());
-        lv_style_set_text_font(&style_value, &lv_font_montserrat_28);
+        lv_style_set_text_color(&style_value, lv_color_black()); // Negro comun
 
         // Estilo resaltado para los dígitos hovered
         lv_style_init(&style_value_hovered);
         lv_style_set_text_color(&style_value_hovered, lv_color_hex(0xFF0000)); // Resaltado en rojo
-        lv_style_set_text_font(&style_value_hovered, &lv_font_montserrat_28);
 
         // Estilo para el botón de salida
         lv_style_init(&style_activated);
-        lv_style_set_text_color(&style_activated, lv_color_hex(0x006400));
-        lv_style_set_text_font(&style_activated, &lv_font_montserrat_18);
-        lv_style_set_text_decor(&style_activated, LV_TEXT_DECOR_UNDERLINE);
+        lv_style_set_text_color(&style_activated, lv_color_hex(0x0000FF)); // Resaltado en azul
 
         styles_initialized = true;
     }
@@ -209,10 +205,12 @@ void LVGL_LCD::print_cx_screen(float current, int selection, int total_items, ch
         // Output button as label
         output_button = lv_label_create(buttons);
         lv_label_set_text(output_button, "OFF");
+        lv_obj_set_style_text_font(output_button, &lv_font_montserrat_18, 0);
 
         // Back button as label
         back_button = lv_label_create(buttons);
         lv_label_set_text(back_button, "Back");
+        lv_obj_set_style_text_font(back_button, &lv_font_montserrat_18, 0);
 
         // Output title
         input_title = lv_label_create(input_screen);
@@ -248,7 +246,7 @@ void LVGL_LCD::print_cx_screen(float current, int selection, int total_items, ch
     // Limpiar el contenedor antes de agregar nuevos dígitos
     lv_obj_clean(digits);
 
-    // Convertir el valor de corriente a cadena con formato "XX.XXX A"
+    // Convertir el valor a string con formato "XX.XXX [X]"
     char value_str[10];
     String format = "%0" + String(total_digits+1) + "."+String(total_digits-digits_before_decimal)+"f " + String(unit);
     snprintf(value_str, sizeof(value_str), format.c_str(), current);
@@ -261,6 +259,7 @@ void LVGL_LCD::print_cx_screen(float current, int selection, int total_items, ch
 
         lv_obj_t* label = lv_label_create(digits);
         lv_label_set_text_fmt(label, "%c", value_str[i]);
+        lv_obj_set_style_text_font(label, &lv_font_montserrat_28, 0);
 
         // Aplicar el estilo resaltado si el carácter es un dígito y es el hovered
         if (isdigit(value_str[i]) && i == hovered_digit_to_process) {
@@ -275,11 +274,14 @@ void LVGL_LCD::print_cx_screen(float current, int selection, int total_items, ch
         lv_label_set_text(output_button, "ON");
         lv_obj_add_style(output_button, &style_activated, LV_PART_MAIN);
     }
-    else if (selection == total_digits) lv_obj_add_style(output_button, &style_value_hovered, LV_PART_MAIN); // Estilo resaltado si es el seleccionado
-    else lv_obj_add_style(output_button, &style_value, LV_PART_MAIN);
-    // Actualizar el estilo del botón de regreso si es el seleccionado
-    if (selection == total_digits + 1) lv_obj_add_style(back_button, &style_value_hovered, LV_PART_MAIN); // Estilo resaltado si es el seleccionado
-    else lv_obj_add_style(back_button, &style_value, LV_PART_MAIN);
+    else {
+        lv_label_set_text(output_button, "OFF");
+        lv_obj_add_style(output_button, &style_value, LV_PART_MAIN);
+    }
+    if (selection == total_digits) lv_obj_add_style(output_button, &style_value_hovered, LV_PART_MAIN); // Resaltado output
+    else lv_obj_add_style(output_button, &style_value, LV_PART_MAIN); // Normal output
+    if (selection == total_digits + 1) lv_obj_add_style(back_button, &style_value_hovered, LV_PART_MAIN); // Resaltado back
+    else lv_obj_add_style(back_button, &style_value, LV_PART_MAIN); // Normal back
 
     // Actualizar valores dut
     String values = String(vDUT,3) + " V";

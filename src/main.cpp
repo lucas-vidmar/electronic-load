@@ -113,6 +113,7 @@ void constant_current(){
   static int selected_digit = 0; // Dígito seleccionado
   static CC_STATES state = CC_STATES::SELECTING_DIGIT; // Estado de la máquina de estados
   static float current = 0.0;
+  static bool output_activated = false;
 
   // First time entering constant current, reset static vars
   if (fsm.hasChanged()) {
@@ -133,7 +134,7 @@ void constant_current(){
           selected_digit++;
           state = CC_STATES::MODIFYING_DIGIT;
           encoder.setPosition(digits_values[selected_digit]); // Set encoder position to the value of the selected digit
-        } else if (selected_digit == CC_TOTAL_DIGITS - 1) {
+        } else if (selected_digit == CC_TOTAL_DIGITS) {
           state = CC_STATES::TRIGGER_OUTPUT;
         }
         else {
@@ -147,12 +148,14 @@ void constant_current(){
         state = CC_STATES::SELECTING_DIGIT;
         Serial.println("Current: " + String(current, CC_DIGITS_AFTER_DECIMAL));
         break;
-      case CC_STATES::TRIGGER_OUTPUT:
-        // @todo: Implement trigger output
+      case CC_STATES::TRIGGER_OUTPUT: // Trigger output and return to selecting digit
+        output_activated = !output_activated;
+        Serial.println("Output activated: " + String(output_activated));
+        state = CC_STATES::SELECTING_DIGIT;
         break;
-      case CC_STATES::EXIT:
-        // @todo: Implement exit
-        break;
+      case CC_STATES::EXIT: // Exit constant current
+        fsm.changeState(FSM_MAIN_STATES::MAIN_MENU);
+        return;
       default:
         break;
     }
@@ -168,10 +171,8 @@ void constant_current(){
       encoder.setMaxPosition(9); // 0-9
       digits_values[selected_digit] = encoder.getPosition();
       break;
-    case CC_STATES::TRIGGER_OUTPUT:
-      break;
-    case CC_STATES::EXIT:
-      break;
+    case CC_STATES::TRIGGER_OUTPUT: // if trigger output is hovered, do nothing
+    case CC_STATES::EXIT: // if exit is hovered, do nothing
     default:
       break;
   }
@@ -179,7 +180,7 @@ void constant_current(){
   current = digits_to_number(digits_values, CC_DIGITS_BEFORE_DECIMAL, CC_DIGITS_AFTER_DECIMAL);
 
   // Print constant current screen
-  lcd.print_cx_screen(current, selected_digit, CC_TOTAL_DIGITS, (char*)"A", vDUT, iDUT, false, CC_DIGITS_BEFORE_DECIMAL, CC_TOTAL_DIGITS);
+  lcd.print_cx_screen(current, selected_digit, CC_TOTAL_DIGITS, (char*)"A", vDUT, iDUT, output_activated, CC_DIGITS_BEFORE_DECIMAL, CC_TOTAL_DIGITS);
 
   delay(15);
 }

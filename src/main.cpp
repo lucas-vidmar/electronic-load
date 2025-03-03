@@ -117,6 +117,7 @@ void constant_x(String unit, int digits_before_decimal, int digits_after_decimal
 
   // First time entering this mode, reset static vars
   if (fsm.hasChanged()) {
+    encoder.setPosition(0);
     digits_values.assign(total_digits, 0);  // Reset digits values
     selected = 0;
     state = CC_STATES::SELECTING;

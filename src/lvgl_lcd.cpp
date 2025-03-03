@@ -152,7 +152,7 @@ void LVGL_LCD::print_cx_screen(float current, int selection, int total_items, St
     // Inicializar estilos si no se han inicializado
     static bool styles_initialized = false;
     static lv_style_t style_value, style_value_hovered;
-    static lv_obj_t *input_title, *digits, *buttons, *output_button, *back_button, *dut_container, *dut_voltage, *dut_current, *dut_power, *cur_selection, *cur_selection_label;
+    static lv_obj_t *input_title, *digits, *buttons, *output_button, *back_button, *dut_container, *dut_voltage, *dut_current, *dut_power, *dut_resistance, *cur_selection, *cur_selection_label;
     String selected_str = selected + " " + unit;
 
     if (!styles_initialized) {
@@ -172,28 +172,25 @@ void LVGL_LCD::print_cx_screen(float current, int selection, int total_items, St
         // INPUT SCREEN
         input_screen = lv_obj_create(lv_scr_act());
         lv_obj_set_size(input_screen, lv_disp_get_hor_res(NULL), lv_disp_get_ver_res(NULL)); // Full screen
-        lv_obj_align(input_screen, LV_ALIGN_TOP_LEFT, 0, 0); // Posicionar en la esquina superior izquierda
+        lv_obj_align(input_screen, LV_ALIGN_TOP_MID, 0, 0); // Posicionar en la esquina superior izquierda
         lv_obj_set_flex_flow(input_screen, LV_FLEX_FLOW_COLUMN);
-        lv_obj_set_style_pad_all(input_screen, 0, 0); // Eliminar padding
+        lv_obj_set_flex_align(input_screen, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+        lv_obj_set_style_pad_all(input_screen, PADDING, PADDING); // Padding
 
         // Input title
         input_title = lv_label_create(input_screen);
         lv_label_set_text(input_title, "Input:");
-        lv_obj_align(input_title, LV_ALIGN_TOP_LEFT, 0, 0);
-        lv_obj_set_style_pad_hor(input_title, PADDING, 0);
 
         // Value container
         digits = lv_obj_create(input_screen);
-        lv_obj_set_size(digits, lv_disp_get_hor_res(NULL), 75); // Altura de 75 píxeles
-        lv_obj_align(digits, LV_ALIGN_TOP_MID, 0, 0); // Posicionar en la parte superior
+        lv_obj_set_size(digits, lv_pct(100), 75); // Altura de 75 píxeles, ancho del padre
 
         lv_obj_set_flex_flow(digits, LV_FLEX_FLOW_ROW);
         lv_obj_set_flex_align(digits, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
 
         // Button Container
         buttons = lv_obj_create(input_screen);
-        lv_obj_set_size(buttons, lv_disp_get_hor_res(NULL), 50); // Altura de 50 píxeles
-        lv_obj_align(buttons, LV_ALIGN_TOP_MID, 0, 0); // Posicionar en la parte superior
+        lv_obj_set_size(buttons, lv_pct(100), 55); // Altura de 55 píxeles, ancho del padre
         lv_obj_set_style_pad_gap(buttons, 0, 0);
 
         lv_obj_set_flex_flow(buttons, LV_FLEX_FLOW_ROW);
@@ -212,12 +209,10 @@ void LVGL_LCD::print_cx_screen(float current, int selection, int total_items, St
         // Current selection title
         input_title = lv_label_create(input_screen);
         lv_label_set_text(input_title, "Current Selection:");
-        lv_obj_align(input_title, LV_ALIGN_TOP_LEFT, 0, 0);
 
         // Current selection container
         cur_selection = lv_obj_create(input_screen);
-        lv_obj_set_size(cur_selection, lv_disp_get_hor_res(NULL), 75); // Altura de 75 píxeles
-        lv_obj_align(cur_selection, LV_ALIGN_TOP_MID, 0, 0); // Posicionar en la parte superior
+        lv_obj_set_size(cur_selection, lv_pct(100), 75); // Altura de 75 píxeles, ancho del padre
 
         lv_obj_set_flex_flow(cur_selection, LV_FLEX_FLOW_ROW);
         lv_obj_set_flex_align(cur_selection, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
@@ -231,31 +226,34 @@ void LVGL_LCD::print_cx_screen(float current, int selection, int total_items, St
         // Output title
         input_title = lv_label_create(input_screen);
         lv_label_set_text(input_title, "Output:");
-        lv_obj_align(input_title, LV_ALIGN_TOP_LEFT, 0, 0);
 
         // DUT Container
         dut_container = lv_obj_create(input_screen);
-        lv_obj_set_size(dut_container, lv_disp_get_hor_res(NULL), 100); // Altura de 50 píxeles
-        lv_obj_align(dut_container, LV_ALIGN_TOP_MID, 0, 0); // Posicionar en la parte superior
+        lv_obj_set_size(dut_container, 150, 100); // Altura de 100 píxeles
         lv_obj_set_style_pad_gap(dut_container, 0, 0);
-        lv_obj_set_flex_flow(dut_container, LV_FLEX_FLOW_COLUMN);
-        lv_obj_set_flex_align(dut_container, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+        lv_obj_set_flex_flow(dut_container, LV_FLEX_FLOW_ROW_WRAP);
+        lv_obj_set_flex_align(dut_container, LV_FLEX_ALIGN_SPACE_AROUND, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_SPACE_EVENLY);
 
         // DUT Voltage
-        String values = String(vDUT,3) + " V";
+        String values = String(vDUT,CV_DIGITS_AFTER_DECIMAL) + " V";
         dut_voltage = lv_label_create(dut_container);
         lv_label_set_text_fmt(dut_voltage, values.c_str());
         lv_obj_set_style_text_font(dut_voltage, &lv_font_montserrat_18, 0);
         // DUT Current
-        values = String(iDUT,3) + " A";
+        values = String(iDUT,CC_DIGITS_AFTER_DECIMAL) + " A";
         dut_current = lv_label_create(dut_container);
         lv_label_set_text_fmt(dut_current, values.c_str());
         lv_obj_set_style_text_font(dut_current, &lv_font_montserrat_18, 0);
         // DUT Power
-        values = String(vDUT*iDUT,3) + " W";
+        values = String(vDUT*iDUT,CW_DIGITS_AFTER_DECIMAL) + " W";
         dut_power = lv_label_create(dut_container);
         lv_label_set_text_fmt(dut_power, values.c_str());
         lv_obj_set_style_text_font(dut_power, &lv_font_montserrat_14, 0);
+        // DUT Resistance
+        iDUT == 0 ? values = "--- R" : values = String(vDUT/iDUT,CR_DIGITS_AFTER_DECIMAL) + " R";
+        dut_resistance = lv_label_create(dut_container);
+        lv_label_set_text_fmt(dut_resistance, values.c_str());
+        lv_obj_set_style_text_font(dut_resistance, &lv_font_montserrat_14, 0);
 
     }
 
@@ -266,7 +264,7 @@ void LVGL_LCD::print_cx_screen(float current, int selection, int total_items, St
     char value_str[10];
     String format = "%0" + String(total_digits+1) + "."+String(total_digits-digits_before_decimal)+"f " + String(unit);
     snprintf(value_str, sizeof(value_str), format.c_str(), current);
-    Serial.println("Value_str: " + String(value_str));
+    //Serial.println("Value_str: " + String(value_str));
 
     // Agregar cada carácter como una etiqueta separada
     int hovered_digit_to_process = selection;
@@ -295,12 +293,15 @@ void LVGL_LCD::print_cx_screen(float current, int selection, int total_items, St
     lv_label_set_text(cur_selection_label, selected_str.c_str());
 
     // Actualizar valores dut
-    String values = String(vDUT,3) + " V";
+    String values = String(vDUT,CV_DIGITS_AFTER_DECIMAL) + " V";
     lv_label_set_text_fmt(dut_voltage, values.c_str());
-    values = String(iDUT,3) + " A";
+    values = String(iDUT,CC_DIGITS_AFTER_DECIMAL) + " A";
     lv_label_set_text_fmt(dut_current, values.c_str());
-    values = String(vDUT*iDUT,3) + " W";
+    values = String(vDUT*iDUT,CW_DIGITS_AFTER_DECIMAL) + " W";
     lv_label_set_text_fmt(dut_power, values.c_str());
+    iDUT == 0 ? values = "--- R" : values = String(vDUT/iDUT,CR_DIGITS_AFTER_DECIMAL) + " R";
+    lv_label_set_text_fmt(dut_resistance, values.c_str());
+    lv_obj_set_style_text_font(dut_resistance, &lv_font_montserrat_14, 0);
     
 }
 

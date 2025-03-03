@@ -6,6 +6,7 @@
 #include <SPI.h>
 #include <TFT_eSPI.h>
 #include <vector>
+#include "fsm.h"
 
 #define TOTAL_PIXELS (TFT_HOR_RES * TFT_VER_RES) // 240*320 = 76800 pixels
 #define BUFFER_SIZE_PIXELS (TOTAL_PIXELS / 10) // 76800 / 10 = 7680 pixels

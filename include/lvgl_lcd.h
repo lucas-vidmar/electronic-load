@@ -13,6 +13,7 @@
 #define COLOR_DEPH_BYTES (LV_COLOR_DEPTH / 8) // 16/8 = 2 bytes
 #define DRAW_BUF_SIZE BUFFER_SIZE_PIXELS * COLOR_DEPH_BYTES // 7680 pixels * 2 bytes = 15360 bytes
 #define PADDING 10
+#define ROUNDED_CORNER_CURVE 5
 
 class LVGL_LCD {
 public:
@@ -50,9 +51,12 @@ private:
     /* UI Elements for cx_screen */
     lv_obj_t* input_screen = nullptr;   // Stores input screen object
     lv_style_t style_value, style_value_hovered; // Styles for values
-    lv_obj_t *input_title,
+    lv_obj_t *input_title, *current_selection_title, *output_title,
     *digits,
     *buttons, *output_button, *back_button, // Buttons
     *cur_selection, *cur_selection_label, // current selection
     *dut_container, *dut_voltage, *dut_current, *dut_power, *dut_resistance = nullptr; // DUT values
+
+    /* Helpers */
+    lv_obj_t* create_section_header(String label, lv_obj_t* parent); // Creates section headers
 };

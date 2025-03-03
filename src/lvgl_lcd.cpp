@@ -149,7 +149,7 @@ void LVGL_LCD::create_cx_screen(float current, int selection, String unit) {
 
     // Estilo resaltado para los dígitos hovered
     lv_style_init(&style_value_hovered);
-    lv_style_set_text_color(&style_value_hovered, lv_color_hex(0xFF0000)); // Resaltado en rojo
+    lv_style_set_text_color(&style_value_hovered, lv_palette_main(LV_PALETTE_RED)); // Resaltado en rojo
 
     // Verificar si el contenedor de corriente ya existe
     if (input_screen != nullptr) return;
@@ -163,8 +163,7 @@ void LVGL_LCD::create_cx_screen(float current, int selection, String unit) {
     lv_obj_set_style_pad_all(input_screen, PADDING, PADDING); // Padding
 
     // Input title
-    input_title = lv_label_create(input_screen);
-    lv_label_set_text(input_title, "Input:");
+    input_title = create_section_header("Input",input_screen);
 
     // Value container
     digits = lv_obj_create(input_screen);
@@ -192,8 +191,7 @@ void LVGL_LCD::create_cx_screen(float current, int selection, String unit) {
     lv_obj_set_style_text_font(back_button, &lv_font_montserrat_18, 0);
 
     // Current selection title
-    input_title = lv_label_create(input_screen);
-    lv_label_set_text(input_title, "Current Selection:");
+    current_selection_title = create_section_header("Output", input_screen);
 
     // Current selection container
     cur_selection = lv_obj_create(input_screen);
@@ -208,8 +206,7 @@ void LVGL_LCD::create_cx_screen(float current, int selection, String unit) {
     lv_obj_set_style_text_font(cur_selection_label, &lv_font_montserrat_28, 0);
 
     // Output title
-    input_title = lv_label_create(input_screen);
-    lv_label_set_text(input_title, "Output:");
+    output_title = create_section_header("DUT Reading", input_screen);
 
     // DUT Container
     dut_container = lv_obj_create(input_screen);
@@ -294,4 +291,18 @@ void LVGL_LCD::close_cx_screen(){
 
     lv_style_reset(&style_value);
     lv_style_reset(&style_value_hovered);
+}
+
+lv_obj_t* LVGL_LCD::create_section_header(String label, lv_obj_t* parent) {
+    lv_obj_t* obj = lv_label_create(parent);
+
+    lv_label_set_text(obj, label.c_str());
+    lv_obj_set_width(obj, lv_pct(100)); // Establecer el ancho al 100% del contenedor padre
+    lv_obj_set_style_pad_ver(obj, PADDING, 0);
+    lv_obj_set_style_pad_hor(obj, PADDING, 0);
+    lv_obj_set_style_bg_color(obj, lv_color_hex(0xdadada), 0);
+    lv_obj_set_style_bg_opa(obj, LV_OPA_COVER, 0); // Opacidad total
+    lv_obj_set_style_radius(obj, ROUNDED_CORNER_CURVE, 0);
+
+    return obj;
 }

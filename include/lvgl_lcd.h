@@ -12,9 +12,9 @@
 #define COLOR_DEPH_BYTES (LV_COLOR_DEPTH / 8) // 16/8 = 2 bytes
 #define DRAW_BUF_SIZE BUFFER_SIZE_PIXELS * COLOR_DEPH_BYTES // 7680 pixels * 2 bytes = 15360 bytes
 #define PADDING 10
-#define TOTAL_DIGITS (DIGITS_BEFORE_DECIMAL + DIGITS_AFTER_DECIMAL)
-#define DIGITS_BEFORE_DECIMAL 2
-#define DIGITS_AFTER_DECIMAL 3
+#define CC_DIGITS_BEFORE_DECIMAL 2
+#define CC_DIGITS_AFTER_DECIMAL 3
+#define CC_TOTAL_DIGITS (CC_DIGITS_BEFORE_DECIMAL + CC_DIGITS_AFTER_DECIMAL)
 
 class LVGL_LCD {
 public:
@@ -27,7 +27,7 @@ public:
     void print_main_menu(int hovered_option);
     void close_main_menu();
 
-    void print_cx_screen(float current, int hovered_digit, char* unit, float vDUT, float iDUT);
+    void print_cx_screen(float current, int selection, int total_items, char* unit, float vDUT, float iDUT, bool output_activated, int digits_before_decimal, int total_digits);
 
 private:
     TFT_eSPI tft;

@@ -13,7 +13,7 @@ void FSM::run() {
             main_menu();
             break;
         case FSM_MAIN_STATES::CC:
-            //constant_current();
+            constant_current();
             break;
         case FSM_MAIN_STATES::CV:
             break;

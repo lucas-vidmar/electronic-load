@@ -70,96 +70,116 @@ void main_menu(){
   }
 }
 
-/*
+float digits_to_number(int digits_values[], int digits_before_decimal, int digits_after_decimal) {
+  float number = 0.0;
+
+  // Validación de cada elemento para que esté en el rango [0, 9]
+  for (int i = 0; i < CC_TOTAL_DIGITS; i++) {
+    if (digits_values[i] < 0) {
+      digits_values[i] = 0;
+    } else if (digits_values[i] > 9) {
+      digits_values[i] = 9;
+    }
+  }
+
+  // Calcula la parte entera
+  for (int i = 0; i < CC_DIGITS_BEFORE_DECIMAL; i++) {
+    number += digits_values[i] * pow(10, CC_DIGITS_BEFORE_DECIMAL - i - 1); // Suma dígitos antes del decimal
+  }
+  // Calcula la parte decimal
+  for (int i = 0; i < CC_DIGITS_AFTER_DECIMAL; i++) {
+    number += digits_values[CC_DIGITS_BEFORE_DECIMAL + i] * pow(10, -i - 1); // Suma dígitos después del decimal
+  }
+  return number;
+}
+
 void constant_current(){
 
-  enum CCState {
+  enum CC_STATES {
     SELECTING_DIGIT,
     MODIFYING_DIGIT,
     TRIGGER_OUTPUT,
     EXIT
-  }; 
+  };
+
+  // Read DUT voltage and current
+  float vDUT = adc.read_vDUT();
+  float iDUT = adc.read_iDUT();
+  //Serial.println("vDUT: " + String(vDUT, 3) + " V");
+  //Serial.println("iDUT: " + String(iDUT, 3) + " A");
 
   // Digits for constant current
-  static int digits[TOTAL_DIGITS] = {0};  // Valores de los dígitos
-  static int digit_selected = 0; // Dígito seleccionado
-  static CCState state = SELECTING_DIGIT; // Estado de la máquina de estados
+  static int digits_values[CC_TOTAL_DIGITS] = {0};  // Valores de los dígitos
+  static int selected_digit = 0; // Dígito seleccionado
+  static CC_STATES state = CC_STATES::SELECTING_DIGIT; // Estado de la máquina de estados
+  static float current = 0.0;
 
-  int pos = encoder.getPosition(); 
+  // First time entering constant current, reset static vars
+  if (fsm.hasChanged()) {
+    digits_values[0] = 0;
+    selected_digit = 0;
+    state = CC_STATES::SELECTING_DIGIT;
+    current = 0.0;
+  }
 
   // Check if encoder button is pressed
   if (encoder.isButtonPressed()) {
+    Serial.println("Button pressed");
+    Serial.println("State: " + String(state));
     switch (state) {
-      case SELECTING_DIGIT:
-        state = MODIFYING_DIGIT;
-        encoder.setPosition(digits[digit_selected]);
+      case CC_STATES::SELECTING_DIGIT: // Start modifying digit
+        Serial.println("Selecting digit");
+        if (selected_digit < CC_TOTAL_DIGITS - 1) {
+          selected_digit++;
+          state = CC_STATES::MODIFYING_DIGIT;
+          encoder.setPosition(digits_values[selected_digit]); // Set encoder position to the value of the selected digit
+        } else if (selected_digit == CC_TOTAL_DIGITS - 1) {
+          state = CC_STATES::TRIGGER_OUTPUT;
+        }
+        else {
+          state = CC_STATES::EXIT;
+        }
         break;
-      case MODIFYING_DIGIT:
-        encoder.setPosition(digit_selected);
-        digit_selected = 0; // Reset digit selected
-        state = SELECTING_DIGIT;
+      case CC_STATES::MODIFYING_DIGIT: // Modify digit
+        Serial.println("Modifying digit");
+        encoder.setPosition(selected_digit);
+        selected_digit = 0; // Reset digit selected
+        state = CC_STATES::SELECTING_DIGIT;
+        Serial.println("Current: " + String(current, CC_DIGITS_AFTER_DECIMAL));
         break;
-      case TRIGGER_OUTPUT:
-        state = SELECTING_DIGIT; // @todo: Implement trigger output
+      case CC_STATES::TRIGGER_OUTPUT:
+        // @todo: Implement trigger output
         break;
-      case EXIT:
-        state = SELECTING_DIGIT; // @todo: Implement exit
+      case CC_STATES::EXIT:
+        // @todo: Implement exit
         break;
       default:
         break;
     }
   }
 
-  // Print constant current menu if encoder is moved
-  if (pos == encoderLastPosition) return;
-  encoderLastPosition = pos;
-
   switch (state) {
-    case SELECTING_DIGIT:
-      encoder.setMaxPosition(TOTAL_DIGITS - 1);
-      digit_selected = pos;
+    case CC_STATES::SELECTING_DIGIT:
+      encoder.setMinPosition(0);
+      encoder.setMaxPosition(CC_TOTAL_DIGITS - 1 + 2); // -1 because it starts from 0, +2 for trigger output and exit
+      selected_digit = encoder.getPosition();
       break;
-    case MODIFYING_DIGIT:
+    case CC_STATES::MODIFYING_DIGIT:
       encoder.setMaxPosition(9); // 0-9
-      digits[digit_selected] = pos;
+      digits_values[selected_digit] = encoder.getPosition();
       break;
-    case TRIGGER_OUTPUT:
+    case CC_STATES::TRIGGER_OUTPUT:
       break;
-    case EXIT:
+    case CC_STATES::EXIT:
       break;
     default:
       break;
   }
 
-
- 
-  // Validación de cada elemento para que esté en el rango [0, 9]
-  for (int i = 0; i < TOTAL_DIGITS; i++) {
-    if (digits[i] < 0) {
-      digits[i] = 0;
-    } else if (digits[i] > 9) {
-      digits[i] = 9;
-    }
-  }
-
-  // Convert digits to float
-  float current = 0.0;
-  // Calcula la parte entera
-  for (int i = 0; i < DIGITS_BEFORE_DECIMAL; i++) {
-    current += digits[i] * pow(10, DIGITS_BEFORE_DECIMAL - i - 1); // Suma dígitos antes del decimal
-  }
-  // Calcula la parte decimal
-  for (int i = 0; i < DIGITS_AFTER_DECIMAL; i++) {
-    current += digits[DIGITS_BEFORE_DECIMAL + i] * pow(10, -i - 1); // Suma dígitos después del decimal
-  }
-
-  Serial.println("Current: " + String(current, DIGITS_AFTER_DECIMAL));
+  current = digits_to_number(digits_values, CC_DIGITS_BEFORE_DECIMAL, CC_DIGITS_AFTER_DECIMAL);
 
   // Print constant current screen
-  float vDUT = adc.read_vDUT();
-  float iDUT = adc.read_iDUT();
-  Serial.println("vDUT: " + String(vDUT, 3) + " V");
-  Serial.println("iDUT: " + String(iDUT, 3) + " A");
-  lcd.print_cx_screen(current, digit_selected, "A", vDUT, iDUT);
+  lcd.print_cx_screen(current, selected_digit, CC_TOTAL_DIGITS, (char*)"A", vDUT, iDUT, false, CC_DIGITS_BEFORE_DECIMAL, CC_TOTAL_DIGITS);
+
+  delay(15);
 }
-*/

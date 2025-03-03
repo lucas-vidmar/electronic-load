@@ -148,10 +148,10 @@ void LVGL_LCD::close_main_menu() {
     }
 }
 
-void LVGL_LCD::print_cx_screen(float current, int hovered_digit, char* unit, float vDUT, float iDUT) {
+void LVGL_LCD::print_cx_screen(float current, int selection, int total_items, char* unit, float vDUT, float iDUT, bool output_activated, int digits_before_decimal, int total_digits) {
     // Inicializar estilos si no se han inicializado
     static bool styles_initialized = false;
-    static lv_style_t style_value, style_value_hovered;
+    static lv_style_t style_value, style_value_hovered, style_activated;
     static lv_obj_t *input_title, *digits, *buttons, *output_button, *back_button, *dut_container, *dut_voltage, *dut_current, *dut_power;
 
     if (!styles_initialized) {
@@ -164,6 +164,12 @@ void LVGL_LCD::print_cx_screen(float current, int hovered_digit, char* unit, flo
         lv_style_init(&style_value_hovered);
         lv_style_set_text_color(&style_value_hovered, lv_color_hex(0xFF0000)); // Resaltado en rojo
         lv_style_set_text_font(&style_value_hovered, &lv_font_montserrat_28);
+
+        // Estilo para el botón de salida
+        lv_style_init(&style_activated);
+        lv_style_set_text_color(&style_activated, lv_color_hex(0x006400));
+        lv_style_set_text_font(&style_activated, &lv_font_montserrat_18);
+        lv_style_set_text_decor(&style_activated, LV_TEXT_DECOR_UNDERLINE);
 
         styles_initialized = true;
     }
@@ -202,7 +208,7 @@ void LVGL_LCD::print_cx_screen(float current, int hovered_digit, char* unit, flo
 
         // Output button as label
         output_button = lv_label_create(buttons);
-        lv_label_set_text(output_button, "Output");
+        lv_label_set_text(output_button, "OFF");
 
         // Back button as label
         back_button = lv_label_create(buttons);
@@ -244,13 +250,12 @@ void LVGL_LCD::print_cx_screen(float current, int hovered_digit, char* unit, flo
 
     // Convertir el valor de corriente a cadena con formato "XX.XXX A"
     char value_str[10];
-    String format = "%0" + String(TOTAL_DIGITS+1) + ".3f " + String(unit);
+    String format = "%0" + String(total_digits+1) + "."+String(total_digits-digits_before_decimal)+"f " + String(unit);
     snprintf(value_str, sizeof(value_str), format.c_str(), current);
 
     // Agregar cada carácter como una etiqueta separada
-    int hovered_digit_to_process = hovered_digit;
-    if (hovered_digit > TOTAL_DIGITS-1) hovered_digit_to_process = TOTAL_DIGITS-1; // Limitar el número de dígitos
-    if (hovered_digit >= DIGITS_BEFORE_DECIMAL) hovered_digit_to_process++; // Saltar el punto decimal
+    int hovered_digit_to_process = selection;
+    if (selection >= digits_before_decimal) hovered_digit_to_process++; // Saltar el punto decimal
 
     for (int i = 0; value_str[i] != '\0'; ++i) {
 
@@ -265,6 +270,16 @@ void LVGL_LCD::print_cx_screen(float current, int hovered_digit, char* unit, flo
         }
     }
 
+    // Actualizar el estilo del botón de salida si está activado o si es el seleccionado
+    if (output_activated) { // Estilo activado en verde y cambiar label a ON 
+        lv_label_set_text(output_button, "ON");
+        lv_obj_add_style(output_button, &style_activated, LV_PART_MAIN);
+    }
+    else if (selection == total_digits) lv_obj_add_style(output_button, &style_value_hovered, LV_PART_MAIN); // Estilo resaltado si es el seleccionado
+    else lv_obj_add_style(output_button, &style_value, LV_PART_MAIN);
+    // Actualizar el estilo del botón de regreso si es el seleccionado
+    if (selection == total_digits + 1) lv_obj_add_style(back_button, &style_value_hovered, LV_PART_MAIN); // Estilo resaltado si es el seleccionado
+    else lv_obj_add_style(back_button, &style_value, LV_PART_MAIN);
 
     // Actualizar valores dut
     String values = String(vDUT,3) + " V";

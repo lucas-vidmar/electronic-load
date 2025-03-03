@@ -266,6 +266,7 @@ void LVGL_LCD::print_cx_screen(float current, int selection, int total_items, St
     char value_str[10];
     String format = "%0" + String(total_digits+1) + "."+String(total_digits-digits_before_decimal)+"f " + String(unit);
     snprintf(value_str, sizeof(value_str), format.c_str(), current);
+    Serial.println("Value_str: " + String(value_str));
 
     // Agregar cada carácter como una etiqueta separada
     int hovered_digit_to_process = selection;

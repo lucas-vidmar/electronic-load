@@ -11,5 +11,6 @@
 #include "lvgl_lcd.h"
 #include "fsm.h"
 
+/* -- Functions -- */
 void main_menu();
-void constant_x(String unit);
+void constant_x(String unit, int digits_before_decimal, int digits_after_decimal, int total_digits);

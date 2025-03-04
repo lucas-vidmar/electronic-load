@@ -167,7 +167,8 @@ void LVGL_LCD::create_cx_screen(float current, int selection, String unit) {
 
     // Value container
     digits = lv_obj_create(input_screen);
-    lv_obj_set_size(digits, lv_pct(100), 75); // Altura de 75 píxeles, ancho del padre
+    lv_obj_set_width(digits, lv_pct(100)); // Ancho del padre
+    lv_obj_set_height(digits, LV_SIZE_CONTENT); // Altura basada en el contenido
 
     lv_obj_set_flex_flow(digits, LV_FLEX_FLOW_ROW);
     lv_obj_set_flex_align(digits, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
@@ -176,12 +177,13 @@ void LVGL_LCD::create_cx_screen(float current, int selection, String unit) {
     buttons = lv_obj_create(input_screen);
     lv_obj_set_width(buttons, lv_pct(100)); // Ancho del padre
     lv_obj_set_height(buttons, LV_SIZE_CONTENT); // Altura basada en el contenido
-    lv_obj_set_style_pad_gap(buttons, 0, 0);
-    lv_obj_set_style_border_width(buttons, 0, 0);
+    lv_obj_set_style_border_width(buttons, 0, 0); // Sin borde
+    lv_obj_set_style_pad_hor(buttons, 0, 0); // Padding horizontal
+    lv_obj_set_style_pad_ver(buttons, 0, 0); // Padding vertical
 
     lv_obj_set_flex_flow(buttons, LV_FLEX_FLOW_ROW);
     lv_obj_set_flex_align(buttons, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-    lv_obj_set_style_pad_column(buttons, PADDING, 0); // Espacio entre columnas
+    lv_obj_set_style_pad_gap(buttons, PADDING, 0);
 
     // Output button as label
     output_button = create_button("Push", buttons, false);
@@ -191,22 +193,23 @@ void LVGL_LCD::create_cx_screen(float current, int selection, String unit) {
     back_button = create_button("Back", buttons, false);
     lv_obj_set_style_text_font(back_button, &lv_font_montserrat_18, 0);
 
-    // Current selection title
+    // Output title
     current_selection_title = create_section_header("Output", input_screen);
 
-    // Current selection container
+    // Output container
     cur_selection = lv_obj_create(input_screen);
-    lv_obj_set_size(cur_selection, lv_pct(100), 75); // Altura de 75 píxeles, ancho del padre
+    lv_obj_set_width(cur_selection, lv_pct(100)); // Ancho del padre
+    lv_obj_set_height(cur_selection, LV_SIZE_CONTENT); // Altura basada en el contenido
 
     lv_obj_set_flex_flow(cur_selection, LV_FLEX_FLOW_ROW);
     lv_obj_set_flex_align(cur_selection, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
 
-    // Current selection label
+    // Output label
     cur_selection_label = lv_label_create(cur_selection);
     lv_obj_add_style(cur_selection_label, &style_value, LV_PART_MAIN);
     lv_obj_set_style_text_font(cur_selection_label, &lv_font_montserrat_28, 0);
 
-    // Output title
+    // DUT Reading title
     output_title = create_section_header("DUT Reading", input_screen);
 
     // DUT Container
@@ -318,6 +321,7 @@ lv_obj_t* LVGL_LCD::create_button(String label, lv_obj_t* parent, bool selected)
     lv_obj_set_style_text_align(obj, LV_TEXT_ALIGN_CENTER, 0); // Center text
     lv_obj_set_style_border_color(obj, lv_color_hex(COLOR_GRAY), 0); // set border color grey
     lv_obj_set_style_border_width(obj, BORDER_WIDTH, 0); // set border width
+    lv_obj_set_style_border_opa(obj, LV_OPA_COVER, 0); // borde Opaco
 
     update_button(obj, selected);
 
@@ -328,11 +332,9 @@ void LVGL_LCD::update_button(lv_obj_t* button, bool selected) {
     if (selected) {
         lv_obj_set_style_bg_color(button, lv_color_hex(COLOR_GRAY), 0);
         lv_obj_set_style_bg_opa(button, LV_OPA_COVER, 0); // Opaco
-        lv_obj_set_style_border_opa(button, LV_OPA_COVER, 0); // Opaco
     }
     else {
         lv_obj_set_style_bg_color(button, lv_color_white(), 0);
         lv_obj_set_style_bg_opa(button, LV_OPA_TRANSP, 0); // Transparente
-        lv_obj_set_style_border_opa(button, LV_OPA_TRANSP, 0); // Transparente
     }
 }

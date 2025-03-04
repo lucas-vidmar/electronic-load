@@ -14,9 +14,17 @@
 #define DRAW_BUF_SIZE BUFFER_SIZE_PIXELS * COLOR_DEPH_BYTES // 7680 pixels * 2 bytes = 15360 bytes
 #define PADDING 10
 #define ROUNDED_CORNER_CURVE 5
-#define PRIMARY_COLOR 0x91b779 // mint
-#define SECONDARY_COLOR 0x46583b // dark green
 #define BORDER_WIDTH 2
+
+// https://coolors.co/002642-99d5ff-3b6349-a1bbaa-6a5905-ecdd92-7e0909-f8a0a0
+#define COLOR1_DARK 0x002642 // blue
+#define COLOR1_LIGHT 0x99d5ff
+#define COLOR2_DARK 0x3b6349 // green
+#define COLOR2_LIGHT 0xa1bbaa
+#define COLOR3_DARK 0x6a5905 // yellow
+#define COLOR3_LIGHT 0xecdd92
+#define COLOR4_DARK 0x7e0909 // red
+#define COLOR4_LIGHT 0xf8a0a0
 
 class LVGL_LCD {
 public:
@@ -61,7 +69,7 @@ private:
     *dut_container, *dut_voltage, *dut_current, *dut_power, *dut_resistance = nullptr; // DUT values
 
     /* Helpers */
-    lv_obj_t* create_section_header(String label, lv_obj_t* parent); // Creates section headers
-    lv_obj_t* create_button(String label, lv_obj_t* parent, bool selected); // Creates button
+    lv_obj_t* create_section_header(String label, lv_obj_t* parent, int color); // Creates section headers
+    lv_obj_t* create_button(String label, lv_obj_t* parent, bool selected, int color); // Creates button
     void update_button(lv_obj_t* button, bool selected); // Toggles button style
 };

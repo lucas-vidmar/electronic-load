@@ -25,6 +25,11 @@
 #define COLOR3_LIGHT 0xecdd92
 #define COLOR4_DARK 0x7e0909 // red
 #define COLOR4_LIGHT 0xf8a0a0
+#define COLOR_GRAY 0xE0E0E0 // gray
+
+#define FONT_S &lv_font_montserrat_18
+#define FONT_L &lv_font_montserrat_24
+
 
 class LVGL_LCD {
 public:

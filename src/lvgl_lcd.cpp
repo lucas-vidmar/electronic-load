@@ -14,9 +14,6 @@ void LVGL_LCD::init() {
 
     lv_init();
 
-    /* Establecer una fuente global */
-    //lv_obj_set_style_text_font(lv_scr_act(), &lv_font_montserrat_18, 0);
-
     /* Establecer una fuente de tick para que LVGL sepa cuánto tiempo ha transcurrido */
     lv_tick_set_cb(tick);
 
@@ -90,7 +87,6 @@ void LVGL_LCD::create_main_menu() {
     for (int i = 0; i < items.size(); ++i) {
         // Crear una etiqueta para cada item
         lv_obj_t* label = create_button(items[i], main_menu, false, COLOR1_LIGHT);
-        lv_obj_set_style_text_font(label, &lv_font_montserrat_18, 0); // Establecer fuente
         lv_obj_set_width(label, lv_pct(100)); // Hace que obj2 ocupe todo el ancho del padre
         lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_LEFT, 0); // Centrar texto a la izquierda
         menu_items.push_back(label); // Agregar al vector de items
@@ -149,6 +145,8 @@ void LVGL_LCD::create_cx_screen(float current, int selection, String unit) {
     lv_obj_set_flex_flow(digits, LV_FLEX_FLOW_ROW);
     lv_obj_set_flex_align(digits, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
 
+    lv_obj_set_style_border_color(digits, lv_color_hex(COLOR_GRAY), 0); // set border color gray
+    
     // Button Container
     buttons = lv_obj_create(input_screen);
     lv_obj_set_width(buttons, lv_pct(100)); // Ancho del padre
@@ -163,12 +161,10 @@ void LVGL_LCD::create_cx_screen(float current, int selection, String unit) {
 
     // Output button as label
     output_button = create_button("Set", buttons, false, COLOR4_LIGHT);
-    lv_obj_set_style_text_font(output_button, &lv_font_montserrat_18, 0);
     lv_obj_set_flex_grow(output_button, 1);
 
     // Back button as label
     back_button = create_button("Back", buttons, false, COLOR4_LIGHT);
-    lv_obj_set_style_text_font(back_button, &lv_font_montserrat_18, 0);
     lv_obj_set_flex_grow(back_button, 1);
 
     // Output title
@@ -182,10 +178,12 @@ void LVGL_LCD::create_cx_screen(float current, int selection, String unit) {
     lv_obj_set_flex_flow(cur_selection, LV_FLEX_FLOW_ROW);
     lv_obj_set_flex_align(cur_selection, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
 
+    lv_obj_set_style_border_color(cur_selection, lv_color_hex(COLOR_GRAY), 0); // set border color gray
+
     // Output label
     cur_selection_label = lv_label_create(cur_selection);
     lv_obj_add_style(cur_selection_label, &style_value, LV_PART_MAIN);
-    lv_obj_set_style_text_font(cur_selection_label, &lv_font_montserrat_28, 0);
+    lv_obj_set_style_text_font(cur_selection_label, FONT_S, 0);
 
     // DUT Reading title
     output_title = create_section_header("DUT Reading", input_screen, COLOR2_DARK);
@@ -220,16 +218,16 @@ void LVGL_LCD::create_cx_screen(float current, int selection, String unit) {
     lv_obj_set_style_border_width(dut_container_row2, 0, 0); // Sin borde
 
     // DUT Voltage
-    dut_voltage = create_button("V", dut_container_row1, false, COLOR2_LIGHT);
+    dut_voltage = create_button("V", dut_container_row1, false, COLOR_GRAY);
     lv_obj_set_flex_grow(dut_voltage, 1);
     // DUT Current
-    dut_current = create_button("A", dut_container_row1, false, COLOR2_LIGHT);
+    dut_current = create_button("A", dut_container_row1, false, COLOR_GRAY);
     lv_obj_set_flex_grow(dut_current, 1);
     // DUT Power
-    dut_power = create_button("W", dut_container_row2, false, COLOR2_LIGHT);
+    dut_power = create_button("W", dut_container_row2, false, COLOR_GRAY);
     lv_obj_set_flex_grow(dut_power, 1);
     // DUT Resistance
-    dut_resistance = create_button("kR", dut_container_row2, false, COLOR2_LIGHT);
+    dut_resistance = create_button("kR", dut_container_row2, false, COLOR_GRAY);
     lv_obj_set_flex_grow(dut_resistance, 1);
 }
 
@@ -252,7 +250,7 @@ void LVGL_LCD::update_cx_screen(float current, int selection, String unit, float
 
         lv_obj_t* label = lv_label_create(digits);
         lv_label_set_text_fmt(label, "%c", value_str[i]);
-        lv_obj_set_style_text_font(label, &lv_font_montserrat_28, 0);
+        lv_obj_set_style_text_font(label, FONT_L, 0);
 
         // Aplicar el estilo resaltado si el carácter es un dígito y es el hovered
         if (isdigit(value_str[i]) && i == hovered_digit_to_process) {
@@ -277,9 +275,8 @@ void LVGL_LCD::update_cx_screen(float current, int selection, String unit, float
     lv_label_set_text_fmt(dut_current, values.c_str());
     values = String(vDUT*iDUT,CW_DIGITS_AFTER_DECIMAL) + " W";
     lv_label_set_text_fmt(dut_power, values.c_str());
-    values = (iDUT > 0 ? String(vDUT/iDUT,CR_DIGITS_AFTER_DECIMAL) : "---") + + " R";
+    values = (iDUT > 0 ? String(vDUT/iDUT,CR_DIGITS_AFTER_DECIMAL) : "---") + + " kR";
     lv_label_set_text_fmt(dut_resistance, values.c_str());
-    lv_obj_set_style_text_font(dut_resistance, &lv_font_montserrat_14, 0);
 }
 
 void LVGL_LCD::close_cx_screen(){
@@ -308,6 +305,7 @@ lv_obj_t* LVGL_LCD::create_section_header(String label, lv_obj_t* parent, int co
     lv_obj_set_style_bg_opa(obj, LV_OPA_COVER, 0); // Opaco
     lv_obj_set_style_radius(obj, ROUNDED_CORNER_CURVE, 0);
     lv_obj_set_style_text_color(obj, lv_color_white(), 0);
+    lv_obj_set_style_text_font(obj, FONT_S, 0);
 
     return obj;
 }
@@ -320,10 +318,11 @@ lv_obj_t* LVGL_LCD::create_button(String label, lv_obj_t* parent, bool selected,
     lv_obj_set_style_pad_hor(obj, PADDING, 0);
     lv_obj_set_style_radius(obj, ROUNDED_CORNER_CURVE, 0); // Rounded corners
     lv_obj_set_style_text_align(obj, LV_TEXT_ALIGN_CENTER, 0); // Center text
-    lv_obj_set_style_border_color(obj, lv_color_hex(color), 0); // set border color grey
+    lv_obj_set_style_border_color(obj, lv_color_hex(color), 0); // set border color
     lv_obj_set_style_border_width(obj, BORDER_WIDTH, 0); // set border width
     lv_obj_set_style_border_opa(obj, LV_OPA_COVER, 0); // borde Opaco
     lv_obj_set_style_bg_color(obj, lv_color_hex(color), 0);
+    lv_obj_set_style_text_font(obj, FONT_S, 0);
 
     update_button(obj, selected);
 

@@ -56,7 +56,6 @@ void main_menu(){
   }
 
   if (encoder.hasChanged()) { // Update menu with selected option
-    Serial.println("Has changed");
     pos = encoder.getPosition();
     lcd.update_main_menu(pos);
   }

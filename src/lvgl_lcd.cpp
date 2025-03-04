@@ -72,7 +72,7 @@ void LVGL_LCD::create_main_menu() {
 
     // Estilo para el ítem resaltado
     lv_style_init(&style_hovered);
-    lv_style_set_text_color(&style_hovered, lv_color_hex(0x0000FF));
+    lv_style_set_text_color(&style_hovered, lv_color_hex(PRIMARY_COLOR));
 
     // Estilo para el título
     lv_style_init(&style_title);
@@ -149,7 +149,7 @@ void LVGL_LCD::create_cx_screen(float current, int selection, String unit) {
 
     // Estilo resaltado para los dígitos hovered
     lv_style_init(&style_value_hovered);
-    lv_style_set_text_color(&style_value_hovered, lv_palette_main(LV_PALETTE_RED)); // Resaltado en rojo
+    lv_style_set_text_color(&style_value_hovered, lv_color_hex(PRIMARY_COLOR)); // Resaltado en rojo
 
     // Verificar si el contenedor de corriente ya existe
     if (input_screen != nullptr) return;
@@ -304,9 +304,10 @@ lv_obj_t* LVGL_LCD::create_section_header(String label, lv_obj_t* parent) {
     lv_obj_set_width(obj, lv_pct(100)); // Establecer el ancho al 100% del contenedor padre
     lv_obj_set_style_pad_ver(obj, PADDING, 0);
     lv_obj_set_style_pad_hor(obj, PADDING, 0);
-    lv_obj_set_style_bg_color(obj, lv_color_hex(COLOR_GRAY), 0);
+    lv_obj_set_style_bg_color(obj, lv_color_hex(SECONDARY_COLOR), 0);
     lv_obj_set_style_bg_opa(obj, LV_OPA_COVER, 0); // Opaco
     lv_obj_set_style_radius(obj, ROUNDED_CORNER_CURVE, 0);
+    lv_obj_set_style_text_color(obj, lv_color_white(), 0);
 
     return obj;
 }
@@ -319,7 +320,7 @@ lv_obj_t* LVGL_LCD::create_button(String label, lv_obj_t* parent, bool selected)
     lv_obj_set_flex_grow(obj, 1); // Crecer en tamaño
     lv_obj_set_style_radius(obj, ROUNDED_CORNER_CURVE, 0); // Rounded corners
     lv_obj_set_style_text_align(obj, LV_TEXT_ALIGN_CENTER, 0); // Center text
-    lv_obj_set_style_border_color(obj, lv_color_hex(COLOR_GRAY), 0); // set border color grey
+    lv_obj_set_style_border_color(obj, lv_color_hex(PRIMARY_COLOR), 0); // set border color grey
     lv_obj_set_style_border_width(obj, BORDER_WIDTH, 0); // set border width
     lv_obj_set_style_border_opa(obj, LV_OPA_COVER, 0); // borde Opaco
 
@@ -330,7 +331,7 @@ lv_obj_t* LVGL_LCD::create_button(String label, lv_obj_t* parent, bool selected)
 
 void LVGL_LCD::update_button(lv_obj_t* button, bool selected) {
     if (selected) {
-        lv_obj_set_style_bg_color(button, lv_color_hex(COLOR_GRAY), 0);
+        lv_obj_set_style_bg_color(button, lv_color_hex(PRIMARY_COLOR), 0);
         lv_obj_set_style_bg_opa(button, LV_OPA_COVER, 0); // Opaco
     }
     else {

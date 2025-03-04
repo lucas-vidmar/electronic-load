@@ -14,7 +14,8 @@
 #define DRAW_BUF_SIZE BUFFER_SIZE_PIXELS * COLOR_DEPH_BYTES // 7680 pixels * 2 bytes = 15360 bytes
 #define PADDING 10
 #define ROUNDED_CORNER_CURVE 5
-#define COLOR_GRAY 0xdadada
+#define PRIMARY_COLOR 0x91b779 // mint
+#define SECONDARY_COLOR 0x46583b // dark green
 #define BORDER_WIDTH 2
 
 class LVGL_LCD {

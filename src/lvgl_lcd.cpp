@@ -192,23 +192,45 @@ void LVGL_LCD::create_cx_screen(float current, int selection, String unit) {
 
     // DUT Container
     dut_container = lv_obj_create(input_screen);
-    lv_obj_set_size(dut_container, 150, 100); // Altura de 100 píxeles
+    lv_obj_set_width(dut_container, lv_pct(100)); // Ancho del padre
+    lv_obj_set_height(dut_container, LV_SIZE_CONTENT); // Altura basada en el contenido
     lv_obj_set_style_pad_gap(dut_container, 0, 0);
-    lv_obj_set_flex_flow(dut_container, LV_FLEX_FLOW_ROW_WRAP);
-    lv_obj_set_flex_align(dut_container, LV_FLEX_ALIGN_SPACE_AROUND, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_SPACE_EVENLY);
+    lv_obj_set_flex_flow(dut_container, LV_FLEX_FLOW_COLUMN);
+    lv_obj_set_flex_align(dut_container, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_START);
+    lv_obj_set_style_pad_all(dut_container, 0, 0); // Remove padding
+    lv_obj_set_style_pad_gap(dut_container, PADDING, 0); // separación entre objetos
+    lv_obj_set_style_border_width(dut_container, 0, 0); // Sin borde
+
+    dut_container_row1 = lv_obj_create(dut_container);
+    lv_obj_set_width(dut_container_row1, lv_pct(100)); // Ancho del padre
+    lv_obj_set_height(dut_container_row1, LV_SIZE_CONTENT); // Altura basada en el contenido
+    lv_obj_set_flex_flow(dut_container_row1, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(dut_container_row1, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_set_style_pad_all(dut_container_row1, 0, 0); // Remove padding
+    lv_obj_set_style_pad_gap(dut_container_row1, PADDING, 0); // separación entre objetos
+    lv_obj_set_style_border_width(dut_container_row1, 0, 0); // Sin borde
+
+    dut_container_row2 = lv_obj_create(dut_container);
+    lv_obj_set_width(dut_container_row2, lv_pct(100)); // Ancho del padre
+    lv_obj_set_height(dut_container_row2, LV_SIZE_CONTENT); // Altura basada en el contenido
+    lv_obj_set_flex_flow(dut_container_row2, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(dut_container_row2, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_set_style_pad_all(dut_container_row2, 0, 0); // Remove padding
+    lv_obj_set_style_pad_gap(dut_container_row2, PADDING, 0); // separación entre objetos
+    lv_obj_set_style_border_width(dut_container_row2, 0, 0); // Sin borde
 
     // DUT Voltage
-    dut_voltage = lv_label_create(dut_container);
-    lv_obj_set_style_text_font(dut_voltage, &lv_font_montserrat_18, 0);
+    dut_voltage = create_button("V", dut_container_row1, false, COLOR2_LIGHT);
+    lv_obj_set_flex_grow(dut_voltage, 1);
     // DUT Current
-    dut_current = lv_label_create(dut_container);
-    lv_obj_set_style_text_font(dut_current, &lv_font_montserrat_18, 0);
+    dut_current = create_button("A", dut_container_row1, false, COLOR2_LIGHT);
+    lv_obj_set_flex_grow(dut_current, 1);
     // DUT Power
-    dut_power = lv_label_create(dut_container);
-    lv_obj_set_style_text_font(dut_power, &lv_font_montserrat_14, 0);
+    dut_power = create_button("W", dut_container_row2, false, COLOR2_LIGHT);
+    lv_obj_set_flex_grow(dut_power, 1);
     // DUT Resistance
-    dut_resistance = lv_label_create(dut_container);
-    lv_obj_set_style_text_font(dut_resistance, &lv_font_montserrat_14, 0);
+    dut_resistance = create_button("kR", dut_container_row2, false, COLOR2_LIGHT);
+    lv_obj_set_flex_grow(dut_resistance, 1);
 }
 
 void LVGL_LCD::update_cx_screen(float current, int selection, String unit, float vDUT, float iDUT, int digits_before_decimal, int total_digits, String selected) {

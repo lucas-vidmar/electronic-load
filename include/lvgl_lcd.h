@@ -65,7 +65,8 @@ private:
     *digits,
     *buttons, *output_button, *back_button, // Buttons
     *cur_selection, *cur_selection_label, // current selection
-    *dut_container, *dut_voltage, *dut_current, *dut_power, *dut_resistance = nullptr; // DUT values
+    *dut_container, *dut_container_row1, *dut_container_row2, // DUT container
+    *dut_voltage, *dut_current, *dut_power, *dut_resistance = nullptr; // DUT values
 
     /* Helpers */
     lv_obj_t* create_section_header(String label, lv_obj_t* parent, int color); // Creates section headers

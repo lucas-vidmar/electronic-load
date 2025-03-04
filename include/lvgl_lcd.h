@@ -54,10 +54,9 @@ private:
     static uint32_t tick();
 
     /* UI Elements for main_menu */
-    lv_obj_t* main_menu = nullptr;      // Stores main menu object
-    lv_style_t style_normal, style_hovered, style_title; // Styles for menu items
+    lv_obj_t *main_menu, *button_container = nullptr;      // Stores main menu object
     std::vector<lv_obj_t*> menu_items;  // Stores menu items
-    std::vector<std::string> items;
+    std::vector<String> items;
 
     /* UI Elements for cx_screen */
     lv_obj_t* input_screen = nullptr;   // Stores input screen object

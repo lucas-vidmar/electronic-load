@@ -65,20 +65,6 @@ uint32_t LVGL_LCD::tick() {
 void LVGL_LCD::create_main_menu() {
     // Inicializar estilos si no se han inicializado
 
-    // Estilo para los ítems normales del menú
-    lv_style_init(&style_normal);
-    lv_style_set_text_color(&style_normal, lv_color_black());
-    lv_style_set_text_font(&style_normal, &lv_font_montserrat_18);
-
-    // Estilo para el ítem resaltado
-    lv_style_init(&style_hovered);
-    lv_style_set_text_color(&style_hovered, lv_color_hex(COLOR1_DARK));
-
-    // Estilo para el título
-    lv_style_init(&style_title);
-    lv_style_set_text_color(&style_title, lv_color_black());
-    lv_style_set_text_font(&style_title, &lv_font_montserrat_22); // Usar una fuente más grande para el título    
-
     // Verificar si el menú ya existe
     if (main_menu != nullptr) return;
 
@@ -97,25 +83,17 @@ void LVGL_LCD::create_main_menu() {
     lv_obj_set_style_pad_gap(main_menu, PADDING, 0);
 
     // Agregar título con fuente más grande
-    lv_obj_t* title_label = lv_label_create(main_menu);
-    lv_label_set_text(title_label, "Carga electronica");
-    lv_obj_add_style(title_label, &style_title, LV_PART_MAIN);
-
-    // Agregar un separador
-    lv_obj_t* separator = lv_obj_create(main_menu);
-    lv_obj_set_size(separator, lv_pct(100), 2); // Altura de 2 píxeles
-    lv_obj_set_style_bg_color(separator, lv_color_black(), 0);
-    lv_obj_set_style_border_width(separator, 0, 0);
+    lv_obj_t* title_label = create_section_header("Main Menu", main_menu, COLOR1_DARK);
 
     // Items para el menú principal
     items = {"Corriente Constante", "Voltaje Constante", "Resistencia Constante", "Potencia Constante", "Ajustes"};
     for (int i = 0; i < items.size(); ++i) {
         // Crear una etiqueta para cada item
-        lv_obj_t* label = lv_label_create(main_menu);
-        lv_label_set_text(label, items[i].c_str());
-        // Aplicar estilo normal
-        lv_obj_add_style(label, &style_normal, LV_PART_MAIN);
-        menu_items.push_back(label); // Almacenar cada etiqueta para actualizaciones
+        lv_obj_t* label = create_button(items[i], main_menu, false, COLOR1_LIGHT);
+        lv_obj_set_style_text_font(label, &lv_font_montserrat_18, 0); // Establecer fuente
+        lv_obj_set_width(label, lv_pct(100)); // Hace que obj2 ocupe todo el ancho del padre
+        lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_LEFT, 0); // Centrar texto a la izquierda
+        menu_items.push_back(label); // Agregar al vector de items
     }
 }
 
@@ -124,11 +102,9 @@ void LVGL_LCD::update_main_menu(int hovered_option) {
     // Actualizar la opción resaltada sin recrear el menú
     for (int i = 0; i < menu_items.size(); ++i) {
         if (i == hovered_option) {
-            lv_obj_add_style(menu_items[i], &style_hovered, LV_PART_MAIN);
-            lv_label_set_text(menu_items[i], ("> " + items[i]).c_str());
+            update_button(menu_items[i], true); // Resaltado
         } else {
-            lv_obj_add_style(menu_items[i], &style_normal, LV_PART_MAIN);
-            lv_label_set_text(menu_items[i], items[i].c_str());
+            update_button(menu_items[i], false); // Normal
         }
     }
 
@@ -186,12 +162,14 @@ void LVGL_LCD::create_cx_screen(float current, int selection, String unit) {
     lv_obj_set_style_pad_gap(buttons, PADDING, 0);
 
     // Output button as label
-    output_button = create_button("Push", buttons, false, COLOR4_LIGHT);
+    output_button = create_button("Set", buttons, false, COLOR4_LIGHT);
     lv_obj_set_style_text_font(output_button, &lv_font_montserrat_18, 0);
+    lv_obj_set_flex_grow(output_button, 1);
 
     // Back button as label
     back_button = create_button("Back", buttons, false, COLOR4_LIGHT);
     lv_obj_set_style_text_font(back_button, &lv_font_montserrat_18, 0);
+    lv_obj_set_flex_grow(back_button, 1);
 
     // Output title
     current_selection_title = create_section_header("Output", input_screen, COLOR1_DARK);
@@ -317,7 +295,7 @@ lv_obj_t* LVGL_LCD::create_button(String label, lv_obj_t* parent, bool selected,
 
     lv_label_set_text(obj, label.c_str());
     lv_obj_set_style_pad_ver(obj, PADDING, 0);
-    lv_obj_set_flex_grow(obj, 1); // Crecer en tamaño
+    lv_obj_set_style_pad_hor(obj, PADDING, 0);
     lv_obj_set_style_radius(obj, ROUNDED_CORNER_CURVE, 0); // Rounded corners
     lv_obj_set_style_text_align(obj, LV_TEXT_ALIGN_CENTER, 0); // Center text
     lv_obj_set_style_border_color(obj, lv_color_hex(color), 0); // set border color grey
@@ -332,11 +310,9 @@ lv_obj_t* LVGL_LCD::create_button(String label, lv_obj_t* parent, bool selected,
 
 void LVGL_LCD::update_button(lv_obj_t* button, bool selected) {
     if (selected) {
-        //lv_obj_set_style_bg_color(button, lv_color_hex(color), 0);
         lv_obj_set_style_bg_opa(button, LV_OPA_COVER, 0); // Opaco
     }
     else {
-        //lv_obj_set_style_bg_color(button, lv_color_white(), 0);
         lv_obj_set_style_bg_opa(button, LV_OPA_TRANSP, 0); // Transparente
     }
 }

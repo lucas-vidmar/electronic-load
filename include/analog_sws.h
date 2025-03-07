@@ -49,8 +49,7 @@ public:
      * @brief Enables the VDAC (Voltage Digital-to-Analog Converter).
      *
      * This function initializes and enables the VDAC, allowing it to start
-     * converting digital values to analog voltages. It is typically used
-     * in applications where precise voltage control is required.
+     * converting digital values to analog voltages.
      */
     void vDACEnable();
 

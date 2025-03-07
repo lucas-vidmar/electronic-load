@@ -39,7 +39,7 @@ public:
     void init();
 
     // Method to update the FSM
-    void run();
+    void run(float input, DAC dac, AnalogSws sws);
 
     // Method to change the state
     void changeState(int newState);

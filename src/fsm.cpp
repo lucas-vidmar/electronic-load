@@ -7,16 +7,40 @@ void FSM::init() {
     lastState = FSM_MAIN_STATES::INITAL;
 }
 
-void FSM::run() {
+void FSM::run(float input, DAC dac, AnalogSws sws) {
+
+    static float last_input = 0.0;
+
     switch (currentState) {
         case FSM_MAIN_STATES::MAIN_MENU:
             main_menu();
+            if (last_input != input) {
+                sws.mosfetInputCCMode();
+                sws.vDACDisable();
+                sws.relayDUTDisable();
+
+                dac.cc_mode_set_current(0.0);
+            }
             break;
         case FSM_MAIN_STATES::CC:
             constant_x(String("A"), CC_DIGITS_BEFORE_DECIMAL, CC_DIGITS_AFTER_DECIMAL, CC_DIGITS_TOTAL);
+            if (last_input != input) {
+                sws.mosfetInputCCMode();
+                sws.vDACEnable();
+                dac.cc_mode_set_current(input);
+
+                sws.relayDUTEnable();
+            }
             break;
         case FSM_MAIN_STATES::CV:
             constant_x(String("V"), CV_DIGITS_BEFORE_DECIMAL, CV_DIGITS_AFTER_DECIMAL, CV_DIGITS_TOTAL);
+            if (last_input != input) {
+                sws.mosfetInputCCMode();
+                sws.vDACEnable();
+                dac.cv_mode_set_voltage(input);
+
+                sws.relayDUTEnable();
+            }
             break;
         case FSM_MAIN_STATES::CR:
             constant_x(String("kR"), CR_DIGITS_BEFORE_DECIMAL, CR_DIGITS_AFTER_DECIMAL, CR_DIGITS_TOTAL);
@@ -29,6 +53,8 @@ void FSM::run() {
         default:
             break;
     }
+
+    if (last_input != input) last_input = input; // Update latest input
 
 }
 

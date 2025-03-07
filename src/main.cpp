@@ -39,7 +39,7 @@ void setup() {
 void loop() {
   lcd.update();
   delay(10);
-  fsm.run();
+  fsm.run(input, dac, analog_sws);
 }
 
 void main_menu(){

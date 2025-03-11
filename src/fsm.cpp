@@ -35,7 +35,7 @@ void FSM::run(float input, DAC dac, AnalogSws sws) {
         case FSM_MAIN_STATES::CV:
             constant_x(String("V"), CV_DIGITS_BEFORE_DECIMAL, CV_DIGITS_AFTER_DECIMAL, CV_DIGITS_TOTAL);
             if (last_input != input) {
-                sws.mosfetInputCCMode();
+                sws.mosfetInputCVMode();
                 sws.vDACEnable();
                 dac.cv_mode_set_voltage(input);
 

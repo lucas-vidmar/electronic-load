@@ -96,7 +96,7 @@ float digits_to_number(std::vector<int> digits_values, int digits_before_decimal
 
 void constant_x(String unit, int digits_before_decimal, int digits_after_decimal, int total_digits) {
 
-  enum CC_STATES {
+  enum CX_STATES {
     SELECTING,
     MODIFYING_DIGIT,
     TRIGGER_OUTPUT,
@@ -112,7 +112,7 @@ void constant_x(String unit, int digits_before_decimal, int digits_after_decimal
   // Digits for constant value
   static std::vector<int> digits_values(total_digits, 0); // Valores de los dígitos iInicializado en 0
   static int selected = 0; // Opcion seleccionada
-  static CC_STATES state = CC_STATES::SELECTING; // Estado de la máquina de estados
+  static CX_STATES state = CX_STATES::SELECTING; // Estado de la máquina de estados
   static float value = 0.0;
 
   // First time entering this mode, reset static vars
@@ -120,7 +120,7 @@ void constant_x(String unit, int digits_before_decimal, int digits_after_decimal
     encoder.setPosition(0);
     digits_values.assign(total_digits, 0);  // Reset digits values
     selected = 0;
-    state = CC_STATES::SELECTING;
+    state = CX_STATES::SELECTING;
     value = 0.0;
     lcd.create_cx_screen(value, selected, unit);
   }
@@ -130,35 +130,35 @@ void constant_x(String unit, int digits_before_decimal, int digits_after_decimal
     Serial.println("Button pressed");
     Serial.println("State: " + String(state));
     switch (state) {
-      case CC_STATES::SELECTING: // Start modifying digit
+      case CX_STATES::SELECTING: // Start modifying digit
         Serial.println("selected: " + String(selected));
         if (selected < total_digits) { // Selection is a digit
-          state = CC_STATES::MODIFYING_DIGIT;
+          state = CX_STATES::MODIFYING_DIGIT;
           encoder.setPosition(digits_values[selected]); // Set encoder position to the value of the selected digit to modify from lastest value
         } else if (selected == total_digits) { // Trigger output
-          state = CC_STATES::TRIGGER_OUTPUT;
+          state = CX_STATES::TRIGGER_OUTPUT;
         }
         else { // Exit
-          state = CC_STATES::EXIT;
+          state = CX_STATES::EXIT;
         }
         break;
-      case CC_STATES::MODIFYING_DIGIT: // Modify digit
+      case CX_STATES::MODIFYING_DIGIT: // Modify digit
         Serial.println("Modifying digit");
         encoder.setPosition(selected);
         selected = 0; // Reset digit selected
-        state = CC_STATES::SELECTING;
+        state = CX_STATES::SELECTING;
         Serial.println("Value: " + String(value, digits_after_decimal));
         break;
       default:
         break;
     }
     switch (state) { // Check if trigger output or exit is pressed
-      case CC_STATES::TRIGGER_OUTPUT: // Trigger output and return to selecting digit
+      case CX_STATES::TRIGGER_OUTPUT: // Trigger output and return to selecting digit
         input = value;
         Serial.println("Output activated: " + String(input, digits_after_decimal));
-        state = CC_STATES::SELECTING;
+        state = CX_STATES::SELECTING;
         break;
-      case CC_STATES::EXIT: // Exit mode
+      case CX_STATES::EXIT: // Exit mode
         fsm.changeState(FSM_MAIN_STATES::MAIN_MENU);
         input = 0.0; // Reset input
         lcd.close_cx_screen();
@@ -169,18 +169,18 @@ void constant_x(String unit, int digits_before_decimal, int digits_after_decimal
   }
 
   switch (state) {
-    case CC_STATES::SELECTING:
+    case CX_STATES::SELECTING:
       encoder.setMinPosition(0);
       encoder.setMaxPosition(total_digits - 1 + 2); // -1 because it starts from 0, +2 for trigger output and exit
       selected = encoder.getPosition();
       break;
-    case CC_STATES::MODIFYING_DIGIT:
+    case CX_STATES::MODIFYING_DIGIT:
       encoder.setMinPosition(0);
       encoder.setMaxPosition(9); // 0-9
       digits_values[selected] = encoder.getPosition(); // Set digit value to encoder position
       break;
-    case CC_STATES::TRIGGER_OUTPUT: // should not reach this state
-    case CC_STATES::EXIT: // should not reach this state
+    case CX_STATES::TRIGGER_OUTPUT: // should not reach this state
+    case CX_STATES::EXIT: // should not reach this state
     default:
       break;
   }

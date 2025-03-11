@@ -275,7 +275,7 @@ void LVGL_LCD::update_cx_screen(float current, int selection, String unit, float
     lv_label_set_text_fmt(dut_current, values.c_str());
     values = String(vDUT*iDUT,CW_DIGITS_AFTER_DECIMAL) + " W";
     lv_label_set_text_fmt(dut_power, values.c_str());
-    values = (iDUT > 0 ? String(vDUT/iDUT,CR_DIGITS_AFTER_DECIMAL) : "---") + + " kR";
+    values = (iDUT > 0 ? String((vDUT/iDUT)/1000,CR_DIGITS_AFTER_DECIMAL) : "---") + + " kR";
     lv_label_set_text_fmt(dut_resistance, values.c_str());
 }
 

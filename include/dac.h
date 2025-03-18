@@ -29,10 +29,11 @@
 #define DAC_REF_VOLTAGE 4.096   /*!< Reference voltage in volts */
 #define DAC_Q (DAC_REF_VOLTAGE / DAC_RESOLUTION)    /*!< Voltage step in V */
 #define DAC_QmV (Q * 1000)  /*!< Voltage step in mV */
-#define DAC_V_MAX 0.5   /*!< Maximum voltage output in V */
+#define DAC_V_MAX_CC 0.5   /*!< Maximum voltage output in V for CC mode*/
+#define DAC_V_MAX_CV 0.45   /*!< Maximum voltage output in V for CV mode*/
 #define DAC_OUTPUT_VOLTAGE_DIVIDER (DAC_V_MAX / DAC_REF_VOLTAGE)    /*!< Output voltage divider */
-#define DAC_MAX_DIGITAL_VALUE 83
-#define DAC_CC_MAX_CURRENT 0.5
+#define DAC_MAX_DIGITAL_VALUE 4095 // To limit either current or voltage
+#define DAC_CC_MAX_CURRENT 2
 #define DAC_CV_MAX_VOLTAGE 5
 
 /**
@@ -72,8 +73,9 @@ public:
      * to the specified value in millivolts (mV).
      * 
      * @param voltageInMmV The desired output voltage in millivolts (mV).
+     * @param dac_v_max The maximum output voltage of the DAC in volts (V).
      */
-    void set_voltage(int voltageInMmV);
+    void set_voltage(int voltageInMmV, float dac_v_max);
 
     /**
      * @brief Writes a digital value to the DAC.

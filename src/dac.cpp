@@ -7,17 +7,17 @@ void DAC::init(I2C* i2c_pointer){
     digitalWrite(0); // Set DAC to default value (0V)
 }
 
-void DAC::set_voltage(int voltageInMmV) {
+void DAC::set_voltage(int voltageInMmV, float dac_v_max) {
 
     Serial.println("DAC voltage in mV: " + String(voltageInMmV));
     // Check in range
-    if (voltageInMmV < 0 || (voltageInMmV / 1000) > DAC_V_MAX) {
+    if (voltageInMmV < 0 || (voltageInMmV / 1000) > dac_v_max) {
         Serial.println("Voltage out of range");
         return;
     }
 
     // Calculate DAC value
-    float value = ((voltageInMmV / 1000.0) / DAC_V_MAX) * (DAC_RESOLUTION - 1); // Convert mV to V and scale to DAC resolution
+    float value = ((voltageInMmV / 1000.0) / dac_v_max) * (DAC_RESOLUTION - 1); // Convert mV to V and scale to DAC resolution
     // Round to nearest integer
     digitalWrite((uint16_t)(value + 0.5));
 }
@@ -49,7 +49,7 @@ void DAC::cc_mode_set_current(float current) {
 
     if (current != prev_current) {
         prev_current = current;
-        set_voltage(current * 100 / CANT_MOSFET); // Set voltage to current * 100mOhm / CANT_MOSFET
+        set_voltage(current * 100 / CANT_MOSFET, DAC_V_MAX_CC); // Set voltage to current * 100mOhm / CANT_MOSFET
     }
 }
 
@@ -65,6 +65,6 @@ void DAC::cv_mode_set_voltage(float voltage) {
 
     if (voltage != prev_voltage) {
         prev_voltage = voltage;
-        set_voltage(voltage * 1000 / 200); // Set voltage to V_DUT * 1000mV / 200
+        set_voltage(voltage * 1000 / 200, DAC_V_MAX_CV); // Set voltage to V_DUT * 1000mV / 200
     }
 }

@@ -1,4 +1,12 @@
 #include "main.h"
+#include "webserver.h"
+#include "I2CScanner.h"
+#include <SPIFFS.h>
+
+/* ------- Web Server ------- */
+const String ssid = "Electronic Load";
+const String password = "pfi2025";
+WebServerESP32 webServer(ssid.c_str(), password.c_str());
 
 Encoder encoder = Encoder();
 BuiltInLed led = BuiltInLed();
@@ -9,12 +17,25 @@ AnalogSws analog_sws = AnalogSws();
 LVGL_LCD lcd = LVGL_LCD();
 float input = 0.0;
 
+I2CScanner scanner;
+
 // Electronic Load FSM
 FSM fsm = FSM();
 
 void setup() {
   Serial.begin(115200);
   Serial.println("Starting...");
+
+  // I2C Scanner
+  scanner.Init();
+  scanner.Scan();
+
+  // Inicializar SPIFFS
+  Serial.println("Inicializando SPIFFS...");
+  if (!SPIFFS.begin(true)) {
+    Serial.println("Error al montar SPIFFS");
+    return;
+  }
 
   // Initialize encoder
   encoder.init();
@@ -34,6 +55,11 @@ void setup() {
   lcd.init();
   // Initialize FSM
   fsm.init();
+
+  // Iniciar el servidor web
+  Serial.println("Iniciando servidor web...");
+  webServer.setDefaultFile("index.html");
+  webServer.begin();
 }
 
 void loop() {

@@ -5,7 +5,7 @@
 
 /* ------- Web Server ------- */
 const String ssid = "Electronic Load";
-const String password = "pfi2025";
+const String password = "pfi2025uade";
 WebServerESP32 webServer(ssid.c_str(), password.c_str());
 
 Encoder encoder = Encoder();

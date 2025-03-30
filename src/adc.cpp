@@ -2,8 +2,8 @@
 
 ADC::ADC() : i2c(nullptr) {}
 
-void ADC::init(I2C* i2c_pointer) {
-    i2c = i2c_pointer;
+void ADC::init(I2C* i2cPointer) {
+    i2c = i2cPointer;
 }
 
 float ADC::read_iDUT() {
@@ -22,7 +22,6 @@ float ADC::read_vDUT() {
 }
 
 void ADC::read(uint8_t channel, int16_t* value) {
-
     // Validate the channel (0 to 3)
     if (channel > 3) return;
 
@@ -54,15 +53,15 @@ void ADC::read(uint8_t channel, int16_t* value) {
     i2c->read(ADS1115_ADDR, data, 2);
 
     // Combine the MSB and LSB to get the 16-bit value
-    int16_t raw_adc = (data[0] << 8) | data[1];
+    int16_t rawAdc = (data[0] << 8) | data[1];
 
     // Ensure the value is positive
-    if (raw_adc < 0) {
-        raw_adc = 0;
+    if (rawAdc < 0) {
+        rawAdc = 0;
     }
 
     // Return the ADC value
-    *value = raw_adc;
+    *value = rawAdc;
 }
 
 float ADC::read_voltage(uint8_t channel) {

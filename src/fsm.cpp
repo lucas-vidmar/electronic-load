@@ -9,37 +9,37 @@ void FSM::init() {
 
 void FSM::run(float input, DAC dac, AnalogSws sws) {
 
-    static float last_input = 0.0;
+    static float lastInput = 0.0;
 
     switch (currentState) {
         case FSM_MAIN_STATES::MAIN_MENU:
             main_menu();
-            if (last_input != input) {
-                sws.mosfetInputCCMode();
-                sws.vDACDisable();
-                sws.relayDUTDisable();
+            if (lastInput != input) {
+                sws.mosfet_input_cc_mode();
+                sws.v_dac_disable();
+                sws.relay_dut_disable();
 
                 dac.cc_mode_set_current(0.0);
             }
             break;
         case FSM_MAIN_STATES::CC:
             constant_x(String("A"), CC_DIGITS_BEFORE_DECIMAL, CC_DIGITS_AFTER_DECIMAL, CC_DIGITS_TOTAL);
-            if (last_input != input) {
-                sws.mosfetInputCCMode();
-                sws.vDACEnable();
+            if (lastInput != input) {
+                sws.mosfet_input_cc_mode();
+                sws.v_dac_enable();
                 dac.cc_mode_set_current(input);
 
-                sws.relayDUTEnable();
+                sws.relay_dut_enable();
             }
             break;
         case FSM_MAIN_STATES::CV:
             constant_x(String("V"), CV_DIGITS_BEFORE_DECIMAL, CV_DIGITS_AFTER_DECIMAL, CV_DIGITS_TOTAL);
-            if (last_input != input) {
-                sws.mosfetInputCVMode();
-                sws.vDACEnable();
+            if (lastInput != input) {
+                sws.mosfet_input_cv_mode();
+                sws.v_dac_enable();
                 dac.cv_mode_set_voltage(input);
 
-                sws.relayDUTEnable();
+                sws.relay_dut_enable();
             }
             break;
         case FSM_MAIN_STATES::CR:
@@ -54,17 +54,17 @@ void FSM::run(float input, DAC dac, AnalogSws sws) {
             break;
     }
 
-    if (last_input != input) last_input = input; // Update latest input
+    if (lastInput != input) lastInput = input;
 
 }
 
-void FSM::changeState(int newState) {
-    if (newState < FSM_MAIN_STATES::INITAL || newState > FSM_MAIN_STATES::FINAL) return; // Invalid state
+void FSM::change_state(int newState) {
+    if (newState < FSM_MAIN_STATES::INITAL || newState > FSM_MAIN_STATES::FINAL) return;
     lastState = currentState;
     currentState = newState;
 }
 
-bool FSM::hasChanged() {
+bool FSM::has_changed() {
     bool changed = lastState != currentState;
     lastState = currentState;
     return changed;

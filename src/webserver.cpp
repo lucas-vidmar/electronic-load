@@ -7,48 +7,48 @@ WebServerESP32::WebServerESP32(const char* ssidAP, const char* passwordAP, uint1
 void WebServerESP32::begin() {
     Serial.begin(115200);
     
-    // Configurar Wi-Fi
-    setupWiFi();
+    // Configure Wi-Fi
+    setup_wifi();
     
-    // Montar SPIFFS
+    // Mount SPIFFS
     if (!SPIFFS.begin(true)) {
-        Serial.println("Error al montar SPIFFS");
+        Serial.println("Error mounting SPIFFS");
         return;
     }
     
-    // Configurar el servidor web
-    setupServer();
+    // Configure web server
+    setup_server();
     
-    // Iniciar el servidor
+    // Start server
     _server.begin();
 }
 
-void WebServerESP32::setupWiFi() {
-    // Configurar el ESP32 en modo AP
+void WebServerESP32::setup_wifi() {
+    // Configure ESP32 in AP mode
     WiFi.mode(WIFI_AP);
     WiFi.softAP(_ssidAP, _passwordAP);
     
-    // Mostrar información del punto de acceso
+    // Display access point information
     Serial.println();
-    Serial.print("Punto de acceso iniciado. IP: ");
+    Serial.print("Access point started. IP: ");
     Serial.println(WiFi.softAPIP());
 }
 
-void WebServerESP32::setupServer() { }
+void WebServerESP32::setup_server() { }
 
 void WebServerESP32::on(const char* uri, WebRequestMethodComposite method, ArRequestHandlerFunction onRequest) {
     _server.on(uri, method, onRequest);
 }
 
-void WebServerESP32::serveStatic(const char* uri, fs::FS& fs, const char* path, const char* cache_control) {
+void WebServerESP32::serve_static(const char* uri, fs::FS& fs, const char* path, const char* cache_control) {
     _server.serveStatic(uri, fs, path, cache_control);
 }
 
-void WebServerESP32::setNotFoundHandler(ArRequestHandlerFunction handler) {
+void WebServerESP32::set_not_found_handler(ArRequestHandlerFunction handler) {
     _server.onNotFound(handler);
 }
 
-void WebServerESP32::setDefaultFile(const char* filename) {
-    // Configurar el archivo por defecto para servir estáticos
+void WebServerESP32::set_default_file(const char* filename) {
+    // Configure default file for serving static files
     _server.serveStatic("/", SPIFFS, "/").setDefaultFile(filename);
 }

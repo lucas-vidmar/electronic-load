@@ -1,4 +1,3 @@
-
 /**
  * @file led.h
  * @brief Header file for the BuiltInLed class.
@@ -7,7 +6,7 @@
  * to control the built-in LED on a microcontroller. The class includes functionality
  * to initialize the LED hardware and to make the LED blink at a specified interval.
  * 
- * 
+ * @note All function names use snake_case, variable names use camelCase, and constants use ALL_CAPS
  * @date 2024-11-01
  */
 #pragma once
@@ -53,7 +52,7 @@ public:
     void blink(int interval);
 
 private:
-    hw_timer_t *timer;
+    hw_timer_t* timer;
 
     /**
      * @brief Static method to handle timer events.
@@ -61,5 +60,5 @@ private:
      * This method is called when a timer event occurs. It is responsible for
      * executing the necessary actions associated with the timer.
      */
-    static void onTimer();
+    static void on_timer();
 };

@@ -2,27 +2,27 @@
 
 DAC::DAC() : i2c(nullptr) {}
 
-void DAC::init(I2C* i2c_pointer){
-    i2c = i2c_pointer;
-    digitalWrite(0); // Set DAC to default value (0V)
+void DAC::init(I2C* i2cPointer){
+    i2c = i2cPointer;
+    digital_write(0); // Set DAC to default value (0V)
 }
 
-void DAC::set_voltage(int voltageInMmV, float dac_v_max) {
+void DAC::set_voltage(int voltageInMmV, float dacVMax) {
 
     Serial.println("DAC voltage in mV: " + String(voltageInMmV));
     // Check in range
-    if (voltageInMmV < 0 || (voltageInMmV / 1000) > dac_v_max) {
+    if (voltageInMmV < 0 || (voltageInMmV / 1000) > dacVMax) {
         Serial.println("Voltage out of range");
         return;
     }
 
     // Calculate DAC value
-    float value = ((voltageInMmV / 1000.0) / dac_v_max) * (DAC_RESOLUTION - 1); // Convert mV to V and scale to DAC resolution
+    float value = ((voltageInMmV / 1000.0) / dacVMax) * (DAC_RESOLUTION - 1); // Convert mV to V and scale to DAC resolution
     // Round to nearest integer
-    digitalWrite((uint16_t)(value + 0.5));
+    digital_write((uint16_t)(value + 0.5));
 }
 
-void DAC::digitalWrite(uint16_t value) {
+void DAC::digital_write(uint16_t value) {
     Serial.println("DAC Digital value: " + String(value));
     if (value > DAC_MAX_DIGITAL_VALUE) { // Check if value is out of range
         Serial.println("DAC value out of range");
@@ -45,10 +45,10 @@ void DAC::cc_mode_set_current(float current) {
         return;
     }
     
-    static float prev_current = 0.0;
+    static float prevCurrent = 0.0;
 
-    if (current != prev_current) {
-        prev_current = current;
+    if (current != prevCurrent) {
+        prevCurrent = current;
         set_voltage(current * 100 / CANT_MOSFET, DAC_V_MAX_CC); // Set voltage to current * 100mOhm / CANT_MOSFET
     }
 }
@@ -61,10 +61,10 @@ void DAC::cv_mode_set_voltage(float voltage) {
         return;
     }
 
-    static float prev_voltage = 0.0;
+    static float prevVoltage = 0.0;
 
-    if (voltage != prev_voltage) {
-        prev_voltage = voltage;
+    if (voltage != prevVoltage) {
+        prevVoltage = voltage;
         set_voltage(voltage * 1000 / 200, DAC_V_MAX_CV); // Set voltage to V_DUT * 1000mV / 200
     }
 }

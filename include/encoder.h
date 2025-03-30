@@ -16,9 +16,12 @@
 
 #include <Arduino.h>
 
+// Hardware pin definitions
 #define ENCODER_CLK GPIO_NUM_32
 #define ENCODER_DT GPIO_NUM_33
 #define ENCODER_SW GPIO_NUM_25
+
+// Timing constants for debouncing and button handling
 #define ENCODER_ROTATION_DEBOUNCE 15
 #define ENCODER_BUTTON_DEBOUNCE 200
 #define ENCODER_BUTTON_LONG_PRESS 1000
@@ -49,14 +52,14 @@ public:
      * 
      * @return true if the button is pressed, false otherwise.
      */
-    bool isButtonPressed();
+    bool is_button_pressed();
 
     /**
      * @brief Retrieves the current position of the encoder.
      * 
      * @return int The current position value of the encoder.
      */
-    int getPosition();
+    int get_position();
 
     /**
      * @brief Sets the position of the encoder.
@@ -65,7 +68,7 @@ public:
      * 
      * @param pos The new position to set for the encoder.
      */
-    void setPosition(int pos);
+    void set_position(int pos);
 
     /**
      * @brief Resets the state of the button.
@@ -73,24 +76,39 @@ public:
      * This function is used to reset any state or counters associated with the button.
      * It should be called when the button needs to be reinitialized or cleared.
      */
-    void resetButton();
+    void reset_button();
 
-    void setMaxPosition(int maxPos);
+    /**
+     * @brief Sets the maximum position value for the encoder.
+     * 
+     * @param maxPos The maximum position value to set.
+     */
+    void set_max_position(int maxPos);
 
-    void setMinPosition(int minPos);
+    /**
+     * @brief Sets the minimum position value for the encoder.
+     * 
+     * @param minPos The minimum position value to set.
+     */
+    void set_min_position(int minPos);
 
-    bool hasChanged();
+    /**
+     * @brief Checks if the encoder position has changed.
+     * 
+     * @return true if the position has changed since the last check, false otherwise.
+     */
+    bool has_changed();
 
 private:
 
     /**
-     * @brief Interrupt handler for the encoder.
+     * @brief Interrupt handler for the encoder rotation.
      * 
      * This function is marked with IRAM_ATTR to ensure it is placed in the 
      * Internal RAM (IRAM) for faster execution. This is particularly important 
      * for interrupt service routines (ISRs) to minimize latency.
      */
-    static void IRAM_ATTR handleInterrupt();
+    static void IRAM_ATTR handle_interrupt();
 
     /**
      * @brief Interrupt Service Routine (ISR) for handling button interrupts.
@@ -100,13 +118,13 @@ private:
      * called when a button interrupt occurs, allowing for quick and 
      * efficient handling of the button press event.
      */
-    static void IRAM_ATTR handleButtonInterrupt();
+    static void IRAM_ATTR handle_button_interrupt();
 
-    static Encoder* instance;       // Global instance pointer
-    volatile int lastState;         // State of the CLK pin
-    volatile int position;          // Encoder position (marked volatile)
-    volatile int lastPosition;      // Last encoder position (marked volatile)
-    volatile bool buttonPressed;    // Button press status (marked volatile)
-    int encoderMaxPosition;         // Maximum position value for the encoder
-    int encoderMinPosition;         // Minimum position value for the encoder
+    static Encoder* instance;         // Global instance pointer
+    volatile int lastState;           // State of the CLK pin
+    volatile int position;            // Encoder position (marked volatile)
+    volatile int lastPosition;        // Last encoder position (marked volatile)
+    volatile bool buttonPressed;      // Button press status (marked volatile)
+    int encoderMaxPosition;           // Maximum position value for the encoder
+    int encoderMinPosition;           // Minimum position value for the encoder
 };

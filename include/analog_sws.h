@@ -1,4 +1,3 @@
-
 /**
  * @file analog_sws.h
  * @brief Header file for the AnalogSws class.
@@ -51,7 +50,7 @@ public:
      * This function initializes and enables the VDAC, allowing it to start
      * converting digital values to analog voltages.
      */
-    void vDACEnable();
+    void v_dac_enable();
 
     /**
      * @brief Disables the VDAC (Voltage Digital-to-Analog Converter).
@@ -59,7 +58,7 @@ public:
      * This function turns off the VDAC to save power or to stop generating an analog output.
      * It should be called when the VDAC is no longer needed.
      */
-    void vDACDisable();
+    void v_dac_disable();
 
     /**
      * @brief Controls the MOSFET input in Constant Current (CC) mode.
@@ -67,7 +66,7 @@ public:
      * This function configures and manages the MOSFET to operate in Constant Current mode,
      * ensuring that the current remains stable and within the desired parameters.
      */
-    void mosfetInputCCMode();
+    void mosfet_input_cc_mode();
 
     /**
      * @brief Controls the MOSFET input in Constant Voltage (CV) mode.
@@ -76,7 +75,7 @@ public:
      * it maintains a constant voltage across its terminals. It is typically used
      * in electronic load applications to simulate a constant voltage load.
      */
-    void mosfetInputCVMode();
+    void mosfet_input_cv_mode();
 
     /**
      * @brief Retrieves the current input mode of the MOSFET.
@@ -86,7 +85,7 @@ public:
      * 
      * @return int The current input mode of the MOSFET.
      */
-    int getMosfetInputMode();
+    int get_mosfet_input_mode();
 
     /**
      * @brief Enables the DUT (Device Under Test) relay.
@@ -94,7 +93,7 @@ public:
      * This function activates the relay that connects the DUT to the circuit,
      * allowing it to be tested or used in the circuit.
      */
-    void relayDUTEnable();
+    void relay_dut_enable();
 
     /**
      * @brief Disables the DUT (Device Under Test) relay.
@@ -102,5 +101,5 @@ public:
      * This function is used to disable the relay connected to the DUT, 
      * effectively disconnecting the DUT from the circuit.
      */
-    void relayDUTDisable();
+    void relay_dut_disable();
 };

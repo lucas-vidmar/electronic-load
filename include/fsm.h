@@ -1,7 +1,17 @@
+/**
+ * @file fsm.h
+ * @brief Finite State Machine implementation for Electronic Load control
+ * @note Handles different operation modes: CC, CV, CR, CW
+ * @date 2023
+ */
+
 #pragma once
 
 #include "main.h"
 
+/**
+ * @brief Main states for the Finite State Machine
+ */
 enum FSM_MAIN_STATES {
     INITAL,
     MAIN_MENU,
@@ -30,24 +40,42 @@ enum FSM_MAIN_STATES {
 #define CW_DIGITS_AFTER_DECIMAL 1
 #define CW_DIGITS_TOTAL (CW_DIGITS_BEFORE_DECIMAL + CW_DIGITS_AFTER_DECIMAL)
 
+/**
+ * @brief Finite State Machine class for electronic load control
+ */
 class FSM {
 public:
-    // Constructor
+    /**
+     * @brief Constructor for FSM
+     */
     FSM();
 
-    // Method to initialize the FSM
+    /**
+     * @brief Initialize the FSM to default state
+     */
     void init();
 
-    // Method to update the FSM
+    /**
+     * @brief Execute the FSM logic based on current state
+     * @param input The input value (current, voltage, etc.)
+     * @param dac DAC controller for setting output values
+     * @param sws Analog switches controller for configuring hardware
+     */
     void run(float input, DAC dac, AnalogSws sws);
 
-    // Method to change the state
-    void changeState(int newState);
+    /**
+     * @brief Change the current state of the FSM
+     * @param newState The new state to transition to
+     */
+    void change_state(int newState);
 
-    // Method to check if the state has changed
-    bool hasChanged();
+    /**
+     * @brief Check if the state has changed since last check
+     * @return true if state has changed, false otherwise
+     */
+    bool has_changed();
 
 private:
-    int currentState;
-    int lastState;
+    int currentState; ///< Current state of the FSM
+    int lastState;    ///< Previous state of the FSM
 };

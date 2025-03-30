@@ -51,9 +51,9 @@ public:
      * I2C pointer. It configures the necessary settings to enable communication
      * with the ADC over the I2C bus.
      * 
-     * @param i2c_pointer A pointer to an I2C instance used for communication with the ADC.
+     * @param i2cPointer A pointer to an I2C instance used for communication with the ADC.
      */
-    void init(I2C* i2c_pointer);
+    void init(I2C* i2cPointer);
 
     /**
      * @brief Reads the current from the Device Under Test (DUT).

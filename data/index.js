@@ -1,0 +1,290 @@
+// Variables
+let currentMode = 'CC';
+let selectedDigit = null;
+let digitValues = [0, 0, 0, 0, 0];
+let relayEnabled = false;
+let outputActive = false;
+let ws = null;
+
+// Mode configuration
+const modeConfig = {
+    'CC': { unit: 'A', decimals: 3, maxDigits: 5, beforeDecimal: 2 },
+    'CV': { unit: 'V', decimals: 3, maxDigits: 5, beforeDecimal: 2 },
+    'CR': { unit: 'kΩ', decimals: 3, maxDigits: 5, beforeDecimal: 2 },
+    'CP': { unit: 'W', decimals: 3, maxDigits: 5, beforeDecimal: 2 }
+};
+
+// DOM Elements
+const digits = document.querySelectorAll('.digit');
+const modeButtons = document.querySelectorAll('.mode-btn');
+const valueUp = document.getElementById('value-up');
+const valueDown = document.getElementById('value-down');
+const triggerOutput = document.getElementById('trigger-output');
+const toggleRelay = document.getElementById('toggle-relay');
+const exitMode = document.getElementById('exit-mode');
+const currentUnit = document.getElementById('current-unit');
+
+// Measurement elements
+const voltageEl = document.getElementById('voltage');
+const currentEl = document.getElementById('current');
+const powerEl = document.getElementById('power');
+const resistanceEl = document.getElementById('resistance');
+const temperatureEl = document.getElementById('temperature');
+const statusEl = document.getElementById('status');
+
+// Initialize WebSocket connection
+function connectWebSocket() {
+    // Replace with your ESP32's IP address or hostname
+    ws = new WebSocket('ws://' + window.location.hostname + '/ws');
+    
+    ws.onopen = function() {
+        statusEl.textContent = 'Connected to device';
+        statusEl.style.display = 'block';
+        statusEl.style.backgroundColor = '#e8f5e9';
+    };
+    
+    ws.onclose = function() {
+        statusEl.textContent = 'Disconnected from device';
+        statusEl.style.display = 'block';
+        statusEl.style.backgroundColor = '#ffebee';
+        setTimeout(connectWebSocket, 2000); // Try to reconnect
+    };
+    
+    ws.onmessage = function(event) {
+        handleMessage(event.data);
+    };
+}
+
+// Handle incoming WebSocket messages
+function handleMessage(message) {
+    try {
+        const data = JSON.parse(message);
+        
+        // Update measurements
+        if (data.measurements) {
+            voltageEl.textContent = data.measurements.voltage.toFixed(3) + ' V';
+            currentEl.textContent = data.measurements.current.toFixed(3) + ' A';
+            powerEl.textContent = data.measurements.power.toFixed(3) + ' W';
+            resistanceEl.textContent = data.measurements.resistance.toFixed(3) + ' kΩ';
+            temperatureEl.textContent = data.measurements.temperature.toFixed(1) + ' °C';
+        }
+        
+        // Update state
+        if (data.state) {
+            if (data.state.mode) {
+                setMode(data.state.mode);
+            }
+            if (data.state.relayEnabled !== undefined) {
+                relayEnabled = data.state.relayEnabled;
+                updateRelayButton();
+            }
+            if (data.state.outputActive !== undefined) {
+                outputActive = data.state.outputActive;
+                updateOutputButton();
+            }
+            if (data.state.value !== undefined) {
+                updateValueFromNumber(data.state.value);
+            }
+        }
+    } catch (e) {
+        console.error('Error parsing message:', e);
+    }
+}
+
+// Send command to ESP32
+function sendCommand(command, value) {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+            command: command,
+            value: value
+        }));
+    }
+}
+
+// Initialize the interface
+function init() {
+    // Select first digit by default
+    selectDigit(digits[0]);
+    
+    // Add event listeners
+    digits.forEach(digit => {
+        digit.addEventListener('click', () => selectDigit(digit));
+    });
+    
+    modeButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            setMode(button.getAttribute('data-mode'));
+            sendCommand('setMode', button.getAttribute('data-mode'));
+        });
+    });
+    
+    valueUp.addEventListener('click', incrementDigit);
+    valueDown.addEventListener('click', decrementDigit);
+    
+    triggerOutput.addEventListener('click', () => {
+        outputActive = !outputActive;
+        updateOutputButton();
+        const value = convertDigitsToNumber();
+        sendCommand('setOutput', { active: outputActive, value: value });
+    });
+    
+    toggleRelay.addEventListener('click', () => {
+        relayEnabled = !relayEnabled;
+        updateRelayButton();
+        sendCommand('setRelay', relayEnabled);
+    });
+    
+    exitMode.addEventListener('click', () => {
+        sendCommand('exit', null);
+    });
+    
+    // Connect to WebSocket
+    connectWebSocket();
+    
+    // Start periodic measurements update
+    setInterval(() => {
+        sendCommand('getMeasurements', null);
+    }, 1000);
+}
+
+// Select a digit
+function selectDigit(digitElement) {
+    // Deselect previously selected digit
+    if (selectedDigit) {
+        selectedDigit.classList.remove('selected');
+    }
+    
+    // Select new digit
+    digitElement.classList.add('selected');
+    selectedDigit = digitElement;
+}
+
+// Increment selected digit
+function incrementDigit() {
+    if (!selectedDigit) return;
+    
+    const position = parseInt(selectedDigit.getAttribute('data-position'));
+    digitValues[position] = (digitValues[position] + 1) % 10;
+    selectedDigit.textContent = digitValues[position];
+    sendValue();
+}
+
+// Decrement selected digit
+function decrementDigit() {
+    if (!selectedDigit) return;
+    
+    const position = parseInt(selectedDigit.getAttribute('data-position'));
+    digitValues[position] = (digitValues[position] - 1 + 10) % 10;
+    selectedDigit.textContent = digitValues[position];
+    sendValue();
+}
+
+// Convert digits array to number
+function convertDigitsToNumber() {
+    const config = modeConfig[currentMode];
+    let value = 0;
+    let multiplier = Math.pow(10, config.decimals);
+    
+    for (let i = 0; i < config.maxDigits; i++) {
+        if (i < config.beforeDecimal) {
+            // Digits before decimal point
+            value += digitValues[i] * multiplier * 10;
+        } else {
+            // Digits after decimal point
+            value += digitValues[i] * multiplier;
+        }
+        multiplier /= 10;
+    }
+    
+    return value / Math.pow(10, config.decimals);
+}
+
+// Update digits from a number
+function updateValueFromNumber(number) {
+    const config = modeConfig[currentMode];
+    // Convert to integer with decimal precision
+    const intValue = Math.round(number * Math.pow(10, config.decimals));
+    
+    // Extract digits
+    let tempValue = intValue;
+    for (let i = config.maxDigits - 1; i >= 0; i--) {
+        if (i < config.beforeDecimal) {
+            // Digits before decimal point
+            const divisor = Math.pow(10, config.decimals + config.beforeDecimal - i - 1);
+            digitValues[i] = Math.floor(tempValue / divisor) % 10;
+        } else {
+            // Digits after decimal point
+            const divisor = Math.pow(10, config.decimals - (i - config.beforeDecimal) - 1);
+            digitValues[i] = Math.floor(tempValue / divisor) % 10;
+        }
+    }
+    
+    // Update digit display
+    digits.forEach((digit, index) => {
+        digit.textContent = digitValues[index];
+    });
+}
+
+// Send current value to ESP32
+function sendValue() {
+    const value = convertDigitsToNumber();
+    sendCommand('setValue', value);
+}
+
+// Set current mode
+function setMode(mode) {
+    // Update mode buttons
+    modeButtons.forEach(button => {
+        if (button.getAttribute('data-mode') === mode) {
+            button.classList.add('active');
+        } else {
+            button.classList.remove('active');
+        }
+    });
+    
+    // Update current mode
+    currentMode = mode;
+    
+    // Update unit display
+    if (modeConfig[mode]) {
+        currentUnit.textContent = modeConfig[mode].unit;
+    }
+    
+    // Reset digits
+    digitValues = [0, 0, 0, 0, 0];
+    digits.forEach((digit, index) => {
+        digit.textContent = '0';
+    });
+    
+    // Select first digit
+    selectDigit(digits[0]);
+}
+
+// Update relay button state
+function updateRelayButton() {
+    if (relayEnabled) {
+        toggleRelay.textContent = 'Disable DUT';
+        toggleRelay.classList.add('danger');
+        toggleRelay.classList.remove('success');
+    } else {
+        toggleRelay.textContent = 'Enable DUT';
+        toggleRelay.classList.add('success');
+        toggleRelay.classList.remove('danger');
+    }
+}
+
+// Update output button state
+function updateOutputButton() {
+    if (outputActive) {
+        triggerOutput.textContent = 'Stop Output';
+        triggerOutput.classList.add('danger');
+        triggerOutput.classList.remove('success');
+    } else {
+        triggerOutput.textContent = 'Trigger Output';
+        triggerOutput.classList.add('success');
+        triggerOutput.classList.remove('danger');
+    }
+}
+
+// Initialize the interface when the DOM is loaded
+document.addEventListener('DOMContentLoaded', init);

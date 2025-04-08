@@ -21,6 +21,7 @@
 #include "fsm.h"
 #include "webserver.h"
 #include "I2CScanner.h"
+#include "fan.h"
 
 /* -- Constants -- */
 const String SSID = "Electronic Load";

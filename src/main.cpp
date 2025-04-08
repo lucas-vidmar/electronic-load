@@ -13,6 +13,11 @@ DAC dac = DAC();
 ADC adc = ADC();
 AnalogSws analogSws = AnalogSws();
 LVGL_LCD lcd = LVGL_LCD();
+Fan fan1(PWM_FAN_1_PIN, EN_FAN_1_PIN, LOCK_FAN_1_PIN);
+Fan fan2(PWM_FAN_2_PIN, EN_FAN_2_PIN, LOCK_FAN_2_PIN);
+// PID controllers with tuning parameters
+PIDFanController pidController1(fan1, 1.0, 0.01, 0.5);
+PIDFanController pidController2(fan2, 1.0, 0.01, 0.5);
 float input = 0.0;
 
 I2CScanner scanner;
@@ -51,6 +56,11 @@ void setup() {
   adc.init(&i2c);
   // Initialize LVGL Display
   lcd.init();
+  // Initialize FANs and PID controllers
+  pidController1.init(30.0); // Set target temperature for fan 1
+  pidController2.init(30.0); // Set target temperature for fan 2
+  fan1.set_speed(125); // Set initial speed to 0
+  fan2.set_speed(255); // Set initial speed to 0
   // Initialize FSM
   fsm.init();
 
@@ -64,6 +74,35 @@ void loop() {
   lcd.update();
   delay(10);
   fsm.run(input, dac, analogSws);
+
+  /* -------------- FAN -------------- */
+  // Get current temperature
+  float currentTemp = adc.read_temperature(); // Read temperature from ADC
+    
+  // Compute and adjust fan speed based on temperature
+  //pidController1.compute(currentTemp);
+  //pidController2.compute(currentTemp);
+  
+  // Print status every second
+  static unsigned long lastPrint = 0;
+  unsigned long now = millis();
+  if (now - lastPrint > 1000) {
+    Serial.print("Temperature: ");
+    Serial.print(currentTemp);
+    Serial.print("°C, Fan Speed: ");
+    Serial.print(fan1.get_speed());
+    Serial.print("/255, Fan Locked: ");
+    Serial.println(fan1.is_locked() ? "YES" : "NO");
+    lastPrint = now;
+
+    Serial.print("Temperature: ");
+    Serial.print(currentTemp);
+    Serial.print("°C, Fan Speed: ");
+    Serial.print(fan2.get_speed());
+    Serial.print("/255, Fan Locked: ");
+    Serial.println(fan2.is_locked() ? "YES" : "NO");
+    lastPrint = now;
+  }
 }
 
 void main_menu() {

@@ -89,3 +89,11 @@ bool Encoder::has_changed() {
 void Encoder::reset_button() {
     buttonPressed = false;
 }
+
+int Encoder::get_encoder_max_position(){
+    return encoderMaxPosition;
+}
+
+int Encoder::get_encoder_min_position(){
+    return encoderMinPosition;
+}

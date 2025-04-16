@@ -22,8 +22,8 @@
 #define ENCODER_SW GPIO_NUM_25
 
 // Timing constants for debouncing and button handling
-#define ENCODER_ROTATION_DEBOUNCE 15
-#define ENCODER_BUTTON_DEBOUNCE 200
+#define ENCODER_ROTATION_DEBOUNCE 15 // milliseconds
+#define ENCODER_BUTTON_DEBOUNCE 200 // miliseconds
 #define ENCODER_BUTTON_LONG_PRESS 1000
 
 class Encoder {
@@ -98,6 +98,9 @@ public:
      * @return true if the position has changed since the last check, false otherwise.
      */
     bool has_changed();
+
+    int get_encoder_max_position();
+    int get_encoder_min_position();
 
 private:
 

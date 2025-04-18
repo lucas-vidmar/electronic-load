@@ -32,6 +32,9 @@ public:
     bool is_enabled() const;
     uint8_t get_speed() const;
     bool is_locked() const; // Check if fan is stalled/locked
+    float get_speed_percentage() const;
+    
+    float get_lock_pin() const;
 };
 
 class PIDFanController {

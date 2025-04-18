@@ -48,6 +48,14 @@ bool Fan::is_locked() const {
     return digitalRead(lockPin) == LOW;
 }
 
+float Fan::get_speed_percentage() const {
+    return (static_cast<float>(speed) / 255.0f) * 100.0f; // Convert to percentage
+}
+
+float Fan::get_lock_pin() const {
+    return analogRead(lockPin); // Read the lock pin state
+}
+
 // PIDFanController implementation
 PIDFanController::PIDFanController(Fan& fan, float kP, float kI, float kD, float minOutput, float maxOutput)
     : fan(fan), kP(kP), kI(kI), kD(kD), targetTemp(0), integral(0), lastError(0), minOutput(minOutput), maxOutput(maxOutput), lastTime(0) { }

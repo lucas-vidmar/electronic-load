@@ -22,6 +22,7 @@
 #include "webserver.h"
 #include "I2CScanner.h"
 #include "fan.h"
+#include "rtc.h"
 
 /* -- Constants -- */
 const String SSID = "Electronic Load";

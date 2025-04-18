@@ -20,6 +20,12 @@ PIDFanController pidController1(fan1, PID_KP, PID_KI, PID_KD);
 //PIDFanController pidController2(fan2, PID_KP, PID_KI, PID_KD);
 float input = 0.0;
 
+// RTC instance
+RTC rtc = RTC();
+
+// Start time in milliseconds
+uint64_t startTimeMs = 0;
+
 I2CScanner scanner;
 
 // Electronic Load FSM
@@ -54,6 +60,17 @@ void setup() {
   i2c.init();
   dac.init(&i2c);
   adc.init(&i2c);
+  // Initialize RTC
+  rtc.init(&i2c);
+  
+  // Set current date and time (example: January 1, 2024 at 12:00:00)
+  DateTime currentTime = {0, 0, 12, 1, 1, 1, 24};  // seconds, minutes, hours, dayOfWeek, date, month, year
+  rtc.set_time(currentTime);
+  
+  // Store start time
+  startTimeMs = rtc.get_timestamp_ms();
+  Serial.println("RTC initialized. Start time recorded.");
+  
   // Initialize LVGL Display
   lcd.init();
   // Initialize FANs and PID controllers
@@ -84,17 +101,39 @@ void loop() {
   //pidController2.compute(currentTemp);
   
   // Print status every second
-  //#define DEBUG_FAN
+  #define DEBUG_FAN
   #ifdef DEBUG_FAN
   static unsigned long lastPrint = 0;
   unsigned long now = millis();
   if (now - lastPrint > 1000) {
     Serial.println("Temperature: " + String(currentTemp, 2) + "°C");
-    Serial.println("FAN 1 Speed: " + String(fan1.get_speed()) + "/255(" + String((fan1.get_speed()/255) * 100,0) + "%), Fan Locked: " + (fan1.is_locked() ? "YES" : "NO"));
-    //Serial.println("FAN 2 Speed: " + String(fan2.get_speed()) + "/255(" + String((fan1.get_speed()/255) * 100,0) + "%), Fan Locked: " + (fan2.is_locked() ? "YES" : "NO"));
+    Serial.println("FAN1 Speed: " + String(fan1.get_speed_percentage(), 2) + "%" + " LockedPin: " + String(fan1.get_lock_pin()));
     lastPrint = now;
   }
   #endif
+  
+  /* -------------- RTC -------------- */
+  // Print elapsed time every 10 seconds
+  static unsigned long lastRtcPrint = 0;
+  unsigned long currentMillis = millis();
+  if (currentMillis - lastRtcPrint > 10000) {  // 10 seconds
+    uint64_t currentTimeMs = rtc.get_timestamp_ms();
+    uint64_t elapsedMs = RTC::elapsed_ms(startTimeMs, currentTimeMs);
+    
+    // Get current date and time
+    DateTime now = rtc.get_time();
+    
+    Serial.println("Current RTC time: " + 
+                   String(now.year + 2000) + "-" + 
+                   String(now.month) + "-" + 
+                   String(now.date) + " " +
+                   String(now.hours) + ":" + 
+                   String(now.minutes) + ":" + 
+                   String(now.seconds));
+    Serial.println("Elapsed time since startup: " + String((unsigned long)(elapsedMs / 1000)) + " seconds (" + String((unsigned long)elapsedMs) + " ms)");
+    
+    lastRtcPrint = currentMillis;
+  }
 }
 
 void main_menu() {
@@ -112,7 +151,7 @@ void main_menu() {
   if (encoder.has_changed()) { // Update menu with selected option
     pos = encoder.get_position();
     lcd.update_main_menu(pos);
-    #define DEBUG_ENCODER
+    //#define DEBUG_ENCODER
     #ifdef DEBUG_ENCODER
     Serial.println("Encoder position: " + String(encoder.get_position()));
     Serial.println("Max:" + String(encoder.get_encoder_max_position()) + " - Min: " + String(encoder.get_encoder_min_position()));

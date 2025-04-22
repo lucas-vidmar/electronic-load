@@ -17,7 +17,7 @@ Fan fan1(PWM_FAN_1_PIN, EN_FAN_1_PIN, LOCK_FAN_1_PIN);
 Fan fan2(PWM_FAN_2_PIN, EN_FAN_2_PIN, LOCK_FAN_2_PIN);
 // PID controllers with tuning parameters
 PIDFanController pidController1(fan1, PID_KP, PID_KI, PID_KD);
-//PIDFanController pidController2(fan2, PID_KP, PID_KI, PID_KD);
+PIDFanController pidController2(fan2, PID_KP, PID_KI, PID_KD);
 float input = 0.0;
 
 // RTC instance
@@ -55,7 +55,7 @@ void setup() {
   analogSws.init();
   analogSws.relay_dut_disable();
   analogSws.mosfet_input_cc_mode();
-  analogSws.v_dac_disable();
+  analogSws.v_dac_enable();
   // Initialize I2C devices
   i2c.init();
   dac.init(&i2c);
@@ -77,7 +77,7 @@ void setup() {
   pidController1.init(PID_SETPOINT); // Set target temperature for fan 1
   //pidController2.init(PID_SETPOINT); // Set target temperature for fan 2
   fan1.set_speed(0); // Set initial speed to 0
-  //fan2.set_speed(125); // Set initial speed to 0
+  fan2.set_speed(0); // Set initial speed to 0
   // Initialize FSM
   fsm.init();
 
@@ -108,6 +108,7 @@ void loop() {
   if (now - lastPrint > 1000) {
     Serial.println("Temperature: " + String(currentTemp, 2) + "°C");
     Serial.println("FAN1 Speed: " + String(fan1.get_speed_percentage(), 2) + "%" + " LockedPin: " + String(fan1.get_lock_pin()));
+    Serial.println("FAN2 Speed: " + String(fan2.get_speed_percentage(), 2) + "%" + " LockedPin: " + String(fan2.get_lock_pin()));
     lastPrint = now;
   }
   #endif

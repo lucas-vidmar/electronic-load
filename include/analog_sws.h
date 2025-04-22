@@ -14,7 +14,7 @@
 
 #include <Arduino.h>
 
-#define ANALOG_SW1_ENABLE GPIO_NUM_1    // ADG1219BRJZ-REEL Analog Switch | Analog SW1 Enable - DAC Enable
+#define ANALOG_SW1_ENABLE GPIO_NUM_23    // ADG1219BRJZ-REEL Analog Switch | Analog SW1 Enable - DAC Enable
 #define ANALOG_SW4_ENABLE GPIO_NUM_19   // ADG1334BRSZ-REEL Analog Switch | Analog SW4 Enable - Power
 #define DUT_ENABLE GPIO_NUM_18          // AHES4191 Relay | DUT Enable
 

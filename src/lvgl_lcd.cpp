@@ -63,6 +63,31 @@ uint32_t LVGL_LCD::tick() {
     return esp_timer_get_time() / 1000;
 }
 
+void LVGL_LCD::create_header(lv_obj_t* parent) {
+    // Create header container
+    headerContainer = lv_obj_create(parent);
+    lv_obj_remove_style_all(headerContainer); // Remove default styles like padding
+    lv_obj_set_size(headerContainer, lv_pct(100), LV_SIZE_CONTENT); // Full width, content height
+    lv_obj_set_flex_flow(headerContainer, LV_FLEX_FLOW_ROW); // Arrange items horizontally
+    lv_obj_set_flex_align(headerContainer, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER); // Space out items
+    lv_obj_set_style_pad_bottom(headerContainer, PADDING / 2, 0); // Add some padding below
+
+    // Temperature Label
+    tempLabel = lv_label_create(headerContainer);
+    lv_obj_set_style_text_font(tempLabel, FONT_S, 0);
+    lv_label_set_text(tempLabel, "Temp: -- C");
+
+    // Fan Speed Label
+    fanLabel = lv_label_create(headerContainer);
+    lv_obj_set_style_text_font(fanLabel, FONT_S, 0);
+    lv_label_set_text(fanLabel, "Fan: -- %");
+}
+
+void LVGL_LCD::update_header(float temperature, int fan_speed) {
+    if (tempLabel) lv_label_set_text(tempLabel, (String(temperature, 1) + " C").c_str()); // Format temperature to 1 decimal place
+    if (fanLabel) lv_label_set_text_fmt(fanLabel, "Fan: %d %%", fan_speed); // Use %% for literal %
+}
+
 void LVGL_LCD::create_main_menu() {
     // Initialize styles if not initialized
 
@@ -75,6 +100,7 @@ void LVGL_LCD::create_main_menu() {
     mainMenu = lv_obj_create(lv_scr_act());
     lv_obj_set_size(mainMenu, lv_disp_get_hor_res(NULL), lv_disp_get_ver_res(NULL)); // Full screen
     lv_obj_align(mainMenu, LV_ALIGN_TOP_LEFT, 0, 0); // Position at top-left corner
+    lv_obj_set_style_pad_all(mainMenu, PADDING, 0); // Add padding to the main container
 
     // Set container layout as column
     lv_obj_set_flex_flow(mainMenu, LV_FLEX_FLOW_COLUMN);
@@ -83,7 +109,10 @@ void LVGL_LCD::create_main_menu() {
     // Set style for space between elements
     lv_obj_set_style_pad_gap(mainMenu, PADDING, 0);
 
-    // Add title with larger font
+    // Create the header at the top of the mainMenu container
+    create_header(mainMenu); 
+
+    // Add title with larger font (below the header)
     lv_obj_t* titleLabel = create_section_header("Main Menu", mainMenu, COLOR1_DARK);
 
     // Items for main menu
@@ -110,8 +139,12 @@ void LVGL_LCD::update_main_menu(int hoveredOption) {
 
 void LVGL_LCD::close_main_menu() {
     if (mainMenu != nullptr) {
-        lv_obj_del(mainMenu); // Delete the main menu object
+        lv_obj_del(mainMenu); // Delete the main menu object (and its children, including header)
         mainMenu = nullptr; // Set pointer to nullptr to indicate it doesn't exist
+        // Clear header pointers as they were children of mainMenu
+        headerContainer = nullptr; 
+        tempLabel = nullptr;
+        fanLabel = nullptr;
     }
 }
 
@@ -135,7 +168,10 @@ void LVGL_LCD::create_cx_screen(float current, int selection, String unit) {
     lv_obj_set_flex_align(inputScreen, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
     lv_obj_set_style_pad_all(inputScreen, PADDING, PADDING); // Padding
 
-    // Input title
+    // Create the header at the top of the inputScreen container
+    create_header(inputScreen);
+
+    // Input title (below header)
     inputTitle = create_section_header("Input", inputScreen, COLOR4_DARK);
 
     // Value container
@@ -283,13 +319,17 @@ void LVGL_LCD::update_cx_screen(float current, int selection, String unit, float
 void LVGL_LCD::close_cx_screen(){
     if (inputScreen == nullptr) return; // Already deleted
 
-    lv_obj_del(inputScreen);
+    lv_obj_del(inputScreen); // Deletes inputScreen and all children (including header)
     inputScreen = nullptr;
     inputTitle = nullptr;
     digits = nullptr;
     buttons = nullptr; outputButton = nullptr; backButton = nullptr;
     curSelection = nullptr; curSelectionLabel = nullptr;
     dutContainer = nullptr; dutVoltage = nullptr; dutCurrent = nullptr; dutPower = nullptr; dutResistance = nullptr;
+    // Clear header pointers as they were children of inputScreen
+    headerContainer = nullptr; 
+    tempLabel = nullptr;
+    fanLabel = nullptr;
 
     lv_style_reset(&styleValue);
     lv_style_reset(&styleValueHovered);

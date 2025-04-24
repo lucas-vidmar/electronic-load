@@ -108,6 +108,14 @@ public:
      */
     void close_cx_screen();
 
+    /**
+     * @brief Update the header with temperature and fan speed.
+     * 
+     * @param temperature Current temperature value.
+     * @param fan_speed Current fan speed percentage.
+     */
+    void update_header(float temperature, int fan_speed);
+
 private:
     TFT_eSPI tft;
     static TFT_eSPI* tftPointer;
@@ -144,6 +152,18 @@ private:
     *curSelection = nullptr, *curSelectionLabel = nullptr, // current selection
     *dutContainer = nullptr, *dutContainerRow1 = nullptr, *dutContainerRow2 = nullptr, // DUT container
     *dutVoltage = nullptr, *dutCurrent = nullptr, *dutPower = nullptr, *dutResistance = nullptr; // DUT values
+
+    /* Common UI Elements */
+    lv_obj_t *headerContainer = nullptr;
+    lv_obj_t *tempLabel = nullptr;
+    lv_obj_t *fanLabel = nullptr;
+
+    /**
+     * @brief Create a common header for screens.
+     * 
+     * @param parent The parent object for the header.
+     */
+    void create_header(lv_obj_t* parent);
 
     /**
      * @brief Create a section header for the UI.

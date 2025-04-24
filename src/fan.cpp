@@ -52,8 +52,8 @@ bool Fan::is_locked() const {
     else return false; // Fan is not locked
 }
 
-float Fan::get_speed_percentage() const {
-    return (static_cast<float>(speed) / 255.0f) * 100.0f; // Convert to percentage
+int Fan::get_speed_percentage() const {
+    return (int)(speed / 255.0 * 100.0 + 1); // Convert to percentage
 }
 
 // PIDFanController implementation

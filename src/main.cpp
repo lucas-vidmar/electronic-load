@@ -84,11 +84,14 @@ void setup() {
 }
 
 void loop() {
+  float currentTemp = adc.read_temperature(); // Read temperature from ADC
+  float fanSpeed = fan.get_speed_percentage(); // Get current fan speed percentage
+
   lcd.update();
+  lcd.update_header(currentTemp, fanSpeed); // Update header with temperature and fan speed
   delay(10);
   fsm.run(input, dac, analogSws);
-  float currentTemp = adc.read_temperature(); // Read temperature from ADC
-    
+
   // Compute and adjust fan speed based on temperature
   pidController.compute(currentTemp);
 }

@@ -24,6 +24,8 @@ void Fan::enable() {
 
 void Fan::disable() {
     digitalWrite(enablePin, LOW);
+    // Explicitly set the pin low in addition to setting PWM duty cycle to 0
+    digitalWrite(pwmPin, LOW); 
     analogWrite(pwmPin, 0);
     enabled = false;
 }
@@ -44,16 +46,14 @@ uint8_t Fan::get_speed() const {
 }
 
 bool Fan::is_locked() const {
-    // Most fan lock pins are active LOW when locked
-    return digitalRead(lockPin) == LOW;
+    unsigned long highTime = pulseIn(lockPin, HIGH, 1000000); // Read the lock pin state
+    unsigned long lowTime = pulseIn(lockPin, LOW, 1000000);
+    if (highTime == 0 && lowTime == 0) return true; // Fan is locked
+    else return false; // Fan is not locked
 }
 
 float Fan::get_speed_percentage() const {
     return (static_cast<float>(speed) / 255.0f) * 100.0f; // Convert to percentage
-}
-
-float Fan::get_lock_pin() const {
-    return analogRead(lockPin); // Read the lock pin state
 }
 
 // PIDFanController implementation
@@ -75,10 +75,10 @@ float PIDFanController::get_target_temperature() const {
     return targetTemp;
 }
 
-void PIDFanController::set_tunings(float kP, float kI, float kD) {
-    this->kP = kP;
-    this->kI = kI;
-    this->kD = kD;
+void PIDFanController::set_tunings(float _kP, float _kI, float _kD) {
+    kP = _kP;
+    kI = _kI;
+    kD = _kD;
 }
 
 void PIDFanController::set_output_limits(float min, float max) {

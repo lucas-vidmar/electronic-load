@@ -3,12 +3,9 @@
 #include <Arduino.h>
 
 // Fan control pin definitions
-#define EN_FAN_1_PIN     GPIO_NUM_2
-#define PWM_FAN_1_PIN    GPIO_NUM_0
-#define LOCK_FAN_1_PIN   GPIO_NUM_16
-#define EN_FAN_2_PIN     GPIO_NUM_17
-#define PWM_FAN_2_PIN    GPIO_NUM_4
-#define LOCK_FAN_2_PIN   GPIO_NUM_5
+#define EN_FAN_PIN     GPIO_NUM_2
+#define PWM_FAN_PIN    GPIO_NUM_0
+#define LOCK_FAN_PIN   GPIO_NUM_16
 // PID controller tuning parameters
 #define PID_KP          6.0
 #define PID_KI          0.01
@@ -33,8 +30,6 @@ public:
     uint8_t get_speed() const;
     bool is_locked() const; // Check if fan is stalled/locked
     float get_speed_percentage() const;
-    
-    float get_lock_pin() const;
 };
 
 class PIDFanController {

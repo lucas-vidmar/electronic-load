@@ -13,11 +13,9 @@ DAC dac = DAC();
 ADC adc = ADC();
 AnalogSws analogSws = AnalogSws();
 LVGL_LCD lcd = LVGL_LCD();
-Fan fan1(PWM_FAN_1_PIN, EN_FAN_1_PIN, LOCK_FAN_1_PIN);
-Fan fan2(PWM_FAN_2_PIN, EN_FAN_2_PIN, LOCK_FAN_2_PIN);
+Fan fan(PWM_FAN_PIN, EN_FAN_PIN, LOCK_FAN_PIN);
 // PID controllers with tuning parameters
-PIDFanController pidController1(fan1, PID_KP, PID_KI, PID_KD);
-PIDFanController pidController2(fan2, PID_KP, PID_KI, PID_KD);
+PIDFanController pidController1(fan, PID_KP, PID_KI, PID_KD);
 float input = 0.0;
 
 // RTC instance
@@ -74,10 +72,8 @@ void setup() {
   // Initialize LVGL Display
   lcd.init();
   // Initialize FANs and PID controllers
-  pidController1.init(PID_SETPOINT); // Set target temperature for fan 1
-  //pidController2.init(PID_SETPOINT); // Set target temperature for fan 2
-  fan1.set_speed(0); // Set initial speed to 0
-  fan2.set_speed(0); // Set initial speed to 0
+  pidController1.init(PID_SETPOINT); // Set target temperature for fan
+  fan.set_speed(0); // Set initial speed to 0
   // Initialize FSM
   fsm.init();
 
@@ -107,34 +103,10 @@ void loop() {
   unsigned long now = millis();
   if (now - lastPrint > 1000) {
     Serial.println("Temperature: " + String(currentTemp, 2) + "°C");
-    Serial.println("FAN1 Speed: " + String(fan1.get_speed_percentage(), 2) + "%" + " LockedPin: " + String(fan1.get_lock_pin()));
-    Serial.println("FAN2 Speed: " + String(fan2.get_speed_percentage(), 2) + "%" + " LockedPin: " + String(fan2.get_lock_pin()));
+    Serial.println("FAN Speed: " + String(fan.get_speed_percentage(), 2) + "%" + " LockedPin: " + String(fan.is_locked()));
     lastPrint = now;
   }
   #endif
-  
-  /* -------------- RTC -------------- */
-  // Print elapsed time every 10 seconds
-  static unsigned long lastRtcPrint = 0;
-  unsigned long currentMillis = millis();
-  if (currentMillis - lastRtcPrint > 10000) {  // 10 seconds
-    uint64_t currentTimeMs = rtc.get_timestamp_ms();
-    uint64_t elapsedMs = RTC::elapsed_ms(startTimeMs, currentTimeMs);
-    
-    // Get current date and time
-    DateTime now = rtc.get_time();
-    
-    Serial.println("Current RTC time: " + 
-                   String(now.year + 2000) + "-" + 
-                   String(now.month) + "-" + 
-                   String(now.date) + " " +
-                   String(now.hours) + ":" + 
-                   String(now.minutes) + ":" + 
-                   String(now.seconds));
-    Serial.println("Elapsed time since startup: " + String((unsigned long)(elapsedMs / 1000)) + " seconds (" + String((unsigned long)elapsedMs) + " ms)");
-    
-    lastRtcPrint = currentMillis;
-  }
 }
 
 void main_menu() {

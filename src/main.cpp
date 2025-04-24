@@ -87,26 +87,10 @@ void loop() {
   lcd.update();
   delay(10);
   fsm.run(input, dac, analogSws);
-
-  /* -------------- FAN -------------- */
-  // Get current temperature
   float currentTemp = adc.read_temperature(); // Read temperature from ADC
     
   // Compute and adjust fan speed based on temperature
   pidController.compute(currentTemp);
-  //pidController2.compute(currentTemp);
-  
-  // Print status every second
-  #define DEBUG_FAN
-  #ifdef DEBUG_FAN
-  static unsigned long lastPrint = 0;
-  unsigned long now = millis();
-  if (now - lastPrint > 1000) {
-    Serial.println("Temperature: " + String(currentTemp, 2) + "°C");
-    Serial.println("FAN Speed: " + String(fan.get_speed_percentage(), 2) + "%" + " LockedPin: " + String(fan.is_locked()));
-    lastPrint = now;
-  }
-  #endif
 }
 
 void main_menu() {

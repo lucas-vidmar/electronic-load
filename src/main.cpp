@@ -15,7 +15,7 @@ AnalogSws analogSws = AnalogSws();
 LVGL_LCD lcd = LVGL_LCD();
 Fan fan(PWM_FAN_PIN, EN_FAN_PIN, LOCK_FAN_PIN);
 // PID controllers with tuning parameters
-PIDFanController pidController1(fan, PID_KP, PID_KI, PID_KD);
+PIDFanController pidController(fan, PID_KP, PID_KI, PID_KD);
 float input = 0.0;
 
 // RTC instance
@@ -72,7 +72,7 @@ void setup() {
   // Initialize LVGL Display
   lcd.init();
   // Initialize FANs and PID controllers
-  pidController1.init(PID_SETPOINT); // Set target temperature for fan
+  pidController.init(PID_SETPOINT); // Set target temperature for fan
   fan.set_speed(0); // Set initial speed to 0
   // Initialize FSM
   fsm.init();
@@ -93,7 +93,7 @@ void loop() {
   float currentTemp = adc.read_temperature(); // Read temperature from ADC
     
   // Compute and adjust fan speed based on temperature
-  pidController1.compute(currentTemp);
+  pidController.compute(currentTemp);
   //pidController2.compute(currentTemp);
   
   // Print status every second

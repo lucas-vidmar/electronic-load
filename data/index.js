@@ -30,6 +30,7 @@ const currentEl = document.getElementById('current');
 const powerEl = document.getElementById('power');
 const resistanceEl = document.getElementById('resistance');
 const temperatureEl = document.getElementById('temperature');
+const fanSpeedEl = document.getElementById('fan-speed');
 const statusEl = document.getElementById('status');
 
 // Initialize WebSocket connection
@@ -70,6 +71,8 @@ function handleMessage(message) {
             const resistance = data.measurements.resistance;
             resistanceEl.textContent = (isFinite(resistance) ? resistance.toFixed(3) : '---') + ' kΩ';
             temperatureEl.textContent = data.measurements.temperature.toFixed(1) + ' °C';
+            // Update Fan Speed display
+            fanSpeedEl.textContent = data.measurements.fanSpeed + ' %';
         }
 
         // Update state
@@ -132,8 +135,8 @@ function init() {
             const newMode = button.getAttribute('data-mode');
             // Only send command if mode actually changes
             if (newMode !== currentMode) {
-                 setMode(newMode); // Update UI immediately
-                 sendCommand('setMode', newMode);
+                setMode(newMode); // Update UI immediately
+                sendCommand('setMode', newMode);
             }
         });
     });

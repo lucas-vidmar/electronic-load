@@ -13,27 +13,32 @@ void Encoder::init() {
     instance = this;
 
     // Attach interrupts without calling gpio_install_isr_service
-    attachInterrupt(digitalPinToInterrupt(ENCODER_CLK), handle_interrupt, CHANGE);
+    // Change CHANGE to FALLING to trigger only once per detent
+    attachInterrupt(digitalPinToInterrupt(ENCODER_CLK), handle_interrupt, FALLING);
     attachInterrupt(digitalPinToInterrupt(ENCODER_SW), handle_button_interrupt, FALLING);
 }
 
 void IRAM_ATTR Encoder::handle_interrupt() {
     static unsigned long lastInterruptTime = 0;
     unsigned long interruptTime = millis();
-    
-    // Debounce: ignore interrupts that occur within 15ms of the last interrupt
+
+    // Debounce: ignore interrupts that occur within 5ms of the last interrupt
     if (interruptTime - lastInterruptTime > ENCODER_ROTATION_DEBOUNCE) {
         if (instance) {
-            int state = digitalRead(ENCODER_CLK);
-            if (state != instance->lastState) { // If state has changed, pulse occurred
-                instance->lastPosition = instance->position; // Save last position
-                if (digitalRead(ENCODER_DT) != state) { // If DT state is different from CLK state
+            // Read the DT pin to determine direction
+            // Note: CLK state check is removed as interrupt triggers only on FALLING edge
+            if (digitalRead(ENCODER_DT) != digitalRead(ENCODER_CLK)) { // Check DT against CLK (which is now LOW due to FALLING trigger)
+                // Clockwise rotation
+                if (instance->position < instance->encoderMaxPosition) {
                     instance->position++;
-                } else {
+                }
+            } else {
+                // Counter-clockwise rotation
+                if (instance->position > instance->encoderMinPosition) {
                     instance->position--;
                 }
-                instance->lastState = state;
             }
+            // No need to update lastState as we only care about the falling edge
         }
     }
     lastInterruptTime = interruptTime;
@@ -59,11 +64,6 @@ bool Encoder::is_button_pressed() {
 }
 
 int Encoder::get_position() {
-    if (position > encoderMaxPosition) {
-        set_position(encoderMaxPosition);
-    } else if (position < encoderMinPosition) {
-        set_position(encoderMinPosition);
-    }
     return position;
 }
 

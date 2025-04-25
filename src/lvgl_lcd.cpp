@@ -268,52 +268,124 @@ void LVGL_LCD::create_cx_screen(float current, int selection, String unit) {
     lv_obj_set_flex_grow(dutResistance, 1);
 }
 
-void LVGL_LCD::update_cx_screen(float current, int selection, String unit, float vDUT, float iDUT, int digitsBeforeDecimal, int totalDigits, String selected) {
+void LVGL_LCD::update_cx_screen(float current, int selection, String unit, float vDUT, float iDUT, int digitsBeforeDecimal, int totalDigits, String targetValueStr, bool output_active, bool is_modifying) {
     // Clean container before adding new digits
-    String selectedStr = selected + " " + unit;
     lv_obj_clean(digits);
 
-    // Convert the value to string with format "XX.XXX [X]"
-    char valueStr[10];
-    String format = "%0" + String(totalDigits+1) + "."+String(totalDigits-digitsBeforeDecimal)+"f " + String(unit);
-    snprintf(valueStr, sizeof(valueStr), format.c_str(), current);
-    //Serial.println("Value_str: " + String(valueStr));
+    // Convert the value being edited to string with format "XX.XXX [X]"
+    char valueStr[15]; // Increased size slightly for safety
+    // Use enough precision for display, potentially more than target decimals
+    snprintf(valueStr, sizeof(valueStr), "%.*f", totalDigits - digitsBeforeDecimal, current);
+    // Manually add padding if needed (e.g., leading zeros) - LVGL might handle this with label width/alignment
 
     // Add each character as a separate label
-    int hoveredDigitToProcess = selection;
-    if (selection >= digitsBeforeDecimal) hoveredDigitToProcess++; // Skip decimal point
+    int char_index = 0; // Tracks position in the formatted string
+    int digit_index = 0; // Tracks the logical digit position (0 to totalDigits-1)
+    bool decimal_passed = false;
 
-    for (int i = 0; valueStr[i] != '\0'; ++i) {
-
+    // Create labels for integer part
+    String intPartStr = String((int)floor(current));
+    int intDigits = intPartStr.length();
+    // Add leading zeros if needed
+    for(int i = 0; i < digitsBeforeDecimal - intDigits; ++i) {
         lv_obj_t* label = lv_label_create(digits);
-        lv_label_set_text_fmt(label, "%c", valueStr[i]);
+        lv_label_set_text(label, "0");
         lv_obj_set_style_text_font(label, FONT_L, 0);
-
-        // Apply highlighted style if character is a digit and is hovered
-        if (isdigit(valueStr[i]) && i == hoveredDigitToProcess) {
-            lv_obj_add_style(label, &styleValueHovered, LV_PART_MAIN);
+        if (digit_index == selection && !is_modifying) { // Highlight selected digit when SELECTING
+             lv_obj_add_style(label, &styleValueHovered, LV_PART_MAIN);
+        } else if (digit_index == selection && is_modifying) { // Could use a different style for modifying
+             lv_obj_add_style(label, &styleValueHovered, LV_PART_MAIN); // Use same for now
+        }
+        else {
+            lv_obj_add_style(label, &styleValue, LV_PART_MAIN);
+        }
+        digit_index++;
+    }
+    // Add actual integer digits
+    for(int i = 0; i < intDigits; ++i) {
+        lv_obj_t* label = lv_label_create(digits);
+        lv_label_set_text_fmt(label, "%c", intPartStr[i]);
+        lv_obj_set_style_text_font(label, FONT_L, 0);
+         if (digit_index == selection && !is_modifying) {
+             lv_obj_add_style(label, &styleValueHovered, LV_PART_MAIN);
+        } else if (digit_index == selection && is_modifying) {
+             lv_obj_add_style(label, &styleValueHovered, LV_PART_MAIN);
         } else {
             lv_obj_add_style(label, &styleValue, LV_PART_MAIN);
         }
+        digit_index++;
     }
 
-    if (selection == totalDigits) update_button(outputButton, true); // Highlight output
-    else update_button(outputButton, false); // Normal output
-    if (selection == totalDigits + 1) update_button(backButton, true); // Highlight back
-    else update_button(backButton, false); // Normal back
+    // Add decimal point
+    lv_obj_t* dotLabel = lv_label_create(digits);
+    lv_label_set_text(dotLabel, ".");
+    lv_obj_set_style_text_font(dotLabel, FONT_L, 0);
+    lv_obj_add_style(dotLabel, &styleValue, LV_PART_MAIN); // Never highlighted
 
-    // Update selected value
-    lv_label_set_text(curSelectionLabel, selectedStr.c_str());
+    // Add decimal part
+    String decPartStr = String(round((current - floor(current)) * pow(10, totalDigits - digitsBeforeDecimal)), 0);
+    int decDigits = decPartStr.length();
+     // Add leading zeros for decimal part if needed (e.g., 0.01)
+    // This part needs careful handling based on precision
+    String formattedDecimal;
+    snprintf(valueStr, sizeof(valueStr), "%.*f", totalDigits - digitsBeforeDecimal, current - floor(current));
+    formattedDecimal = String(valueStr).substring(2); // Get digits after "0."
+
+    for(int i = 0; i < totalDigits - digitsBeforeDecimal; ++i) {
+         lv_obj_t* label = lv_label_create(digits);
+         if (i < formattedDecimal.length()) {
+            lv_label_set_text_fmt(label, "%c", formattedDecimal[i]);
+         } else {
+             lv_label_set_text(label, "0"); // Pad with trailing zeros if needed
+         }
+         lv_obj_set_style_text_font(label, FONT_L, 0);
+         if (digit_index == selection && !is_modifying) {
+             lv_obj_add_style(label, &styleValueHovered, LV_PART_MAIN);
+        } else if (digit_index == selection && is_modifying) {
+             lv_obj_add_style(label, &styleValueHovered, LV_PART_MAIN);
+        } else {
+            lv_obj_add_style(label, &styleValue, LV_PART_MAIN);
+        }
+        digit_index++;
+    }
+
+
+    // Add Unit
+    lv_obj_t* unitLabel = lv_label_create(digits);
+    lv_label_set_text(unitLabel, unit.c_str());
+    lv_obj_set_style_text_font(unitLabel, FONT_L, 0);
+    lv_obj_add_style(unitLabel, &styleValue, LV_PART_MAIN); // Never highlighted
+
+
+    // Update button states and text
+    // Selection: 0..totalDigits-1 = digits, totalDigits = Trigger/Stop, totalDigits+1 = Exit
+    if (selection == totalDigits) { // Trigger/Stop button selected
+        update_button(outputButton, true);
+    } else {
+        update_button(outputButton, false);
+    }
+    // Change text based on output state
+    lv_label_set_text(outputButton, output_active ? "Stop" : "Set");
+
+    if (selection == totalDigits + 1) { // Back button selected
+        update_button(backButton, true);
+    } else {
+        update_button(backButton, false);
+    }
+
+    // Update target value display
+    String targetStr = targetValueStr + " " + unit;
+    lv_label_set_text(curSelectionLabel, targetStr.c_str());
 
     // Update DUT values
-    String values = String(vDUT,CV_DIGITS_AFTER_DECIMAL) + " V";
-    lv_label_set_text_fmt(dutVoltage, values.c_str());
-    values = String(iDUT,CC_DIGITS_AFTER_DECIMAL) + " A";
-    lv_label_set_text_fmt(dutCurrent, values.c_str());
-    values = String(vDUT*iDUT,CW_DIGITS_AFTER_DECIMAL) + " W";
-    lv_label_set_text_fmt(dutPower, values.c_str());
-    values = (iDUT > 0 ? String((vDUT/iDUT)/1000,CR_DIGITS_AFTER_DECIMAL) : "---") + + " kR";
-    lv_label_set_text_fmt(dutResistance, values.c_str());
+    String values = String(vDUT, CV_DIGITS_AFTER_DECIMAL) + " V";
+    lv_label_set_text(dutVoltage, values.c_str()); // Use lv_label_set_text directly on the label child
+    values = String(iDUT, CC_DIGITS_AFTER_DECIMAL) + " A";
+    lv_label_set_text(dutCurrent, values.c_str());
+    values = String(vDUT * iDUT, CW_DIGITS_AFTER_DECIMAL) + " W";
+    lv_label_set_text(dutPower, values.c_str());
+    values = (iDUT > 1e-6 ? String((vDUT / iDUT) / 1000.0, CR_DIGITS_AFTER_DECIMAL) : "---") + " kR"; // Check for near-zero current
+    lv_label_set_text(dutResistance, values.c_str());
 }
 
 void LVGL_LCD::close_cx_screen(){

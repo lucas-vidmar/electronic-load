@@ -67,7 +67,7 @@ public:
      * @brief Change the current state of the FSM
      * @param newState The new state to transition to
      */
-    void change_state(int newState);
+    void change_state(FSM_MAIN_STATES newState);
 
     /**
      * @brief Check if the state has changed since last check
@@ -75,7 +75,13 @@ public:
      */
     bool has_changed();
 
+    /**
+     * @brief Get the current state of the FSM
+     * @return The current state
+     */
+    FSM_MAIN_STATES get_current_state();
+
 private:
-    int currentState; ///< Current state of the FSM
-    int lastState;    ///< Previous state of the FSM
+    FSM_MAIN_STATES currentState; ///< Current state of the FSM
+    FSM_MAIN_STATES lastState;    ///< Previous state of the FSM
 };

@@ -59,35 +59,51 @@ function connectWebSocket() {
 function handleMessage(message) {
     try {
         const data = JSON.parse(message);
-        
+        console.log("Received data:", data); // Log received data
+
         // Update measurements
         if (data.measurements) {
             voltageEl.textContent = data.measurements.voltage.toFixed(3) + ' V';
             currentEl.textContent = data.measurements.current.toFixed(3) + ' A';
             powerEl.textContent = data.measurements.power.toFixed(3) + ' W';
-            resistanceEl.textContent = data.measurements.resistance.toFixed(3) + ' kΩ';
+            // Ensure resistance is handled correctly (e.g., avoid Infinity)
+            const resistance = data.measurements.resistance;
+            resistanceEl.textContent = (isFinite(resistance) ? resistance.toFixed(3) : '---') + ' kΩ';
             temperatureEl.textContent = data.measurements.temperature.toFixed(1) + ' °C';
         }
-        
+
         // Update state
         if (data.state) {
-            if (data.state.mode) {
-                setMode(data.state.mode);
+            // Update Mode
+            if (data.state.mode && data.state.mode !== currentMode && data.state.mode !== "MENU") {
+                setMode(data.state.mode); // Update mode buttons and unit
             }
-            if (data.state.relayEnabled !== undefined) {
+            // Update Relay Button
+            if (data.state.relayEnabled !== undefined && data.state.relayEnabled !== relayEnabled) {
                 relayEnabled = data.state.relayEnabled;
                 updateRelayButton();
             }
-            if (data.state.outputActive !== undefined) {
+            // Update Output Button and State
+            if (data.state.outputActive !== undefined && data.state.outputActive !== outputActive) {
                 outputActive = data.state.outputActive;
                 updateOutputButton();
             }
-            if (data.state.value !== undefined) {
-                updateValueFromNumber(data.state.value);
+            // Update Value Display (Digits)
+            // Only update digits if the mode matches and output is NOT active (to avoid overwriting user input)
+            // Or if the value received is significantly different from the current display
+            const currentValueDisplayed = convertDigitsToNumber();
+            if (data.state.value !== undefined && data.state.mode === currentMode) {
+                 // Update digits if value changed significantly or if output is off
+                 // (prevents minor fluctuations during active output from resetting digits)
+                 if (!outputActive || Math.abs(data.state.value - currentValueDisplayed) > 1e-4) {
+                    updateValueFromNumber(data.state.value);
+                 }
             }
         }
     } catch (e) {
         console.error('Error parsing message:', e);
+        statusEl.textContent = 'Error processing message';
+        statusEl.style.backgroundColor = '#ffcdd2';
     }
 }
 
@@ -113,8 +129,12 @@ function init() {
     
     modeButtons.forEach(button => {
         button.addEventListener('click', () => {
-            setMode(button.getAttribute('data-mode'));
-            sendCommand('setMode', button.getAttribute('data-mode'));
+            const newMode = button.getAttribute('data-mode');
+            // Only send command if mode actually changes
+            if (newMode !== currentMode) {
+                 setMode(newMode); // Update UI immediately
+                 sendCommand('setMode', newMode);
+            }
         });
     });
     
@@ -122,29 +142,36 @@ function init() {
     valueDown.addEventListener('click', decrementDigit);
     
     triggerOutput.addEventListener('click', () => {
-        outputActive = !outputActive;
+        // Toggle intended state
+        const intendedOutputState = !outputActive;
+        // Update UI immediately for responsiveness
+        outputActive = intendedOutputState;
         updateOutputButton();
+        // Send command with current value
         const value = convertDigitsToNumber();
-        sendCommand('setOutput', { active: outputActive, value: value });
+        sendCommand('setOutput', { active: intendedOutputState, value: value });
     });
     
     toggleRelay.addEventListener('click', () => {
-        relayEnabled = !relayEnabled;
+        // Toggle intended state
+        const intendedRelayState = !relayEnabled;
+        // Update UI immediately
+        relayEnabled = intendedRelayState;
         updateRelayButton();
-        sendCommand('setRelay', relayEnabled);
+        // Send command
+        sendCommand('setRelay', intendedRelayState);
     });
     
     exitMode.addEventListener('click', () => {
         sendCommand('exit', null);
+        // Optionally reset UI elements immediately or wait for WS confirmation
     });
     
     // Connect to WebSocket
     connectWebSocket();
     
-    // Start periodic measurements update
-    setInterval(() => {
-        sendCommand('getMeasurements', null);
-    }, 1000);
+    // Request initial state/measurements after connection (optional, handled by connect event on server)
+    // setInterval(() => { sendCommand('getMeasurements', null); }, 2000); // Reduced frequency, rely on broadcasts
 }
 
 // Select a digit
@@ -166,6 +193,9 @@ function incrementDigit() {
     const position = parseInt(selectedDigit.getAttribute('data-position'));
     digitValues[position] = (digitValues[position] + 1) % 10;
     selectedDigit.textContent = digitValues[position];
+    // Send updated value only if output is active OR if user explicitly changes it
+    // Avoid sending intermediate values during editing if output is off?
+    // Let's send it always for now, backend can decide.
     sendValue();
 }
 
@@ -182,57 +212,66 @@ function decrementDigit() {
 // Convert digits array to number
 function convertDigitsToNumber() {
     const config = modeConfig[currentMode];
-    let value = 0;
-    let multiplier = Math.pow(10, config.decimals);
-    
+    if (!config) return 0; // Handle case where mode might be invalid temporarily
+
+    let valueStr = "";
     for (let i = 0; i < config.maxDigits; i++) {
-        if (i < config.beforeDecimal) {
-            // Digits before decimal point
-            value += digitValues[i] * multiplier * 10;
-        } else {
-            // Digits after decimal point
-            value += digitValues[i] * multiplier;
-        }
-        multiplier /= 10;
+        valueStr += digitValues[i];
     }
-    
-    return value / Math.pow(10, config.decimals);
+
+    const integerPart = valueStr.substring(0, config.beforeDecimal);
+    const decimalPart = valueStr.substring(config.beforeDecimal);
+
+    return parseFloat(integerPart + "." + decimalPart);
 }
 
 // Update digits from a number
 function updateValueFromNumber(number) {
     const config = modeConfig[currentMode];
-    // Convert to integer with decimal precision
-    const intValue = Math.round(number * Math.pow(10, config.decimals));
-    
-    // Extract digits
-    let tempValue = intValue;
-    for (let i = config.maxDigits - 1; i >= 0; i--) {
-        if (i < config.beforeDecimal) {
-            // Digits before decimal point
-            const divisor = Math.pow(10, config.decimals + config.beforeDecimal - i - 1);
-            digitValues[i] = Math.floor(tempValue / divisor) % 10;
-        } else {
-            // Digits after decimal point
-            const divisor = Math.pow(10, config.decimals - (i - config.beforeDecimal) - 1);
-            digitValues[i] = Math.floor(tempValue / divisor) % 10;
-        }
-    }
-    
-    // Update digit display
+    if (!config) return;
+
+    // Format number to fixed decimal places matching the mode
+    const formattedNumber = number.toFixed(config.decimals);
+    const [integerPart, decimalPart] = formattedNumber.split('.');
+
+    // Pad parts with leading/trailing zeros if necessary
+    const paddedInteger = integerPart.padStart(config.beforeDecimal, '0');
+    const paddedDecimal = (decimalPart || "").padEnd(config.decimals, '0');
+
+    const valueStr = paddedInteger + paddedDecimal;
+
+    // Update digitValues array and display
     digits.forEach((digit, index) => {
-        digit.textContent = digitValues[index];
+        if (index < valueStr.length) {
+            const digitValue = parseInt(valueStr[index]);
+            digitValues[index] = digitValue;
+            digit.textContent = digitValue;
+        } else {
+            // Should not happen if padding is correct, but handle defensively
+            digitValues[index] = 0;
+            digit.textContent = '0';
+        }
     });
 }
 
 // Send current value to ESP32
 function sendValue() {
     const value = convertDigitsToNumber();
+    // Only send if output is active? Or always send the edited value?
+    // Let's send always, backend handles it.
+    // If output is active, this effectively changes the target value.
+    // If output is inactive, this updates the value to be used when output is triggered.
     sendCommand('setValue', value);
 }
 
 // Set current mode
 function setMode(mode) {
+    // Check if mode is valid
+    if (!modeConfig[mode]) {
+        console.warn(`Invalid mode received or set: ${mode}`);
+        return; // Don't change if mode is unknown
+    }
+
     // Update mode buttons
     modeButtons.forEach(button => {
         if (button.getAttribute('data-mode') === mode) {
@@ -241,23 +280,20 @@ function setMode(mode) {
             button.classList.remove('active');
         }
     });
-    
-    // Update current mode
+
+    // Update current mode variable
     currentMode = mode;
-    
+
     // Update unit display
-    if (modeConfig[mode]) {
-        currentUnit.textContent = modeConfig[mode].unit;
-    }
-    
-    // Reset digits
-    digitValues = [0, 0, 0, 0, 0];
-    digits.forEach((digit, index) => {
-        digit.textContent = '0';
-    });
-    
-    // Select first digit
-    selectDigit(digits[0]);
+    currentUnit.textContent = modeConfig[mode].unit;
+
+    // Reset digits display to 0 when mode changes via UI click
+    // (WS updates might bring a non-zero value)
+    // digitValues = Array(modeConfig[mode].maxDigits).fill(0);
+    // updateValueFromNumber(0); // Update display based on reset array
+
+    // Select first digit (optional, might be annoying)
+    // selectDigit(digits[0]);
 }
 
 // Update relay button state

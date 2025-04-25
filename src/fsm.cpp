@@ -58,7 +58,7 @@ void FSM::run(float input, DAC dac, AnalogSws sws) {
 
 }
 
-void FSM::change_state(int newState) {
+void FSM::change_state(FSM_MAIN_STATES newState) {
     if (newState < FSM_MAIN_STATES::INITAL || newState > FSM_MAIN_STATES::FINAL) return;
     lastState = currentState;
     currentState = newState;
@@ -68,4 +68,8 @@ bool FSM::has_changed() {
     bool changed = lastState != currentState;
     lastState = currentState;
     return changed;
+}
+
+FSM_MAIN_STATES FSM::get_current_state() {
+    return currentState;
 }

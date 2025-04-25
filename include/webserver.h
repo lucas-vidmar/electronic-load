@@ -13,6 +13,13 @@
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include <SPIFFS.h>
+#include <ArduinoJson.h> // Include ArduinoJson
+
+// Forward declaration
+class WebServerESP32;
+
+// Define the type for the WebSocket event handler function
+typedef std::function<void(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len)> WsEventHandler;
 
 class WebServerESP32 {
 public:
@@ -78,11 +85,30 @@ public:
      */
     void set_default_file(const char* filename);
     
+    /**
+     * @brief Attaches the WebSocket event handler.
+     * @param handler The function to handle WebSocket events.
+     */
+    void attachWsHandler(WsEventHandler handler);
+
+    /**
+     * @brief Sends a message to all connected WebSocket clients.
+     * @param message The message string to send.
+     */
+    void notifyClients(const String& message);
+
+    /**
+     * @brief Cleans up disconnected WebSocket clients.
+     */
+    void cleanupClients();
+
 private:
     const char* _ssidAP;
     const char* _passwordAP;
     uint16_t _port;
     AsyncWebServer _server;
+    AsyncWebSocket _ws; // WebSocket server instance
+    WsEventHandler _wsHandler; // Store the handler
     
     void setup_wifi();
     void setup_server();

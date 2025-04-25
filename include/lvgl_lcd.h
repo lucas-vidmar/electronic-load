@@ -99,9 +99,11 @@ public:
      * @param iDUT Current reading from device under test.
      * @param digitsBeforeDecimal Number of digits before decimal point.
      * @param totalDigits Total number of digits to display.
-     * @param selected Label for the selected mode.
+     * @param targetValueStr String representation of the actual target value (input).
+     * @param output_active Whether the output is currently active.
+     * @param is_modifying Whether a digit is currently being modified.
      */
-    void update_cx_screen(float current, int selection, String unit, float vDUT, float iDUT, int digitsBeforeDecimal, int totalDigits, String selected);
+    void update_cx_screen(float current, int selection, String unit, float vDUT, float iDUT, int digitsBeforeDecimal, int totalDigits, String targetValueStr, bool output_active, bool is_modifying);
     
     /**
      * @brief Close and clean up the CX screen.

@@ -5,6 +5,7 @@ let digitValues = [0, 0, 0, 0, 0];
 let relayEnabled = false;
 let outputActive = false;
 let ws = null;
+let heartbeatTimeout = null; // Added timeout variable
 
 // Mode configuration
 const modeConfig = {
@@ -24,6 +25,8 @@ const dutStatusIndicator = document.getElementById('dut-status-indicator'); // A
 const exitMode = document.getElementById('exit-mode');
 const currentUnit = document.getElementById('current-unit');
 const valueDisplay = document.getElementById('value-display'); // Get reference to the container
+const connectionStatusIndicator = document.getElementById('connection-status-indicator'); // Select the connection dot
+const statusTextEl = document.getElementById('status-text'); // Select the status text span
 
 // Measurement elements
 const voltageEl = document.getElementById('voltage');
@@ -32,33 +35,63 @@ const powerEl = document.getElementById('power');
 const resistanceEl = document.getElementById('resistance');
 const temperatureEl = document.getElementById('temperature');
 const fanSpeedEl = document.getElementById('fan-speed');
-const statusEl = document.getElementById('status');
 
 // Initialize WebSocket connection
 function connectWebSocket() {
+    // Clear any existing timeout before attempting connection
+    if (heartbeatTimeout) {
+        clearTimeout(heartbeatTimeout);
+        heartbeatTimeout = null;
+    }
     // Replace with your ESP32's IP address or hostname
     ws = new WebSocket('ws://' + window.location.hostname + '/ws');
-    
+
     ws.onopen = function() {
-        statusEl.textContent = 'Connected to device';
-        statusEl.style.display = 'block';
-        statusEl.style.backgroundColor = '#e8f5e9';
+        statusTextEl.textContent = 'Connected to device'; // Update text content
+        connectionStatusIndicator.classList.add('connected'); // Add 'connected' class to dot
+        resetHeartbeatTimeout(); // Start the timeout check
     };
-    
+
     ws.onclose = function() {
-        statusEl.textContent = 'Disconnected from device';
-        statusEl.style.display = 'block';
-        statusEl.style.backgroundColor = '#ffebee';
+        statusTextEl.textContent = 'Disconnected from device'; // Update text content
+        connectionStatusIndicator.classList.remove('connected'); // Remove 'connected' class from dot
+        // Clear the timeout when connection explicitly closes
+        if (heartbeatTimeout) {
+            clearTimeout(heartbeatTimeout);
+            heartbeatTimeout = null;
+        }
         setTimeout(connectWebSocket, 2000); // Try to reconnect
     };
-    
+
     ws.onmessage = function(event) {
         handleMessage(event.data);
+    };
+
+    // Handle potential errors
+    ws.onerror = function(error) {
+        console.error('WebSocket Error:', error);
+        statusTextEl.textContent = 'Connection error';
+        connectionStatusIndicator.classList.remove('connected');
+        // Clear the timeout on error as well
+        if (heartbeatTimeout) {
+            clearTimeout(heartbeatTimeout);
+            heartbeatTimeout = null;
+        }
+        // Optionally attempt reconnect on error too, or rely on onclose
     };
 }
 
 // Handle incoming WebSocket messages
 function handleMessage(message) {
+    // Reset the timeout since we received a message
+    resetHeartbeatTimeout();
+
+    // Ensure status is shown as connected if it was previously marked as lost
+    if (!connectionStatusIndicator.classList.contains('connected')) {
+         statusTextEl.textContent = 'Connected to device';
+         connectionStatusIndicator.classList.add('connected');
+    }
+
     try {
         const data = JSON.parse(message);
         console.log("Received data:", data); // Log received data
@@ -114,9 +147,23 @@ function handleMessage(message) {
         }
     } catch (e) {
         console.error('Error parsing message:', e);
-        statusEl.textContent = 'Error processing message';
-        statusEl.style.backgroundColor = '#ffcdd2';
+        statusTextEl.textContent = 'Error processing message'; // Update text content
+        // Don't change connection dot color here, let timeout/onclose handle it
     }
+}
+
+// Function to reset the heartbeat timeout
+function resetHeartbeatTimeout() {
+    if (heartbeatTimeout) {
+        clearTimeout(heartbeatTimeout);
+    }
+    heartbeatTimeout = setTimeout(() => {
+        console.warn('WebSocket timeout: No message received for 10 seconds.');
+        statusTextEl.textContent = 'Connection lost? No updates...';
+        connectionStatusIndicator.classList.remove('connected');
+        // Do not automatically try to reconnect here, wait for onclose or manual action
+        heartbeatTimeout = null; // Clear the handle after firing
+    }, 10000); // 10 seconds
 }
 
 // Send command to ESP32

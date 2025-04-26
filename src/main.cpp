@@ -380,7 +380,7 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
 // --- WebSocket Handler ---
 void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
   switch (type) {
-    case WS_EVT_CONNECT:
+    case WS_EVT_CONNECT: {
       Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
       // Send current state to the newly connected client
       client->text(getCurrentStateJson());
@@ -409,9 +409,11 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
         handleWsCommand(client, doc);
       }
       break;
-    //case WS_EVT_PONG:
-    //case WS_EVT_ERROR:
-    //  break;
+    }
+    case WS_EVT_PONG:
+      break;
+    case WS_EVT_ERROR:
+      break;
   }
 }
 
@@ -461,18 +463,7 @@ void handleSetValue(JsonDocument& doc) {
   if (!doc["value"].is<float>() && !doc["value"].is<int>()) return;
   float newValue = doc["value"];
   Serial.printf("WS: Setting value to %.3f\n", newValue);
-
-  if (output_active) {
-    // If output is active, update the target 'input' directly
-    input = newValue;
-  } else {
-    // If output is not active, update the value being edited via the flag mechanism
-    ws_requested_value = newValue;
-    ws_value_updated = true;
-    Serial.println("WS: Output not active, flagging value update for constant_x.");
-    // The actual update of digitsValues and current_value happens in constant_x
-  }
-  // No broadcast here, let the loop handle broadcasting the potentially changed state
+  input = newValue;
 }
 
 void handleSetOutput(JsonDocument& doc) {

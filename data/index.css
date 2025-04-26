@@ -82,41 +82,46 @@ h1 {
     color: #545b64;
 }
 .controls {
-    display: flex;
-    justify-content: space-between;
     margin: 24px 0;
-    gap: 20px;
 }
-.value-controls {
+
+/* New container for the buttons and dot */
+.button-container {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
+    align-items: center; /* Vertically center items */
+    justify-content: center; /* Horizontally center items */
+    gap: 15px; /* Adjust spacing between the vertical group and the toggle button */
+    width: 100%; /* Ensure it takes full width if needed */
 }
+
+/* Container for the vertical Up/Down buttons */
+.value-button-group {
+    display: flex;
+    flex-direction: column; /* Stack buttons vertically */
+    gap: 4px; /* Spacing between Up and Down buttons (76px total height = 36px + 4px + 36px) */
+}
+
 .value-btn {
-    padding: 12px 18px;
-    margin: 4px;
+    width: 56px; /* Match digit width */
+    height: 36px; /* Half of digit height approx, accounting for gap */
+    padding: 0; /* Remove padding if using line-height/flex for centering */
+    display: flex; /* Use flexbox for centering */
+    align-items: center; /* Center icon vertically */
+    justify-content: center; /* Center icon horizontally */
     background-color: #007eb9;
     color: white;
-    border: none;
-    border-radius: 20px;
+    border: 1px solid #007eb9; /* Add border matching background to maintain size */
+    box-sizing: border-box; /* Ensure width/height include border/padding */
+    border-radius: 10px; /* Adjust border-radius */
     cursor: pointer;
-    font-size: 18px;
-    width: 90px;
+    font-size: 28px; /* Match digit font size */
     transition: background-color 0.2s ease;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    line-height: normal; /* Reset line-height if using flex */
 }
-.value-btn:hover {
-    background-color: #00699c;
-}
-.action-controls {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
+
 .action-btn {
     padding: 12px 18px;
-    margin: 4px;
     background-color: #ff9900;
     color: #232f3e;
     font-weight: 500;
@@ -126,6 +131,7 @@ h1 {
     transition: all 0.2s ease;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
+
 .action-btn:hover {
     background-color: #ec7c11;
 }
@@ -142,6 +148,14 @@ h1 {
 }
 .action-btn.success:hover {
     background-color: #186b01;
+}
+.action-btn.fixed-color {
+    background-color: #6c757d; /* Example fixed color (grey) */
+    color: white;
+    /* Remove hover effects that change background if needed */
+}
+.action-btn.fixed-color:hover {
+    background-color: #5a6268; /* Slightly darker grey on hover */
 }
 .unit {
     font-size: 28px;
@@ -182,14 +196,67 @@ h1 {
     font-weight: 500;
     color: #16191f;
 }
-#status {
+.dut-status-dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #dc3545; /* Red for off */
+    vertical-align: middle;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Add transitions */
+    /* Add red glow (matching connection dot) */
+    box-shadow: 0 0 5px 1px rgba(220, 53, 69, 0.6);
+    margin-left: 10px; /* Added left margin (matching connection dot) */
+}
+
+.dut-status-dot.enabled {
+    background-color: #28a745; /* Green for on */
+    /* Add green glow (matching connection dot) */
+    box-shadow: 0 0 5px 1px rgba(40, 167, 69, 0.6);
+}
+
+#status-container {
     margin-top: 24px;
     padding: 12px;
-    background-color: #f1faff;
-    border: 1px solid #c4e7ff;
+    background-color: #f8f9fa; /* Light background */
+    border: 1px solid #eaeded;
     border-radius: 16px;
-    color: #0073bb;
+    color: #16191f; /* Default text color */
     text-align: center;
-    display: none;
     font-weight: 500;
+    display: flex; /* Use flexbox */
+    justify-content: center; /* Center items horizontally */
+    align-items: center; /* Center items vertically */
+    gap: 8px; /* Space between text and dot */
 }
+
+.connection-status-dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #dc3545; /* Red for disconnected (default) */
+    transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Add box-shadow transition */
+    /* Reduce red glow */
+    box-shadow: 0 0 5px 1px rgba(220, 53, 69, 0.6);
+    margin-left: 10px; /* Added left margin */
+}
+
+.connection-status-dot.connected {
+    background-color: #28a745; /* Green for connected */
+    /* Reduce green glow */
+    box-shadow: 0 0 5px 1px rgba(40, 167, 69, 0.6);
+}
+
+/* Remove or comment out old #status styles if they exist */
+/* #status { ... } */
+
+#value-display.hidden {
+    display: none;
+}
+
+/* Ensure #value-display uses block or appropriate display when not hidden */
+/* #value-display { */
+    /* display: block; */ /* Or flex, grid, etc. depending on content */
+    /* Add other necessary styles if they were previously inline or missing */
+/* } */

@@ -19,10 +19,11 @@ const digits = document.querySelectorAll('.digit');
 const modeButtons = document.querySelectorAll('.mode-btn');
 const valueUp = document.getElementById('value-up');
 const valueDown = document.getElementById('value-down');
-const triggerOutput = document.getElementById('trigger-output');
-const toggleRelay = document.getElementById('toggle-relay');
+const toggleOperation = document.getElementById('toggle-operation'); // Renamed from trigger-output
+const dutStatusIndicator = document.getElementById('dut-status-indicator'); // Added reference for the dot
 const exitMode = document.getElementById('exit-mode');
 const currentUnit = document.getElementById('current-unit');
+const valueDisplay = document.getElementById('value-display'); // Get reference to the container
 
 // Measurement elements
 const voltageEl = document.getElementById('voltage');
@@ -77,19 +78,27 @@ function handleMessage(message) {
 
         // Update state
         if (data.state) {
-            // Update Mode
-            if (data.state.mode && data.state.mode !== currentMode && data.state.mode !== "MENU") {
+            // Check if returning to MENU
+            if (data.state.mode === "MENU") {
+                valueDisplay.classList.add('hidden'); // Hide controls
+                // Deactivate all mode buttons
+                modeButtons.forEach(button => {
+                    button.classList.remove('active');
+                });
+                currentMode = "MENU"; // Update local mode state
+            } else if (data.state.mode && data.state.mode !== currentMode) {
+                // Update Mode (if not MENU and different from current)
                 setMode(data.state.mode); // Update mode buttons and unit
             }
-            // Update Relay Button
+            // Update Relay State (affects combined button)
             if (data.state.relayEnabled !== undefined && data.state.relayEnabled !== relayEnabled) {
                 relayEnabled = data.state.relayEnabled;
-                updateRelayButton();
+                updateOperationButton(); // Update the combined button
             }
-            // Update Output Button and State
+            // Update Output State (affects combined button)
             if (data.state.outputActive !== undefined && data.state.outputActive !== outputActive) {
                 outputActive = data.state.outputActive;
-                updateOutputButton();
+                updateOperationButton(); // Update the combined button
             }
             // Update Value Display (Digits)
             // Only update digits if the mode matches and output is NOT active (to avoid overwriting user input)
@@ -122,8 +131,8 @@ function sendCommand(command, value) {
 
 // Initialize the interface
 function init() {
-    // Select first digit by default
-    selectDigit(digits[0]);
+    // Select first digit by default - only if display is visible initially
+    // selectDigit(digits[0]); // Remove or comment out initial digit selection
     
     // Add event listeners
     digits.forEach(digit => {
@@ -138,33 +147,37 @@ function init() {
                 setMode(newMode); // Update UI immediately
                 sendCommand('setMode', newMode);
             }
+            // Show the value display container when any mode button is clicked
+            valueDisplay.classList.remove('hidden'); 
         });
     });
     
     valueUp.addEventListener('click', incrementDigit);
     valueDown.addEventListener('click', decrementDigit);
-    
-    triggerOutput.addEventListener('click', () => {
-        // Toggle intended state
-        const intendedOutputState = !outputActive;
-        // Update UI immediately for responsiveness
-        outputActive = intendedOutputState;
-        updateOutputButton();
-        // Send command with current value
-        const value = convertDigitsToNumber();
-        sendCommand('setOutput', { active: intendedOutputState, value: value });
+
+    toggleOperation.addEventListener('click', () => {
+        if (!relayEnabled) {
+            // If relay is off, the first action is to enable it
+            const intendedRelayState = true;
+            // Update UI immediately (button text/style will change)
+            relayEnabled = intendedRelayState;
+            updateOperationButton();
+            // Send command
+            sendCommand('setRelay', intendedRelayState);
+        } else {
+            // If relay is already on, toggle the output state
+            const intendedOutputState = !outputActive;
+            // Update UI immediately
+            outputActive = intendedOutputState;
+            updateOperationButton();
+            // Send command with current value
+            const value = convertDigitsToNumber();
+            sendCommand('setOutput', { active: intendedOutputState, value: value });
+        }
     });
-    
-    toggleRelay.addEventListener('click', () => {
-        // Toggle intended state
-        const intendedRelayState = !relayEnabled;
-        // Update UI immediately
-        relayEnabled = intendedRelayState;
-        updateRelayButton();
-        // Send command
-        sendCommand('setRelay', intendedRelayState);
-    });
-    
+
+    // Removed event listener for toggleRelay
+
     exitMode.addEventListener('click', () => {
         sendCommand('exit', null);
         // Optionally reset UI elements immediately or wait for WS confirmation
@@ -290,6 +303,9 @@ function setMode(mode) {
     // Update unit display
     currentUnit.textContent = modeConfig[mode].unit;
 
+    // Show the value display container when mode is set (e.g., from WS)
+    valueDisplay.classList.remove('hidden');
+
     // Reset digits display to 0 when mode changes via UI click
     // (WS updates might bring a non-zero value)
     // digitValues = Array(modeConfig[mode].maxDigits).fill(0);
@@ -299,31 +315,32 @@ function setMode(mode) {
     // selectDigit(digits[0]);
 }
 
-// Update relay button state
-function updateRelayButton() {
-    if (relayEnabled) {
-        toggleRelay.textContent = 'Disable DUT';
-        toggleRelay.classList.add('danger');
-        toggleRelay.classList.remove('success');
-    } else {
-        toggleRelay.textContent = 'Enable DUT';
-        toggleRelay.classList.add('success');
-        toggleRelay.classList.remove('danger');
-    }
-}
+// Update combined operation button state and text
+function updateOperationButton() {
+    // Button text is now fixed: "Toggle DUT"
+    // toggleOperation.textContent = '...'; // No longer needed
 
-// Update output button state
-function updateOutputButton() {
-    if (outputActive) {
-        triggerOutput.textContent = 'Stop Output';
-        triggerOutput.classList.add('danger');
-        triggerOutput.classList.remove('success');
+    // Remove class manipulation for the button itself
+    // toggleOperation.classList.remove('success', 'danger'); // No longer needed
+
+    // Update the status dot based on relayEnabled state
+    if (relayEnabled) {
+        dutStatusIndicator.classList.add('enabled');
     } else {
-        triggerOutput.textContent = 'Trigger Output';
-        triggerOutput.classList.add('success');
-        triggerOutput.classList.remove('danger');
+        dutStatusIndicator.classList.remove('enabled');
     }
+
+    // The button's click logic still handles toggling relay/output,
+    // but this function only updates the visual indicator (the dot).
 }
 
 // Initialize the interface when the DOM is loaded
 document.addEventListener('DOMContentLoaded', init);
+
+// Add initial call to set button state correctly on load
+document.addEventListener('DOMContentLoaded', () => {
+    // ... other init logic ...
+    updateOperationButton(); // Set initial state of the combined button and dot
+    // Ensure value display is hidden initially (redundant if class is set in HTML)
+    // valueDisplay.classList.add('hidden'); 
+});

@@ -512,8 +512,11 @@ void handleExit() {
   fsm.change_state(FSM_MAIN_STATES::MAIN_MENU);
   input = 0.0;
   output_active = false;
+  relay_enabled = false; // Explicitly set relay state to false
+  analogSws.relay_dut_disable(); // Physically disable the relay
   // Update physical interface (LCD)
   // The FSM state change should trigger screen updates in the main loop
+  // No need to call broadcastState() here, it's called after handleWsCommand finishes
 }
 
 

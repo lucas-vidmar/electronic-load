@@ -4,6 +4,8 @@
 #include <SPIFFS.h>
 #include <ArduinoJson.h> // Include ArduinoJson
 
+#define BROADCAST_INTERVAL 1000 // Interval for broadcasting state updates (in milliseconds)
+
 /* ------- Global Variables ------- */
 WebServerESP32 webServer(SSID.c_str(), PASSWORD.c_str());
 
@@ -15,9 +17,20 @@ ADC adc = ADC();
 AnalogSws analogSws = AnalogSws();
 LVGL_LCD lcd = LVGL_LCD();
 Fan fan(PWM_FAN_PIN, EN_FAN_PIN, LOCK_FAN_PIN);
-// PID controllers with tuning parameters
 PIDFanController pidController(fan, PID_KP, PID_KI, PID_KD);
+RTC rtc = RTC();
+uint64_t startTimeMs = 0;
+I2CScanner scanner;
+FSM fsm = FSM();
+
+
+// --- Global Variables for State Management ---
 float input = 0.0;
+float dut_voltage = 0.0; // Track DUT voltage
+float dut_current = 0.0; // Track DUT current
+float dut_power = 0.0; // Track DUT power
+float dut_resistance = 0.0; // Track DUT resistance
+
 bool output_active = false; // Track output state
 bool relay_enabled = false; // Track relay state
 float temperature = 0.0; // Track temperature
@@ -27,16 +40,7 @@ int fanSpeed = 0; // Get current fan speed percentage
 float ws_requested_value = 0.0;
 bool ws_value_updated = false;
 
-// RTC instance
-RTC rtc = RTC();
 
-// Start time in milliseconds
-uint64_t startTimeMs = 0;
-
-I2CScanner scanner;
-
-// Electronic Load FSM
-FSM fsm = FSM();
 
 void setup() {
   Serial.begin(115200);
@@ -97,16 +101,17 @@ void setup() {
   relay_enabled = false;
 }
 
-// Timer for periodic state broadcast
-unsigned long lastBroadcastTime = 0;
-const unsigned long broadcastInterval = 500; // Broadcast state every 500ms
-
 void loop() {
   // Handle WebSocket clients
   webServer.cleanupClients(); // Important for AsyncWebServer
 
+  // Update all global variables
   fanSpeed = fan.get_speed_percentage(); // Get current fan speed percentage
   temperature = adc.read_temperature(); // Read temperature from ADC
+  dut_voltage = adc.read_vDUT(); // Read DUT voltage
+  dut_current = adc.read_iDUT(); // Read DUT current
+  dut_power = dut_voltage * dut_current; // Calculate DUT power
+  dut_resistance = (dut_current != 0) ? (dut_voltage / dut_current) : 0; // Calculate DUT resistance
 
   lcd.update();
   lcd.update_header(temperature, fanSpeed); // Update header with temperature and fan speed
@@ -123,6 +128,8 @@ void loop() {
   // Compute and adjust fan speed based on temperature
   pidController.compute(temperature);
 
+  unsigned long lastBroadcastTime = 0;
+
   // Broadcast state periodically or if changed
   unsigned long currentTime = millis();
   bool stateChanged = (fsm.get_current_state() != prevState) ||
@@ -130,12 +137,12 @@ void loop() {
                       (output_active != prevOutputActive) ||
                       (relay_enabled != prevRelayEnabled);
 
-  if (stateChanged || (currentTime - lastBroadcastTime >= broadcastInterval)) {
-      broadcastState();
-      lastBroadcastTime = currentTime;
+  if (stateChanged || (currentTime - lastBroadcastTime >= BROADCAST_INTERVAL)) {
+    broadcastState();
+    lastBroadcastTime = currentTime;
   }
 
-  // Short delay to prevent busy-waiting, adjust as needed
+  // Short delay to prevent busy-waiting
   delay(5);
 }
 
@@ -267,10 +274,6 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
     MODIFYING_DIGIT // Modifying the selected digit's value
   };
 
-  // Read DUT voltage and current
-  float vDUT = adc.read_vDUT();
-  float iDUT = adc.read_iDUT();
-
   // Static variables for the state within constant_x
   static std::vector<int> digitsValues(totalDigits, 0); // Digit values initialized to 0
   static int selected_item = 0; // Currently selected item (0..totalDigits-1 = digits, totalDigits = Trigger, totalDigits+1 = Exit)
@@ -368,7 +371,7 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
   }
 
   // Update LCD screen - Pass global output_active and current edit state
-  lcd.update_cx_screen(current_value, selected_item, unit, vDUT, iDUT, digitsBeforeDecimal, totalDigits, String(input, digitsAfterDecimal), output_active, edit_state == CX_EDIT_STATES::MODIFYING_DIGIT);
+  lcd.update_cx_screen(current_value, selected_item, unit, dut_voltage, dut_current, digitsBeforeDecimal, totalDigits, String(input, digitsAfterDecimal), output_active, edit_state == CX_EDIT_STATES::MODIFYING_DIGIT);
 
   // No delay here, rely on loop delay/timing
   // State changes (input, output_active, fsm state) are detected and broadcast in loop()
@@ -406,9 +409,9 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
         handleWsCommand(client, doc);
       }
       break;
-    case WS_EVT_PONG:
-    case WS_EVT_ERROR:
-    break;
+    //case WS_EVT_PONG:
+    //case WS_EVT_ERROR:
+    //  break;
   }
 }
 
@@ -520,14 +523,10 @@ String getCurrentStateJson() {
 
   // Measurements
   JsonObject measurements = doc.createNestedObject("measurements");
-  float v = adc.read_vDUT();
-  float i = adc.read_iDUT();
-  float p = v * i;
-  float r = (i != 0) ? (v / i) : 0; // Avoid division by zero
-  measurements["voltage"] = v;
-  measurements["current"] = i;
-  measurements["power"] = p;
-  measurements["resistance"] = r; // Assuming kOhm, adjust if needed
+  measurements["voltage"] = dut_voltage;
+  measurements["current"] = dut_current;
+  measurements["power"] = dut_power;
+  measurements["resistance"] = dut_resistance; // Assuming kOhm, adjust if needed
   measurements["temperature"] = temperature;
   measurements["fanSpeed"] = fanSpeed;
 

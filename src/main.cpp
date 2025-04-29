@@ -36,7 +36,6 @@ float temperature = 0.0; // Track temperature
 int fanSpeed = 0; // Get current fan speed percentage
 
 // --- Global Variables for WS/UI Sync ---
-float ws_requested_value = 0.0;
 bool ws_value_updated = false;
 
 
@@ -279,8 +278,8 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
 
   // Check for updates from WebSocket when output is off
   if (ws_value_updated) {
-    Serial.printf("constant_x: Detected WS value update to %.3f\n", ws_requested_value);
-    current_value = ws_requested_value;
+    Serial.printf("constant_x: Detected WS value update to %.3f\n", input);
+    current_value = input;
     // Convert the new float value back into the digits array
     number_to_digits(current_value, digitsValues, digitsBeforeDecimal, digitsAfterDecimal, totalDigits);
     ws_value_updated = false; // Consume the update flag
@@ -460,6 +459,7 @@ void handleSetValue(JsonDocument& doc) {
   float newValue = doc["value"];
   Serial.printf("WS: Setting value to %.3f\n", newValue);
   input = newValue;
+  ws_value_updated = true; // Mark that the value has been updated via WS
 }
 
 void handleSetOutput(JsonDocument& doc) {

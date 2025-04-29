@@ -7,7 +7,13 @@ void FSM::init() {
     lastState = FSM_MAIN_STATES::INITAL;
 }
 
-void FSM::run(float input, DAC dac, AnalogSws sws) {
+void FSM::run(float input, DAC dac, AnalogSws sws, bool* output_active) {
+
+    if (*output_active) {
+        sws.relay_dut_enable();
+    } else {
+        sws.relay_dut_disable();
+    }
 
     static float lastInput = 0.0;
 
@@ -16,10 +22,10 @@ void FSM::run(float input, DAC dac, AnalogSws sws) {
             main_menu();
             if (lastInput != input) {
                 sws.mosfet_input_cc_mode();
-                sws.v_dac_disable();
                 sws.relay_dut_disable();
-
                 dac.cc_mode_set_current(0.0);
+
+                *output_active = false;
             }
             break;
         case FSM_MAIN_STATES::CC:
@@ -28,8 +34,6 @@ void FSM::run(float input, DAC dac, AnalogSws sws) {
                 sws.mosfet_input_cc_mode();
                 sws.v_dac_enable();
                 dac.cc_mode_set_current(input);
-
-                sws.relay_dut_enable();
             }
             break;
         case FSM_MAIN_STATES::CV:
@@ -38,8 +42,6 @@ void FSM::run(float input, DAC dac, AnalogSws sws) {
                 sws.mosfet_input_cv_mode();
                 sws.v_dac_enable();
                 dac.cv_mode_set_voltage(input);
-
-                sws.relay_dut_enable();
             }
             break;
         case FSM_MAIN_STATES::CR:

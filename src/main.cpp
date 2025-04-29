@@ -32,7 +32,6 @@ float dut_power = 0.0; // Track DUT power
 float dut_resistance = 0.0; // Track DUT resistance
 
 bool output_active = false; // Track output state
-bool relay_enabled = false; // Track relay state
 float temperature = 0.0; // Track temperature
 int fanSpeed = 0; // Get current fan speed percentage
 
@@ -98,7 +97,7 @@ void setup() {
 
   // Initial relay state
   analogSws.relay_dut_disable();
-  relay_enabled = false;
+  output_active = false; // Ensure output is off
 }
 
 void loop() {
@@ -120,10 +119,9 @@ void loop() {
   FSM_MAIN_STATES prevState = fsm.get_current_state();
   float prevInput = input;
   bool prevOutputActive = output_active;
-  bool prevRelayEnabled = relay_enabled;
 
   // Run FSM which might change state or apply 'input'
-  fsm.run(input, dac, analogSws);
+  fsm.run(input, dac, analogSws, &output_active);
 
   // Compute and adjust fan speed based on temperature
   pidController.compute(temperature);
@@ -134,8 +132,7 @@ void loop() {
   unsigned long currentTime = millis();
   bool stateChanged = (fsm.get_current_state() != prevState) ||
                       (input != prevInput) ||
-                      (output_active != prevOutputActive) ||
-                      (relay_enabled != prevRelayEnabled);
+                      (output_active != prevOutputActive);
 
   if (stateChanged || (currentTime - lastBroadcastTime >= BROADCAST_INTERVAL)) {
     broadcastState();
@@ -489,9 +486,9 @@ void handleSetOutput(JsonDocument& doc) {
 
 void handleSetRelay(JsonDocument& doc) {
   if (!doc["value"].is<bool>()) return;
-  relay_enabled = doc["value"];
-  Serial.printf("WS: Setting relay %s\n", relay_enabled ? "ON" : "OFF");
-  if (relay_enabled) {
+  output_active = doc["value"];
+  Serial.printf("WS: Setting relay %s\n", output_active ? "ON" : "OFF");
+  if (output_active) {
     analogSws.relay_dut_enable();
   } else {
     analogSws.relay_dut_disable();
@@ -503,7 +500,6 @@ void handleExit() {
   fsm.change_state(FSM_MAIN_STATES::MAIN_MENU);
   input = 0.0;
   output_active = false;
-  relay_enabled = false; // Explicitly set relay state to false
   analogSws.relay_dut_disable(); // Physically disable the relay
   // Update physical interface (LCD)
   // The FSM state change should trigger screen updates in the main loop
@@ -536,7 +532,6 @@ String getCurrentStateJson() {
       case FSM_MAIN_STATES::SETTINGS: modeStr = "SETTINGS"; break; // Add if needed
   }
   state["mode"] = modeStr;
-  state["relayEnabled"] = relay_enabled;
   state["outputActive"] = output_active;
   // Include the current value being set/targeted if applicable
   // This might need refinement based on how 'constant_x' manages its value

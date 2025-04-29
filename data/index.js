@@ -3,7 +3,6 @@ let currentMode = 'CC';
 let selectedDigit = null;
 let digitValues = [0, 0, 0, 0, 0];
 let relayEnabled = false;
-let outputActive = false;
 let ws = null;
 let heartbeatTimeout = null; // Added timeout variable
 
@@ -203,24 +202,11 @@ function init() {
     valueDown.addEventListener('click', decrementDigit);
 
     toggleOperation.addEventListener('click', () => {
-        if (!relayEnabled) {
-            // If relay is off, the first action is to enable it
-            const intendedRelayState = true;
-            // Update UI immediately (button text/style will change)
-            relayEnabled = intendedRelayState;
-            updateOperationButton();
-            // Send command
-            sendCommand('setRelay', intendedRelayState);
-        } else {
-            // If relay is already on, toggle the output state
-            const intendedOutputState = !outputActive;
-            // Update UI immediately
-            outputActive = intendedOutputState;
-            updateOperationButton();
-            // Send command with current value
-            const value = convertDigitsToNumber();
-            sendCommand('setOutput', { active: intendedOutputState, value: value });
-        }
+        // Update UI immediately
+        relayEnabled = relayEnabled ? false : true; // Toggle relay state
+        updateOperationButton();
+        // Send command
+        sendCommand('setRelay', relayEnabled);
     });
 
     // Removed event listener for toggleRelay

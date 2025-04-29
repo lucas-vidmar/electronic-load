@@ -3,7 +3,6 @@
     --text-primary: #16191f;
     --text-light: #ffffff;
     --border-primary: #d5dbdb;
-    --accent-primary: #4da0dc;
     --danger: #b42c11;
     --success: #1d8102;
     --danger-glow: rgba(180, 44, 17, 0.6);
@@ -18,29 +17,53 @@
 
 body {
     font-family: Aptos, Calibri, Arial, sans-serif;
+    font-size: 14px;
     max-width: 800px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 0 10px;
     background-color: var(--bg-primary);
     color: var(--text-primary);
 }
+
 .container {
     background-color: var(--text-light);
     border-radius: var(--corner-radius);
-    padding: 24px;
-    box-shadow: 0 2px 8px var(--shadow);
+    border-top-left-radius: 0;
+    padding: 15px;
+    box-shadow: 0 8px 8px var(--shadow);
 }
+
 h1 {
+    margin: 10px 0 ;
+    color: var(--text-primary);
+    font-weight: bolder;
+    padding: 15px;
+    border-radius: var(--corner-radius);
+    background-color: var(--text-light);
+    box-shadow: 0 8px 8px var(--shadow);
+    margin-bottom: 10px;
+}
+
+h2 {
+    margin: 0;
+    margin-top: 10px;
     color: var(--text-primary);
     font-weight: 500;
-    margin-bottom: 24px;
+    width: fit-content;
+    border: 0px solid red;
+    border-top-left-radius: var(--corner-radius);
+    border-top-right-radius: var(--corner-radius);
+    padding: 10px 20px;
+    background-color: var(--text-light);
+    box-shadow: 0 8px 8px var(--shadow);
 }
+
 .mode-selector {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 24px;
-    gap: 8px;
+    gap: 15px;
 }
+
 .mode-btn {
     padding: 10px 16px;
     background-color: var(--bg-primary);
@@ -52,15 +75,18 @@ h1 {
     color: var(--text-primary);
     transition: all 0.3s ease;
 }
+
 .mode-btn.active {
-    background-color: var(--accent-primary);
+    background-color: var(--text-primary);
     color: var(--text-light);
-    border-color: var(--accent-primary);
+    border-color: var(--text-primary);
 }
+
 .mode-btn:hover:not(.active) {
     background-color: var(--interactive-hover);
     border-color: var(--border-primary);
 }
+
 .digit-selector {
     display: flex;
     justify-content: center;
@@ -68,6 +94,7 @@ h1 {
     margin: 36px 0;
     font-size: 28px;
 }
+
 .digit {
     width: 56px;
     height: 76px;
@@ -82,16 +109,19 @@ h1 {
     transition: all 0.3s ease;
     padding: 10px 15px;
 }
+
 .digit.selected {
-    background-color: var(--accent-primary);
+    background-color: var(--text-primary);
     color: var(--text-light);
-    border-color: var(--accent-primary);
+    border-color: var(--text-primary);
     box-shadow: 0 2px 5px var(--shadow);
 }
+
 .digit:hover:not(.selected) {
     background-color: var(--bg-primary);
     border-color: var(--border-primary);
 }
+
 .digit-dot {
     width: 10px;
     margin: 0;
@@ -100,20 +130,21 @@ h1 {
     font-size: 28px;
     color: var(--text-primary);
 }
+
 .controls {
     margin: 24px 0;
     display: flex;
     flex-flow: row wrap;
     align-items: center;
     justify-content: center;
-    column-gap: 20px;
+    column-gap: 15px;
 }
 
 /* Container for the vertical Up/Down buttons */
 .value-button-group {
     display: flex;
     flex-direction: column; /* Stack buttons vertically */
-    gap: 4px; /* Spacing between Up and Down buttons (76px total height = 36px + 4px + 36px) */
+    gap: 8px; /* Spacing between Up and Down buttons (76px total height = 36px + 4px + 36px) */
 }
 
 .value-btn {
@@ -152,10 +183,10 @@ h1 {
 }
 
 .action-btn:hover {
-    background-color: var(--accent-primary);
-    color: var(--text-light);
+    background-color: var(--interactive-hover);
 }
 .action-btn.danger {
+    padding: 10px 0;
     background-color: var(--bg-primary);
     color: var(--danger);
     border: var(--danger) 1px solid;
@@ -179,8 +210,7 @@ h1 {
 .measurements {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-top: 36px;
+    gap: 15px;
 }
 .measurement {
     padding: 18px;
@@ -215,7 +245,6 @@ h1 {
     transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Add transitions */
     /* Add red glow (matching connection dot) */
     box-shadow: 0 0 5px 1px var(--danger-glow);
-    margin-left: 10px; /* Added left margin (matching connection dot) */
 }
 
 .dut-status-dot.enabled {
@@ -225,18 +254,17 @@ h1 {
 }
 
 #status-container {
-    margin-top: 24px;
+    margin-top: 10px;
     padding: 12px;
-    background-color: var(--bg-primary); /* Light background */
-    border: 1px solid var(--interactive-hover);
+    border: 0px solid var(--text-light);
     border-radius: var(--corner-radius);
-    color: var(--text-primary); /* Default text color */
+    color: var(--text-primary);
     text-align: center;
     font-weight: 500;
-    display: flex; /* Use flexbox */
-    justify-content: center; /* Center items horizontally */
-    align-items: center; /* Center items vertically */
-    gap: 8px; /* Space between text and dot */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
 }
 
 .connection-status-dot {
@@ -248,7 +276,6 @@ h1 {
     transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Add box-shadow transition */
     /* Reduce red glow */
     box-shadow: 0 0 5px 1px var(--danger-glow);
-    margin-left: 10px; /* Added left margin */
 }
 
 .connection-status-dot.connected {
@@ -259,4 +286,20 @@ h1 {
 
 #value-display.hidden {
     display: none;
+}
+
+footer {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    padding-top: 50px;
+    padding-bottom: 10px;
+    column-gap: 50px;
+    row-gap: 20px;
+
+    p {
+        margin: 0;
+        color: var(--text-primary);
+        text-align: center;
+    }
 }

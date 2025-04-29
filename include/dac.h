@@ -32,7 +32,7 @@
 #define DAC_V_MAX_CV 0.45   /*!< Maximum voltage output in V for CV mode*/
 #define DAC_OUTPUT_VOLTAGE_DIVIDER (DAC_V_MAX / DAC_REF_VOLTAGE)    /*!< Output voltage divider */
 #define DAC_MAX_DIGITAL_VALUE 4095 // To limit either current or voltage
-#define DAC_CC_MAX_CURRENT 10
+#define DAC_CC_MAX_CURRENT 20
 #define DAC_CV_MAX_VOLTAGE 30
 
 /**

@@ -7,10 +7,10 @@
 #define PWM_FAN_PIN    GPIO_NUM_0
 #define LOCK_FAN_PIN   GPIO_NUM_16
 // PID controller tuning parameters
-#define PID_KP          12.0
-#define PID_KI          0.01
+#define PID_KP          20.0
+#define PID_KI          1
 #define PID_KD          0.5
-#define PID_SETPOINT   40.0 // Target temperature in degrees C
+#define PID_SETPOINT   35.0 // Target temperature in degrees C
 
 class Fan {
 private:

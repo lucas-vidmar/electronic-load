@@ -232,15 +232,20 @@ function init() {
     modeButtons.forEach(button => {
         button.addEventListener('click', () => {
             const newMode = button.getAttribute('data-mode');
-            if (newMode !== currentMode) {
-                // Update UI immediately (setMode calls updateDigitDisplay)
-                setMode(newMode);
+            const modeChanged = newMode !== currentMode; // Check if mode actually changed
+
+            // Always update the UI display when a mode button is clicked
+            // This ensures digits are rendered even if the mode hasn't changed (e.g., first click)
+            setMode(newMode);
+            valueDisplay.classList.remove('hidden'); // Ensure display is visible
+
+            // Only send commands and reset value if the mode actually changed
+            if (modeChanged) {
                 sendCommand('setMode', newMode);
                 // Reset value to 0 when mode changes via UI click
                 updateValueFromNumber(0); // This will use the new digit structure
                 sendValue(); // Send the reset value
             }
-            valueDisplay.classList.remove('hidden');
         });
     });
 

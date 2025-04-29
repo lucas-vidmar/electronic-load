@@ -5,11 +5,14 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Electronic Load Control</title>
         <link rel="stylesheet" href="index.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
     </head>
     <body>
-        <h1>Electronic Load</h1>
-        <h2>Input</h2>
-        <div class="container">
+        <h1>⚡ Electronic Load</h1>
+        <h2 id="input-title">Input</h2>
+        <div class="container" id="input-container">
             <div class="mode-selector">
                 <button class="mode-btn" data-mode="CC">CC</button>
                 <button class="mode-btn" data-mode="CV">CV</button>
@@ -40,8 +43,8 @@
 
         </div>
         
-        <h2>Output</h2>
-        <div class="container">
+        <h2 id="output-title">Output</h2>
+        <div class="container" id="output-container">
             <div class="measurements">
                 <div class="measurement">
                     <div class="measurement-title">Voltage</div>
@@ -81,7 +84,7 @@
     <footer>
         <div>
             <p>© 2025 Electronic Load Control</p>
-            <p>Version: 1.0.0</p>
+            <p>Version: 3.2</p>
         </div>
         <div>
             <p>Lucas Vidmar | 1103052</p>

@@ -90,8 +90,8 @@ function handleMessage(message) {
 
     // Ensure status is shown as connected if it was previously marked as lost
     if (!connectionStatusIndicator.classList.contains('connected')) {
-         statusTextEl.textContent = 'Connected to device';
-         connectionStatusIndicator.classList.add('connected');
+        statusTextEl.textContent = 'Connected to device';
+        connectionStatusIndicator.classList.add('connected');
     }
 
     try {
@@ -128,11 +128,6 @@ function handleMessage(message) {
             // Update Relay State (affects combined button)
             if (data.state.relayEnabled !== undefined && data.state.relayEnabled !== relayEnabled) {
                 relayEnabled = data.state.relayEnabled;
-                updateOperationButton(); // Update the combined button
-            }
-            // Update Output State (affects combined button)
-            if (data.state.outputActive !== undefined && data.state.outputActive !== outputActive) {
-                outputActive = data.state.outputActive;
                 updateOperationButton(); // Update the combined button
             }
             // Update Value Display (Digits)

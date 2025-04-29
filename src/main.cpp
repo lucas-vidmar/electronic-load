@@ -352,7 +352,6 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
     switch (edit_state) {
       case CX_EDIT_STATES::SELECTING_ITEM:
         selected_item = encoder.get_position();
-        Serial.println("Selected item: " + String(selected_item));
         break;
       case CX_EDIT_STATES::MODIFYING_DIGIT:
         digitsValues[selected_item] = encoder.get_position(); // Update digit value

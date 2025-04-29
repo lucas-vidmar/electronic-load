@@ -8,15 +8,23 @@
     --danger-glow: rgba(180, 44, 17, 0.6);
     --success-glow: rgba(40, 167, 69, 0.6);
     --shadow: rgba(0, 0, 0, 0.08);
-
     --interactive-hover: #eaeded;
 
+    --color1-dark: #002642; /* blue */
+    --color1-light: #99d5ff;
+    --color2-dark: #3b6349; /* green */
+    --color2-light: #a1bbaa;
+    --color3-dark: #6a5905; /* yellow */
+    --color3-light: #ecdd92;
+    --color4-dark: #7e0909; /* red */
+    --color4-light: #f8a0a0;
+
     /* Corner Radii */
-    --corner-radius: 10px;
+    --corner-radius: 20px;
 }
 
 body {
-    font-family: Aptos, Calibri, Arial, sans-serif;
+    font-family: "Open Sans", Roboto, Arial, sans-serif;
     font-size: 14px;
     max-width: 800px;
     margin: 0 auto;
@@ -42,6 +50,7 @@ h1 {
     background-color: var(--text-light);
     box-shadow: 0 8px 8px var(--shadow);
     margin-bottom: 10px;
+    font-size: 2.5em;
 }
 
 h2 {
@@ -50,7 +59,6 @@ h2 {
     color: var(--text-primary);
     font-weight: 500;
     width: fit-content;
-    border: 0px solid red;
     border-top-left-radius: var(--corner-radius);
     border-top-right-radius: var(--corner-radius);
     padding: 10px 20px;
@@ -65,7 +73,7 @@ h2 {
 }
 
 .mode-btn {
-    padding: 10px 16px;
+    padding: 10px 15px;
     background-color: var(--bg-primary);
     border: 1px solid var(--border-primary);
     border-radius: var(--corner-radius);
@@ -77,14 +85,15 @@ h2 {
 }
 
 .mode-btn.active {
-    background-color: var(--text-primary);
+    background-color: var(--color4-dark);
     color: var(--text-light);
-    border-color: var(--text-primary);
+    border-color: var(--color4-dark);
 }
 
 .mode-btn:hover:not(.active) {
-    background-color: var(--interactive-hover);
-    border-color: var(--border-primary);
+    background-color: var(--color4-light);
+    color: var(--text-light);
+    border-color: transparent;
 }
 
 .digit-selector {
@@ -111,15 +120,15 @@ h2 {
 }
 
 .digit.selected {
-    background-color: var(--text-primary);
+    background-color: var(--color4-dark);
     color: var(--text-light);
-    border-color: var(--text-primary);
+    border-color: var(--color4-dark);
     box-shadow: 0 2px 5px var(--shadow);
 }
 
 .digit:hover:not(.selected) {
-    background-color: var(--bg-primary);
-    border-color: var(--border-primary);
+    background-color: var(--color4-light);
+    border-color: transparent;
 }
 
 .digit-dot {
@@ -302,4 +311,24 @@ footer {
         color: var(--text-primary);
         text-align: center;
     }
+}
+
+#input-title {
+    background-color: var(--color4-light);
+    border: 1px solid var(--color4-light);
+    color: var(--text-light);
+}
+
+#input-container {
+    border: 1px solid var(--color4-light);
+}
+
+#output-title {
+    background-color: var(--color2-light);
+    border: 1px solid var(--color2-light);
+    color: var(--text-light);
+}
+
+#output-container {
+    border: 1px solid var(--color2-light);
 }

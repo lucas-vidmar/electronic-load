@@ -126,8 +126,8 @@ function handleMessage(message) {
                 setMode(data.state.mode); // Update mode buttons and unit
             }
             // Update Relay State (affects combined button)
-            if (data.state.relayEnabled !== undefined && data.state.relayEnabled !== relayEnabled) {
-                relayEnabled = data.state.relayEnabled;
+            if (data.state.outputActive !== undefined && data.state.outputActive !== relayEnabled) {
+                relayEnabled = data.state.outputActive;
                 updateOperationButton(); // Update the combined button
             }
             // Update Value Display (Digits)
@@ -255,6 +255,7 @@ function init() {
 
     exitMode.addEventListener('click', () => {
         sendCommand('exit', null);
+        relayEnabled = false; // Reset relay state
         valueDisplay.classList.add('hidden'); // Hide controls on exit
         // Deactivate mode buttons visually
         modeButtons.forEach(button => button.classList.remove('active'));

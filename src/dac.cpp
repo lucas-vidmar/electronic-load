@@ -7,9 +7,9 @@ void DAC::init(I2C* i2cPointer){
     digital_write(0); // Set DAC to default value (0V)
 }
 
-void DAC::set_voltage(int voltageInMmV, float dacVMax) {
+void DAC::set_voltage(float voltageInMmV, float dacVMax) {
 
-    Serial.println("DAC voltage in mV: " + String(voltageInMmV));
+    Serial.println("DAC voltage in mV: " + String(voltageInMmV,2));
     // Check in range
     if (voltageInMmV < 0 || (voltageInMmV / 1000) > dacVMax) {
         Serial.println("Voltage out of range");

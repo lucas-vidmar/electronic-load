@@ -74,7 +74,7 @@ public:
      * @param voltageInMmV The desired output voltage in millivolts (mV).
      * @param dacVMax The maximum output voltage of the DAC in volts (V).
      */
-    void set_voltage(int voltageInMmV, float dacVMax);
+    void set_voltage(float voltageInMmV, float dacVMax);
 
     /**
      * @brief Writes a digital value to the DAC.

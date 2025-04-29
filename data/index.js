@@ -138,7 +138,7 @@ function handleMessage(message) {
                  // Update digits if value changed significantly or if output is off
                  // (prevents minor fluctuations during active output from resetting digits)
                  // Also check if digits array is populated for the current mode
-                 if (digits.length > 0 && (!outputActive || Math.abs(data.state.value - currentValueDisplayed) > 1e-4)) {
+                 if (digits.length > 0 && (!relayEnabled || Math.abs(data.state.value - currentValueDisplayed) > 1e-4)) {
                     updateValueFromNumber(data.state.value);
                  }
             }

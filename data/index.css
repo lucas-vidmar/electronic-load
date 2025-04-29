@@ -1,19 +1,37 @@
+:root {
+    --bg-primary: #f8f9fa;
+    --text-primary: #16191f;
+    --text-light: #ffffff;
+    --border-primary: #d5dbdb;
+    --accent-primary: #4da0dc;
+    --danger: #b42c11;
+    --success: #1d8102;
+    --danger-glow: rgba(180, 44, 17, 0.6);
+    --success-glow: rgba(40, 167, 69, 0.6);
+    --shadow: rgba(0, 0, 0, 0.08);
+
+    --interactive-hover: #eaeded;
+
+    /* Corner Radii */
+    --corner-radius: 10px;
+}
+
 body {
-    font-family: 'Amazon Ember', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    font-family: Aptos, Calibri, Arial, sans-serif;
     max-width: 800px;
     margin: 0 auto;
     padding: 20px;
-    background-color: #f8f9fa;
-    color: #16191f;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
 }
 .container {
-    background-color: #ffffff;
-    border-radius: 16px;
+    background-color: var(--text-light);
+    border-radius: var(--corner-radius);
     padding: 24px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 8px var(--shadow);
 }
 h1 {
-    color: #232f3e;
+    color: var(--text-primary);
     font-weight: 500;
     margin-bottom: 24px;
 }
@@ -25,23 +43,23 @@ h1 {
 }
 .mode-btn {
     padding: 10px 16px;
-    background-color: #f8f9fa;
-    border: 1px solid #d5dbdb;
-    border-radius: 20px;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--corner-radius);
     cursor: pointer;
     flex-grow: 1;
     font-weight: 500;
-    color: #545b64;
-    transition: all 0.2s ease;
+    color: var(--text-primary);
+    transition: all 0.3s ease;
 }
 .mode-btn.active {
-    background-color: #232f3e;
-    color: white;
-    border-color: #232f3e;
+    background-color: var(--accent-primary);
+    color: var(--text-light);
+    border-color: var(--accent-primary);
 }
 .mode-btn:hover:not(.active) {
-    background-color: #eaeded;
-    border-color: #aab7b8;
+    background-color: var(--interactive-hover);
+    border-color: var(--border-primary);
 }
 .digit-selector {
     display: flex;
@@ -55,23 +73,24 @@ h1 {
     height: 76px;
     margin: 0 6px;
     text-align: center;
-    border: 1px solid #d5dbdb;
-    border-radius: 16px;
+    border: 1px solid var(--border-primary);
+    border-radius: var(--corner-radius);
     line-height: 76px;
     cursor: pointer;
-    background-color: #ffffff;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    transition: all 0.2s ease;
+    background-color: var(--text-light);
+    box-shadow: 0 1px 3px var(--shadow);
+    transition: all 0.3s ease;
+    padding: 10px 15px;
 }
 .digit.selected {
-    background-color: #232f3e;
-    color: white;
-    border-color: #232f3e;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    background-color: var(--accent-primary);
+    color: var(--text-light);
+    border-color: var(--accent-primary);
+    box-shadow: 0 2px 5px var(--shadow);
 }
 .digit:hover:not(.selected) {
-    background-color: #f8f9fa;
-    border-color: #aab7b8;
+    background-color: var(--bg-primary);
+    border-color: var(--border-primary);
 }
 .digit-dot {
     width: 10px;
@@ -79,19 +98,15 @@ h1 {
     text-align: center;
     line-height: 76px;
     font-size: 28px;
-    color: #545b64;
+    color: var(--text-primary);
 }
 .controls {
     margin: 24px 0;
-}
-
-/* New container for the buttons and dot */
-.button-container {
     display: flex;
-    align-items: center; /* Vertically center items */
-    justify-content: center; /* Horizontally center items */
-    gap: 15px; /* Adjust spacing between the vertical group and the toggle button */
-    width: 100%; /* Ensure it takes full width if needed */
+    flex-flow: row wrap;
+    align-items: center;
+    justify-content: center;
+    column-gap: 20px;
 }
 
 /* Container for the vertical Up/Down buttons */
@@ -102,65 +117,59 @@ h1 {
 }
 
 .value-btn {
-    width: 56px; /* Match digit width */
-    height: 36px; /* Half of digit height approx, accounting for gap */
-    padding: 0; /* Remove padding if using line-height/flex for centering */
+    padding: 5px 10px; /* Remove padding if using line-height/flex for centering */
     display: flex; /* Use flexbox for centering */
     align-items: center; /* Center icon vertically */
     justify-content: center; /* Center icon horizontally */
-    background-color: #007eb9;
-    color: white;
-    border: 1px solid #007eb9; /* Add border matching background to maintain size */
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-primary); /* Add border matching background to maintain size */
     box-sizing: border-box; /* Ensure width/height include border/padding */
-    border-radius: 10px; /* Adjust border-radius */
+    border-radius: var(--corner-radius); /* Adjust border-radius */
     cursor: pointer;
     font-size: 28px; /* Match digit font size */
-    transition: background-color 0.2s ease;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 3px var(--shadow);
     line-height: normal; /* Reset line-height if using flex */
+}
+
+.value-btn:hover {
+    background-color: var(--interactive-hover);
+    border-color: var(--border-primary);
 }
 
 .action-btn {
     padding: 12px 18px;
-    background-color: #ff9900;
-    color: #232f3e;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
     font-weight: 500;
-    border: none;
-    border-radius: 20px;
+    border: 1px solid var(--border-primary);
+    border-radius: var(--corner-radius);
     cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 3px var(--shadow);
+    line-height: 130%;
 }
 
 .action-btn:hover {
-    background-color: #ec7c11;
+    background-color: var(--accent-primary);
+    color: var(--text-light);
 }
 .action-btn.danger {
-    background-color: #d13212;
-    color: white;
+    background-color: var(--bg-primary);
+    color: var(--danger);
+    border: var(--danger) 1px solid;
+    width: 100%;
 }
 .action-btn.danger:hover {
-    background-color: #b42c11;
+    background-color: var(--danger);
+    color: var(--text-light);
 }
-.action-btn.success {
-    background-color: #1d8102;
-    color: white;
-}
-.action-btn.success:hover {
-    background-color: #186b01;
-}
-.action-btn.fixed-color {
-    background-color: #6c757d; /* Example fixed color (grey) */
-    color: white;
-    /* Remove hover effects that change background if needed */
-}
-.action-btn.fixed-color:hover {
-    background-color: #5a6268; /* Slightly darker grey on hover */
-}
+
 .unit {
     font-size: 28px;
     margin-left: 10px;
-    color: #545b64;
+    color: var(--text-primary);
     line-height: 76px; /* Match the line-height of the digits */
     align-self: center;
     display: inline-flex;
@@ -175,53 +184,53 @@ h1 {
 }
 .measurement {
     padding: 18px;
-    background-color: #f8f9fa;
-    border: 1px solid #eaeded;
-    border-radius: 16px;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--interactive-hover);
+    border-radius: var(--corner-radius);
     text-align: center;
-    transition: all 0.2s ease;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 3px var(--shadow);
 }
 .measurement:hover {
-    border-color: #d5dbdb;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+    border-color: var(--border-primary);
+    box-shadow: 0 2px 5px var(--shadow);
 }
 .measurement-title {
     font-size: 14px;
-    color: #687078;
+    color: var(--text-primary);
     margin-bottom: 8px;
 }
 .measurement-value {
     font-size: 22px;
     font-weight: 500;
-    color: #16191f;
+    color: var(--text-primary);
 }
 .dut-status-dot {
     display: inline-block;
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    background-color: #dc3545; /* Red for off */
+    background-color: var(--danger); /* Red for off */
     vertical-align: middle;
     transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Add transitions */
     /* Add red glow (matching connection dot) */
-    box-shadow: 0 0 5px 1px rgba(220, 53, 69, 0.6);
+    box-shadow: 0 0 5px 1px var(--danger-glow);
     margin-left: 10px; /* Added left margin (matching connection dot) */
 }
 
 .dut-status-dot.enabled {
-    background-color: #28a745; /* Green for on */
+    background-color: var(--success); /* Green for on */
     /* Add green glow (matching connection dot) */
-    box-shadow: 0 0 5px 1px rgba(40, 167, 69, 0.6);
+    box-shadow: 0 0 5px 1px var(--success-glow);
 }
 
 #status-container {
     margin-top: 24px;
     padding: 12px;
-    background-color: #f8f9fa; /* Light background */
-    border: 1px solid #eaeded;
-    border-radius: 16px;
-    color: #16191f; /* Default text color */
+    background-color: var(--bg-primary); /* Light background */
+    border: 1px solid var(--interactive-hover);
+    border-radius: var(--corner-radius);
+    color: var(--text-primary); /* Default text color */
     text-align: center;
     font-weight: 500;
     display: flex; /* Use flexbox */
@@ -235,28 +244,19 @@ h1 {
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    background-color: #dc3545; /* Red for disconnected (default) */
+    background-color: var(--danger); /* Red for disconnected (default) */
     transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Add box-shadow transition */
     /* Reduce red glow */
-    box-shadow: 0 0 5px 1px rgba(220, 53, 69, 0.6);
+    box-shadow: 0 0 5px 1px var(--danger-glow);
     margin-left: 10px; /* Added left margin */
 }
 
 .connection-status-dot.connected {
-    background-color: #28a745; /* Green for connected */
+    background-color: var(--success); /* Green for connected */
     /* Reduce green glow */
-    box-shadow: 0 0 5px 1px rgba(40, 167, 69, 0.6);
+    box-shadow: 0 0 5px 1px var(--success-glow);
 }
-
-/* Remove or comment out old #status styles if they exist */
-/* #status { ... } */
 
 #value-display.hidden {
     display: none;
 }
-
-/* Ensure #value-display uses block or appropriate display when not hidden */
-/* #value-display { */
-    /* display: block; */ /* Or flex, grid, etc. depending on content */
-    /* Add other necessary styles if they were previously inline or missing */
-/* } */

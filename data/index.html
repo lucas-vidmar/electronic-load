@@ -19,27 +19,23 @@
         
         <div id="value-display" class="hidden">
             <div class="digit-selector">
-                <div class="digit" data-position="0">0</div>
-                <div class="digit" data-position="1">0</div>
-                <div class="digit-dot">.</div>
-                <div class="digit" data-position="2">0</div>
-                <div class="digit" data-position="3">0</div>
-                <div class="digit" data-position="4">0</div>
+                <!-- Removed hardcoded digits and dot -->
+                <div id="digit-container">
+                    <!-- Digits will be dynamically inserted here -->
+                </div>
                 <span class="unit" id="current-unit">A</span>
             </div>
             
             <div class="controls">
                 <!-- Removed value-controls and action-controls divs -->
                 <!-- New flex container for buttons and dot -->
-                <div class="button-container">
-                    <!-- Container for vertical Up/Down buttons -->
-                    <div class="value-button-group">
-                        <button class="value-btn" id="value-up">▲</button>
-                        <button class="value-btn" id="value-down">▼</button>
-                    </div>
-                    <button class="action-btn fixed-color" id="toggle-operation">Toggle DUT</button>
-                    <span class="dut-status-dot" id="dut-status-indicator"></span>
+                <!-- Container for vertical Up/Down buttons -->
+                <div class="value-button-group">
+                    <button class="value-btn" id="value-up">▲</button>
+                    <button class="value-btn" id="value-down">▼</button>
                 </div>
+                <button class="action-btn fixed-color" id="toggle-operation">Toggle<br>DUT</button>
+                <span class="dut-status-dot" id="dut-status-indicator"></span>
             </div>
         </div>
         

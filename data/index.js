@@ -1,21 +1,24 @@
 // Variables
 let currentMode = 'CC';
 let selectedDigit = null;
-let digitValues = [0, 0, 0, 0, 0];
+// let digitValues = [0, 0, 0, 0, 0]; // Initialize dynamically
+let digitValues = []; // Initialize as empty, will be sized in updateDigitDisplay
 let relayEnabled = false;
 let ws = null;
 let heartbeatTimeout = null; // Added timeout variable
 
 // Mode configuration
 const modeConfig = {
-    'CC': { unit: 'A', decimals: 3, maxDigits: 5, beforeDecimal: 2 },
-    'CV': { unit: 'V', decimals: 3, maxDigits: 5, beforeDecimal: 2 },
+    'CC': { unit: 'A', decimals: 2, maxDigits: 4, beforeDecimal: 2 },
+    'CV': { unit: 'V', decimals: 2, maxDigits: 5, beforeDecimal: 3 },
     'CR': { unit: 'kΩ', decimals: 3, maxDigits: 5, beforeDecimal: 2 },
-    'CP': { unit: 'W', decimals: 3, maxDigits: 5, beforeDecimal: 2 }
+    'CP': { unit: 'W', decimals: 2, maxDigits: 4, beforeDecimal: 2 }
 };
 
 // DOM Elements
-const digits = document.querySelectorAll('.digit');
+// const digits = document.querySelectorAll('.digit'); // Remove static selection
+let digits = []; // Initialize as an empty array, will be populated dynamically
+const digitContainer = document.getElementById('digit-container'); // Get the container for digits
 const modeButtons = document.querySelectorAll('.mode-btn');
 const valueUp = document.getElementById('value-up');
 const valueDown = document.getElementById('value-down');
@@ -139,7 +142,8 @@ function handleMessage(message) {
             if (data.state.value !== undefined && data.state.mode === currentMode) {
                  // Update digits if value changed significantly or if output is off
                  // (prevents minor fluctuations during active output from resetting digits)
-                 if (!outputActive || Math.abs(data.state.value - currentValueDisplayed) > 1e-4) {
+                 // Also check if digits array is populated for the current mode
+                 if (digits.length > 0 && (!outputActive || Math.abs(data.state.value - currentValueDisplayed) > 1e-4)) {
                     updateValueFromNumber(data.state.value);
                  }
             }
@@ -175,52 +179,97 @@ function sendCommand(command, value) {
     }
 }
 
+// Function to dynamically create digits based on mode
+function updateDigitDisplay(mode) {
+    const config = modeConfig[mode];
+    if (!config) return; // Exit if mode is invalid
+
+    digitContainer.innerHTML = ''; // Clear existing digits
+    digits = []; // Reset the digits array
+    digitValues = Array(config.maxDigits).fill(0); // Reset digit values based on new maxDigits
+
+    for (let i = 0; i < config.maxDigits; i++) {
+        // Insert decimal point
+        if (i === config.beforeDecimal) {
+            const dot = document.createElement('span');
+            dot.classList.add('decimal-point');
+            dot.textContent = '.';
+            digitContainer.appendChild(dot);
+        }
+
+        const digit = document.createElement('span');
+        digit.classList.add('digit');
+        digit.setAttribute('data-position', i);
+        digit.textContent = digitValues[i]; // Initialize with 0
+        digit.addEventListener('click', () => selectDigit(digit)); // Add listener
+        digitContainer.appendChild(digit);
+        digits.push(digit); // Add to the digits array
+    }
+
+    // Update unit display as well
+    currentUnit.textContent = config.unit;
+
+    // Deselect any previously selected digit
+    if (selectedDigit) {
+        selectedDigit.classList.remove('selected');
+        selectedDigit = null;
+    }
+    // Optionally select the first digit (can be annoying)
+    // if (digits.length > 0) {
+    //     selectDigit(digits[0]);
+    // }
+}
+
+
 // Initialize the interface
 function init() {
-    // Select first digit by default - only if display is visible initially
-    // selectDigit(digits[0]); // Remove or comment out initial digit selection
-    
-    // Add event listeners
-    digits.forEach(digit => {
-        digit.addEventListener('click', () => selectDigit(digit));
-    });
-    
+    // Set initial mode and update display (e.g., CC)
+    // currentMode = 'CC'; // Set a default mode if needed
+    // updateDigitDisplay(currentMode); // Create initial digits
+    // setMode(currentMode); // Activate the button and set unit
+
+    // Add event listeners for static elements
     modeButtons.forEach(button => {
         button.addEventListener('click', () => {
             const newMode = button.getAttribute('data-mode');
-            // Only send command if mode actually changes
             if (newMode !== currentMode) {
-                setMode(newMode); // Update UI immediately
+                // Update UI immediately (setMode calls updateDigitDisplay)
+                setMode(newMode);
                 sendCommand('setMode', newMode);
+                // Reset value to 0 when mode changes via UI click
+                updateValueFromNumber(0); // This will use the new digit structure
+                sendValue(); // Send the reset value
             }
-            // Show the value display container when any mode button is clicked
-            valueDisplay.classList.remove('hidden'); 
+            valueDisplay.classList.remove('hidden');
         });
     });
-    
+
     valueUp.addEventListener('click', incrementDigit);
     valueDown.addEventListener('click', decrementDigit);
 
     toggleOperation.addEventListener('click', () => {
-        // Update UI immediately
-        relayEnabled = relayEnabled ? false : true; // Toggle relay state
+        relayEnabled = !relayEnabled;
         updateOperationButton();
-        // Send command
         sendCommand('setRelay', relayEnabled);
     });
 
-    // Removed event listener for toggleRelay
-
     exitMode.addEventListener('click', () => {
         sendCommand('exit', null);
-        // Optionally reset UI elements immediately or wait for WS confirmation
+        valueDisplay.classList.add('hidden'); // Hide controls on exit
+        // Deactivate mode buttons visually
+        modeButtons.forEach(button => button.classList.remove('active'));
+        currentMode = "MENU"; // Reflect exit state locally
+        if (selectedDigit) {
+            selectedDigit.classList.remove('selected');
+            selectedDigit = null;
+        }
+        digitContainer.innerHTML = ''; // Clear digits on exit
+        digits = []; // Clear digits array
     });
-    
-    // Connect to WebSocket
+
     connectWebSocket();
-    
-    // Request initial state/measurements after connection (optional, handled by connect event on server)
-    // setInterval(() => { sendCommand('getMeasurements', null); }, 2000); // Reduced frequency, rely on broadcasts
+    updateOperationButton(); // Set initial button state
+    // Value display is hidden by default via HTML class
 }
 
 // Select a digit
@@ -277,27 +326,32 @@ function convertDigitsToNumber() {
 // Update digits from a number
 function updateValueFromNumber(number) {
     const config = modeConfig[currentMode];
-    if (!config) return;
+    // Ensure config exists and digits have been created for the current mode
+    if (!config || digits.length === 0) return;
 
-    // Format number to fixed decimal places matching the mode
     const formattedNumber = number.toFixed(config.decimals);
     const [integerPart, decimalPart] = formattedNumber.split('.');
 
-    // Pad parts with leading/trailing zeros if necessary
     const paddedInteger = integerPart.padStart(config.beforeDecimal, '0');
     const paddedDecimal = (decimalPart || "").padEnd(config.decimals, '0');
 
     const valueStr = paddedInteger + paddedDecimal;
 
-    // Update digitValues array and display
-    digits.forEach((digit, index) => {
-        if (index < valueStr.length) {
-            const digitValue = parseInt(valueStr[index]);
-            digitValues[index] = digitValue;
+    // Ensure digitValues array has the correct length for the current mode
+    if (digitValues.length !== config.maxDigits) {
+        digitValues = Array(config.maxDigits).fill(0);
+    }
+
+    // Update digitValues array and display using the dynamic digits array
+    digits.forEach((digit) => { // No index needed here, use data-position
+        const position = parseInt(digit.getAttribute('data-position')); // Get position from attribute
+        if (position < valueStr.length) {
+            const digitValue = parseInt(valueStr[position]);
+            digitValues[position] = digitValue; // Update the correct index in digitValues
             digit.textContent = digitValue;
         } else {
-            // Should not happen if padding is correct, but handle defensively
-            digitValues[index] = 0;
+            // This case might occur if the number is smaller than the display capacity
+            digitValues[position] = 0;
             digit.textContent = '0';
         }
     });
@@ -315,37 +369,27 @@ function sendValue() {
 
 // Set current mode
 function setMode(mode) {
-    // Check if mode is valid
     if (!modeConfig[mode]) {
         console.warn(`Invalid mode received or set: ${mode}`);
-        return; // Don't change if mode is unknown
+        return;
     }
 
     // Update mode buttons
     modeButtons.forEach(button => {
-        if (button.getAttribute('data-mode') === mode) {
-            button.classList.add('active');
-        } else {
-            button.classList.remove('active');
-        }
+        button.classList.toggle('active', button.getAttribute('data-mode') === mode);
     });
 
     // Update current mode variable
     currentMode = mode;
 
-    // Update unit display
-    currentUnit.textContent = modeConfig[mode].unit;
+    // Update the digit display (creates/recreates digits and sets unit)
+    updateDigitDisplay(mode);
 
-    // Show the value display container when mode is set (e.g., from WS)
+    // Show the value display container
     valueDisplay.classList.remove('hidden');
 
-    // Reset digits display to 0 when mode changes via UI click
-    // (WS updates might bring a non-zero value)
-    // digitValues = Array(modeConfig[mode].maxDigits).fill(0);
-    // updateValueFromNumber(0); // Update display based on reset array
-
-    // Select first digit (optional, might be annoying)
-    // selectDigit(digits[0]);
+    // Note: Resetting value to 0 is handled in the mode button click listener
+    // for UI clicks. WS updates will call updateValueFromNumber directly.
 }
 
 // Update combined operation button state and text
@@ -370,10 +414,5 @@ function updateOperationButton() {
 // Initialize the interface when the DOM is loaded
 document.addEventListener('DOMContentLoaded', init);
 
-// Add initial call to set button state correctly on load
-document.addEventListener('DOMContentLoaded', () => {
-    // ... other init logic ...
-    updateOperationButton(); // Set initial state of the combined button and dot
-    // Ensure value display is hidden initially (redundant if class is set in HTML)
-    // valueDisplay.classList.add('hidden'); 
-});
+// Remove the second DOMContentLoaded listener as init handles setup
+// document.addEventListener('DOMContentLoaded', () => { ... });

@@ -38,7 +38,7 @@ int fanSpeed = 0; // Get current fan speed percentage
 // --- Global Variables for WS/UI Sync ---
 float ws_requested_value = 0.0;
 bool ws_value_updated = false;
-
+bool ws_delete_main_menu = false; // Track if in main menu
 
 
 void setup() {
@@ -139,13 +139,17 @@ void loop() {
     lastBroadcastTime = currentTime;
   }
 
+  if (ws_delete_main_menu) {
+    lcd.close_cx_screen(); // Close CX screen if in main menu, moved here because it was taking too long to close
+    ws_delete_main_menu = false; // Reset the flag
+  }
+
   // Short delay to prevent busy-waiting
-  delay(5);
+  delay(10);
 }
 
 void main_menu() {
   static int pos = 0;
-  bool changed = false; // Track if UI needs update
 
   if (fsm.has_changed()) { // First time entering main menu
     Serial.println("Main menu");
@@ -155,13 +159,11 @@ void main_menu() {
     pos = 0; // Reset position
     lcd.create_main_menu(); // Create main menu
     lcd.update_main_menu(0);
-    changed = true;
   }
 
   if (encoder.has_changed()) { // Update menu with selected option
     pos = encoder.get_position();
     lcd.update_main_menu(pos);
-    changed = true; // Position changed, might need WS update if relevant
     #ifdef DEBUG_ENCODER
     Serial.println("Encoder position: " + String(encoder.get_position()));
     Serial.println("Max:" + String(encoder.get_encoder_max_position()) + " - Min: " + String(encoder.get_encoder_min_position()));
@@ -177,7 +179,6 @@ void main_menu() {
     lcd.close_main_menu();
     input = 0.0; // Reset input when changing mode
     output_active = false; // Ensure output is off
-    changed = true; // State changed
     // No return here, let loop handle broadcast
   }
 
@@ -326,6 +327,7 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
           // State change (output_active) will be broadcast by loop()
         }
         else { // Exit pressed (selected_item == totalDigits + 1)
+          Serial.println("Exiting CX mode");
           fsm.change_state(FSM_MAIN_STATES::MAIN_MENU);
           input = 0.0; // Reset input
           output_active = false; // Ensure output is off
@@ -484,9 +486,8 @@ void handleExit() {
   input = 0.0;
   output_active = false;
   analogSws.relay_dut_disable(); // Physically disable the relay
-  // Update physical interface (LCD)
-  // The FSM state change should trigger screen updates in the main loop
-  // No need to call broadcastState() here, it's called after handleWsCommand finishes
+  ws_delete_main_menu = true; // Set flag to close main menu
+  broadcastState(); // Broadcast the state after exiting
 }
 
 

@@ -35,6 +35,10 @@
 #define DAC_CC_MAX_CURRENT 20
 #define DAC_CV_MAX_VOLTAGE 30
 
+/* ----------------- FACTORES DE CORRECCION ----------------- */
+#define CC_CORRECTION_FACTOR_SLOPE -0.019 /*!< Correction factor for CC mode */
+#define CC_CORRECTION_FACTOR_INTERCEPT 0.04 /*!< Correction factor for CC mode */
+
 /**
  * @class DAC
  * @brief A class to represent a Digital-to-Analog Converter (DAC).

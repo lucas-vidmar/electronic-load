@@ -288,6 +288,7 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
     // If output is active, WS should have updated 'input' directly.
     // If output is inactive, 'input' remains 0, only the display value changes.
   }
+  else ws_requested_value = current_value;
 
   // First time entering this mode, reset static vars
   if (fsm.has_changed()) {

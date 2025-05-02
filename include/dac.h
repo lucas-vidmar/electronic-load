@@ -37,7 +37,10 @@
 
 /* ----------------- FACTORES DE CORRECCION ----------------- */
 #define CC_CORRECTION_FACTOR_SLOPE -0.019 /*!< Correction factor for CC mode */
-#define CC_CORRECTION_FACTOR_INTERCEPT 0.04 /*!< Correction factor for CC mode */
+#define CC_CORRECTION_FACTOR_INTERCEPT 0.040 /*!< Correction factor for CC mode */
+
+#define CV_CORRECTION_FACTOR_SLOPE -0.076 /*!< Correction factor for CV mode */
+#define CV_CORRECTION_FACTOR_INTERCEPT -0.416 /*!< Correction factor for CV mode */
 
 /**
  * @class DAC

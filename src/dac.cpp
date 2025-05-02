@@ -66,6 +66,7 @@ void DAC::cv_mode_set_voltage(float voltage) {
 
     if (voltage != prevVoltage) {
         prevVoltage = voltage;
-        set_voltage(voltage * 1000 / 200, DAC_V_MAX_CV); // Set voltage to V_DUT * 1000mV / 200
+        float correctedVoltage = voltage - (voltage * CV_CORRECTION_FACTOR_SLOPE + CV_CORRECTION_FACTOR_INTERCEPT); // Apply correction factor
+        set_voltage(correctedVoltage * 1000 / 200, DAC_V_MAX_CV); // Set voltage to V_DUT * 1000mV / 200
     }
 }

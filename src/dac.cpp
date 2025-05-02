@@ -70,3 +70,13 @@ void DAC::cv_mode_set_voltage(float voltage) {
         set_voltage(correctedVoltage * 1000 / 200, DAC_V_MAX_CV); // Set voltage to V_DUT * 1000mV / 200
     }
 }
+
+void DAC::cr_mode_set_resistance(float resistance, float dutVoltage) {
+    // V_DAC = I_DUT * R
+    
+    Serial.println("Resistance: " + String(resistance, 2));
+    Serial.println("DUT Voltage: " + String(dutVoltage, 2));
+    float current = dutVoltage / (resistance * 1000); // I_DUT = V_DUT / R
+    Serial.println("Current: " + String(current, 2));
+    cc_mode_set_current(current); // Set current to I_DUT
+}

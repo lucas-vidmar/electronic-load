@@ -7,7 +7,7 @@ void FSM::init() {
     lastState = FSM_MAIN_STATES::INITAL;
 }
 
-void FSM::run(float input, DAC dac, AnalogSws sws, bool* output_active) {
+void FSM::run(float input, DAC dac, AnalogSws sws, bool* output_active, ADC adc) {
 
     if (*output_active) {
         sws.relay_dut_enable();
@@ -46,6 +46,11 @@ void FSM::run(float input, DAC dac, AnalogSws sws, bool* output_active) {
             break;
         case FSM_MAIN_STATES::CR:
             constant_x(String("kR"), CR_DIGITS_BEFORE_DECIMAL, CR_DIGITS_AFTER_DECIMAL, CR_DIGITS_TOTAL);
+            if (lastInput != input) {
+                sws.mosfet_input_cc_mode();
+                sws.v_dac_enable();
+            }
+            dac.cr_mode_set_resistance(input, adc.read_vDUT());
             break;
         case FSM_MAIN_STATES::CW:
             constant_x(String("W"), CW_DIGITS_BEFORE_DECIMAL, CW_DIGITS_AFTER_DECIMAL, CW_DIGITS_TOTAL);

@@ -121,7 +121,7 @@ void loop() {
   bool prevOutputActive = output_active;
 
   // Run FSM which might change state or apply 'input'
-  fsm.run(input, dac, analogSws, &output_active);
+  fsm.run(input, dac, analogSws, &output_active, adc);
 
   // Compute and adjust fan speed based on temperature
   pidController.compute(temperature);

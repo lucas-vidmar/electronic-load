@@ -111,8 +111,9 @@ public:
      * @brief Sets the resistance in constant resistance (CR) mode.
      *
      * @param resistance The resistance value in ohms.
+     * @param dutVoltage The voltage across the DUT in volts.
      */
-    void cr_mode_set_resistance(float resistance);
+    void cr_mode_set_resistance(float resistance, float dutVoltage);
 
     /**
      * @brief Sets the power in constant power (CW) mode.

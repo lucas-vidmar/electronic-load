@@ -61,8 +61,9 @@ public:
      * @param dac DAC controller for setting output values
      * @param sws Analog switches controller for configuring hardware
      * @param output_active Pointer to the output active state
+     * @param adc ADC controller for reading input values
      */
-    void run(float input, DAC dac, AnalogSws sws, bool* output_active);
+    void run(float input, DAC dac, AnalogSws sws, bool* output_active, ADC adc);
 
     /**
      * @brief Change the current state of the FSM

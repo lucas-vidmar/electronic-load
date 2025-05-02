@@ -25,6 +25,12 @@ void WebServerESP32::begin() {
 }
 
 void WebServerESP32::setup_wifi() {
+    // Configure static IP for AP mode
+    IPAddress local_IP(10, 10, 10, 1); // Set your desired IP address
+    IPAddress gateway(10, 10, 10, 1);  // Set your desired gateway address
+    IPAddress subnet(255, 255, 255, 0); // Set your desired subnet mask
+    WiFi.softAPConfig(local_IP, gateway, subnet);
+
     // Configure ESP32 in AP mode
     WiFi.mode(WIFI_AP);
     WiFi.softAP(_ssidAP, _passwordAP);

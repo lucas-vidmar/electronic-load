@@ -18,7 +18,8 @@ float ADC::read_temperature() {
 
 float ADC::read_vDUT() {
     float voltage = read_voltage(ADC_CHANNEL_VDUT);
-    return (voltage / 4.0) * 100.0; // 4V ≡ 100V
+    float correction = voltage * V_DUT_CORRECTION_FACTOR_SLOPE + V_DUT_CORRECTION_FACTOR_INTERCEPT;
+    return (voltage / 4.0) * 100.0 + correction; // 4V ≡ 100V
 }
 
 void ADC::read(uint8_t channel, int16_t* value) {

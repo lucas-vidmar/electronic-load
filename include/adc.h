@@ -25,6 +25,10 @@
 #define ADC_MAX_VALUE (1 << 16)
 #define ADC_PGA 6.144
 
+/* ----------------- FACTORES DE CORRECCION ----------------- */
+#define V_DUT_CORRECTION_FACTOR_SLOPE 0.001 /*!< Correction factor for DUT measurements */
+#define V_DUT_CORRECTION_FACTOR_INTERCEPT 0.33 /*!< Correction factor for DUT measurements */
+
 /**
  * @class ADC
  * @brief A class to interface with an Analog-to-Digital Converter (ADC) module.

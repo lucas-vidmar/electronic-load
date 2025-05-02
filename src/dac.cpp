@@ -49,9 +49,7 @@ void DAC::cc_mode_set_current(float current) {
 
     if (current != prevCurrent) {
         prevCurrent = current;
-        Serial.println("Current in A: " + String(current, 2));
         float correctedCurrent = current - (current * CC_CORRECTION_FACTOR_SLOPE + CC_CORRECTION_FACTOR_INTERCEPT); // Apply correction factor
-        Serial.println("Corrected current in A: " + String(correctedCurrent, 2));
         set_voltage(correctedCurrent * 100 / CANT_MOSFET, DAC_V_MAX_CC); // Set voltage to current * 100mOhm / CANT_MOSFET
     }
 }

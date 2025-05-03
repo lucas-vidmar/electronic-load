@@ -25,12 +25,12 @@
 #define ADC_MAX_VALUE (1 << 16)
 #define ADC_PGA 6.144
 
-/* ----------------- FACTORES DE CORRECCION ----------------- */
-#define V_DUT_CORRECTION_FACTOR_SLOPE 0.001 /*!< Correction factor for DUT measurements */
-#define V_DUT_CORRECTION_FACTOR_INTERCEPT 0.334 /*!< Correction factor for DUT measurements */
+/* ----------------- CORRECTION PARAMETERS ----------------- */
+#define V_DUT_CORRECTION_PARAMETER_SLOPE 0.001 /*!< Correction parameter for DUT measurements */
+#define V_DUT_CORRECTION_PARAMETER_INTERCEPT 0.334 /*!< Correction parameter for DUT measurements */
 
-#define I_DUT_CORRECTION_FACTOR_SLOPE -0.057 /*!< Correction factor for current DUT measurements */
-#define I_DUT_CORRECTION_FACTOR_INTERCEPT 0.006 /*!< Correction factor for DUT current measurements */
+#define I_DUT_CORRECTION_PARAMETER_SLOPE -0.057 /*!< Correction parameter for current DUT measurements */
+#define I_DUT_CORRECTION_PARAMETER_INTERCEPT 0.006 /*!< Correction parameter for DUT current measurements */
 
 /**
  * @class ADC

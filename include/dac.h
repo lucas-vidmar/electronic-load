@@ -32,15 +32,19 @@
 #define DAC_V_MAX_CV 0.45   /*!< Maximum voltage output in V for CV mode*/
 #define DAC_OUTPUT_VOLTAGE_DIVIDER (DAC_V_MAX / DAC_REF_VOLTAGE)    /*!< Output voltage divider */
 #define DAC_MAX_DIGITAL_VALUE 4095 // To limit either current or voltage
+
+/* ----------------- MAXs ----------------- */
 #define DAC_CC_MAX_CURRENT 20
-#define DAC_CV_MAX_VOLTAGE 30
+#define DAC_CV_MAX_VOLTAGE 100
+#define DAC_CR_MAX_RESISTANCE 20475
+#define DAC_CW_MAX_POWER 200
 
-/* ----------------- FACTORES DE CORRECCION ----------------- */
-#define CC_CORRECTION_FACTOR_SLOPE -0.019 /*!< Correction factor for CC mode */
-#define CC_CORRECTION_FACTOR_INTERCEPT 0.040 /*!< Correction factor for CC mode */
+/* ----------------- CORRECTION PARAMETERS ----------------- */
+#define CC_CORRECTION_PARAMETER_SLOPE -0.019 /*!< Correction parameter for CC mode */
+#define CC_CORRECTION_PARAMETER_INTERCEPT 0.040 /*!< Correction parameter for CC mode */
 
-#define CV_CORRECTION_FACTOR_SLOPE -0.076 /*!< Correction factor for CV mode */
-#define CV_CORRECTION_FACTOR_INTERCEPT -0.416 /*!< Correction factor for CV mode */
+#define CV_CORRECTION_PARAMETER_SLOPE -0.076 /*!< Correction parameter for CV mode */
+#define CV_CORRECTION_PARAMETER_INTERCEPT -0.416 /*!< Correction parameter for CV mode */
 
 /**
  * @class DAC

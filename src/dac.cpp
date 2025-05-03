@@ -49,7 +49,7 @@ void DAC::cc_mode_set_current(float current) {
 
     if (current != prevCurrent) {
         prevCurrent = current;
-        float correctedCurrent = current - (current * CC_CORRECTION_FACTOR_SLOPE + CC_CORRECTION_FACTOR_INTERCEPT); // Apply correction factor
+        float correctedCurrent = current - (current * CC_CORRECTION_PARAMETER_SLOPE + CC_CORRECTION_PARAMETER_INTERCEPT); // Apply correction PARAMETER
         set_voltage(correctedCurrent * 100 / CANT_MOSFET, DAC_V_MAX_CC); // Set voltage to current * 100mOhm / CANT_MOSFET
     }
 }
@@ -66,7 +66,7 @@ void DAC::cv_mode_set_voltage(float voltage) {
 
     if (voltage != prevVoltage) {
         prevVoltage = voltage;
-        float correctedVoltage = voltage - (voltage * CV_CORRECTION_FACTOR_SLOPE + CV_CORRECTION_FACTOR_INTERCEPT); // Apply correction factor
+        float correctedVoltage = voltage - (voltage * CV_CORRECTION_PARAMETER_SLOPE + CV_CORRECTION_PARAMETER_INTERCEPT); // Apply correction PARAMETER
         set_voltage(correctedVoltage * 1000 / 200, DAC_V_MAX_CV); // Set voltage to V_DUT * 1000mV / 200
     }
 }
@@ -74,6 +74,10 @@ void DAC::cv_mode_set_voltage(float voltage) {
 void DAC::cr_mode_set_resistance(float resistance, float dutVoltage) {
     // V = I * R
     // I = V / R
+    if (resistance < 0 || resistance > DAC_CR_MAX_RESISTANCE) {
+        Serial.println("Resistance out of range");
+        return;
+    }
     
     float current = dutVoltage / (resistance * 1000); // I_DUT = V_DUT / R
     cc_mode_set_current(current); // Set current to I_DUT
@@ -82,6 +86,10 @@ void DAC::cr_mode_set_resistance(float resistance, float dutVoltage) {
 void DAC::cw_mode_set_power(float power, float dutVoltage) {
     // P = V * I
     // I = P / V
+    if (power < 0 || power > DAC_CW_MAX_POWER) {
+        Serial.println("Power out of range");
+        return;
+    }
 
     float current = power / dutVoltage; // I_DUT = P / V_DUT
     cc_mode_set_current(current); // Set current to I_DUT

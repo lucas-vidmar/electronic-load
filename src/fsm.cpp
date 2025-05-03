@@ -54,6 +54,11 @@ void FSM::run(float input, DAC dac, AnalogSws sws, bool* output_active, ADC adc)
             break;
         case FSM_MAIN_STATES::CW:
             constant_x(String("W"), CW_DIGITS_BEFORE_DECIMAL, CW_DIGITS_AFTER_DECIMAL, CW_DIGITS_TOTAL);
+            if (lastInput != input) {
+                sws.mosfet_input_cc_mode();
+                sws.v_dac_enable();
+            }
+            dac.cw_mode_set_power(input, adc.read_vDUT());
             break;
         case FSM_MAIN_STATES::SETTINGS:
             break;

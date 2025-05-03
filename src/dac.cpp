@@ -9,7 +9,7 @@ void DAC::init(I2C* i2cPointer){
 
 void DAC::set_voltage(float voltageInMmV, float dacVMax) {
 
-    Serial.println("DAC voltage in mV: " + String(voltageInMmV,2));
+    // Serial.println("DAC voltage in mV: " + String(voltageInMmV,2));
     // Check in range
     if (voltageInMmV < 0 || (voltageInMmV / 1000) > dacVMax) {
         Serial.println("Voltage out of range");
@@ -23,7 +23,7 @@ void DAC::set_voltage(float voltageInMmV, float dacVMax) {
 }
 
 void DAC::digital_write(uint16_t value) {
-    Serial.println("DAC Digital value: " + String(value));
+    // Serial.println("DAC Digital value: " + String(value));
     if (value > DAC_MAX_DIGITAL_VALUE) { // Check if value is out of range
         Serial.println("DAC value out of range");
         return;
@@ -72,11 +72,17 @@ void DAC::cv_mode_set_voltage(float voltage) {
 }
 
 void DAC::cr_mode_set_resistance(float resistance, float dutVoltage) {
-    // V_DAC = I_DUT * R
+    // V = I * R
+    // I = V / R
     
-    Serial.println("Resistance: " + String(resistance, 2));
-    Serial.println("DUT Voltage: " + String(dutVoltage, 2));
     float current = dutVoltage / (resistance * 1000); // I_DUT = V_DUT / R
-    Serial.println("Current: " + String(current, 2));
+    cc_mode_set_current(current); // Set current to I_DUT
+}
+
+void DAC::cw_mode_set_power(float power, float dutVoltage) {
+    // P = V * I
+    // I = P / V
+
+    float current = power / dutVoltage; // I_DUT = P / V_DUT
     cc_mode_set_current(current); // Set current to I_DUT
 }

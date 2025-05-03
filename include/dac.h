@@ -110,7 +110,7 @@ public:
     /**
      * @brief Sets the resistance in constant resistance (CR) mode.
      *
-     * @param resistance The resistance value in ohms.
+     * @param resistance The resistance value in kilo-ohms.
      * @param dutVoltage The voltage across the DUT in volts.
      */
     void cr_mode_set_resistance(float resistance, float dutVoltage);
@@ -119,8 +119,9 @@ public:
      * @brief Sets the power in constant power (CW) mode.
      *
      * @param power The power value in watts.
+     * @param dutVoltage The voltage across the DUT in volts.
      */
-    void cw_mode_set_power(float power);
+    void cw_mode_set_power(float power, float dutVoltage);
 
 private:
     I2C* i2c; /*!< Pointer to I2C communication interface */

@@ -12,7 +12,7 @@ const modeConfig = {
     'CC': { unit: 'A', decimals: 2, maxDigits: 4, beforeDecimal: 2 },
     'CV': { unit: 'V', decimals: 2, maxDigits: 5, beforeDecimal: 3 },
     'CR': { unit: 'kΩ', decimals: 3, maxDigits: 5, beforeDecimal: 2 },
-    'CP': { unit: 'W', decimals: 2, maxDigits: 4, beforeDecimal: 2 }
+    'CP': { unit: 'W', decimals: 2, maxDigits: 5, beforeDecimal: 3 }
 };
 
 // DOM Elements

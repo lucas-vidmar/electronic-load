@@ -115,8 +115,9 @@ public:
      * 
      * @param temperature Current temperature value.
      * @param fan_speed Current fan speed percentage.
+     * @param uptime Uptime string in hh:mm:ss format.
      */
-    void update_header(float temperature, int fan_speed);
+    void update_header(float temperature, int fan_speed, const char* uptime);
 
 private:
     TFT_eSPI tft;
@@ -159,6 +160,7 @@ private:
     lv_obj_t *headerContainer = nullptr;
     lv_obj_t *tempLabel = nullptr;
     lv_obj_t *fanLabel = nullptr;
+    lv_obj_t *uptimeLabel = nullptr; // Add uptime label
 
     /**
      * @brief Create a common header for screens.

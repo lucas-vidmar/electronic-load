@@ -38,6 +38,7 @@ const resistanceEl = document.getElementById('resistance');
 const temperatureEl = document.getElementById('temperature');
 const fanSpeedEl = document.getElementById('fan-speed');
 const fanIconEl = document.getElementById('fan-icon'); // Added fan icon element
+const uptimeEl = document.getElementById('uptime-timer'); // Added uptime element
 
 // Initialize WebSocket connection
 function connectWebSocket() {
@@ -123,6 +124,8 @@ function handleMessage(message) {
             else {
                 fanIconEl.classList.remove("spinning");
             }
+            // Update Uptime display
+            uptimeEl.textContent = data.measurements.uptime;
         }
 
         // Update state

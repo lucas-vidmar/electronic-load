@@ -19,7 +19,6 @@ LVGL_LCD lcd = LVGL_LCD();
 Fan fan(PWM_FAN_PIN, EN_FAN_PIN, LOCK_FAN_PIN);
 PIDFanController pidController(fan, PID_KP, PID_KI, PID_KD);
 RTC rtc = RTC();
-uint64_t startTimeMs = 0;
 I2CScanner scanner;
 FSM fsm = FSM();
 
@@ -35,11 +34,31 @@ bool output_active = false; // Track output state
 float temperature = 0.0; // Track temperature
 int fanSpeed = 0; // Get current fan speed percentage
 
+uint64_t timeMs = 0; // Track RTC time
+uint64_t startTimeMs = 0; // Track start time in milliseconds
+String uptimeString = "00:00:00"; // Track uptime string
+
 // --- Global Variables for WS/UI Sync ---
 float ws_requested_value = 0.0;
 bool ws_value_updated = false;
 bool ws_delete_main_menu = false; // Track if in main menu
 
+// Helper function to format uptime
+String format_uptime(uint64_t ms) {
+  uint32_t totalSeconds = ms / 1000;
+  uint8_t seconds = totalSeconds % 60;
+  uint32_t totalMinutes = totalSeconds / 60;
+  uint8_t minutes = totalMinutes % 60;
+  uint32_t hours = totalMinutes / 60;
+  char buf[10]; // hh:mm:ss\0
+  // Format as HHH:MM:SS if hours > 99, otherwise HH:MM:SS
+  if (hours > 99) {
+    sprintf(buf, "%03lu:%02u:%02u", hours, minutes, seconds);
+  } else {
+    sprintf(buf, "%02lu:%02u:%02u", hours, minutes, seconds);
+  }
+  return String(buf);
+}
 
 void setup() {
   Serial.begin(115200);
@@ -78,8 +97,7 @@ void setup() {
   rtc.set_time(currentTime);
   
   // Store start time
-  startTimeMs = rtc.get_timestamp_ms();
-  Serial.println("RTC initialized. Start time recorded.");
+  Serial.println("RTC initialized. Start time recorded for uptime.");
   
   // Initialize LVGL Display
   lcd.init();
@@ -98,11 +116,17 @@ void setup() {
   // Initial relay state
   analogSws.relay_dut_disable();
   output_active = false; // Ensure output is off
+
+  startTimeMs = rtc.get_timestamp_ms();
 }
 
 void loop() {
   // Handle WebSocket clients
   webServer.cleanupClients(); // Important for AsyncWebServer
+
+  // Calculate uptime
+  timeMs = rtc.get_timestamp_ms();
+  uptimeString = format_uptime(timeMs-startTimeMs); // Format uptime string
 
   // Update all global variables
   fanSpeed = fan.get_speed_percentage(); // Get current fan speed percentage
@@ -113,7 +137,7 @@ void loop() {
   dut_resistance = (dut_current != 0) ? (dut_voltage / dut_current) : 0; // Calculate DUT resistance
 
   lcd.update();
-  lcd.update_header(temperature, fanSpeed); // Update header with temperature and fan speed
+  lcd.update_header(temperature, fanSpeed, uptimeString.c_str()); // Update header with temperature, fan speed, and uptime
 
   // Store previous state to detect changes
   FSM_MAIN_STATES prevState = fsm.get_current_state();
@@ -150,6 +174,7 @@ void loop() {
 
 void main_menu() {
   static int pos = 0;
+  startTimeMs = rtc.get_timestamp_ms(); 
 
   if (fsm.has_changed()) { // First time entering main menu
     Serial.println("Main menu");
@@ -292,6 +317,7 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
 
   // First time entering this mode, reset static vars
   if (fsm.has_changed()) {
+    startTimeMs = rtc.get_timestamp_ms();
     encoder.set_position(0);
     digitsValues.assign(totalDigits, 0);  // Reset digits values
     selected_item = 0;
@@ -504,6 +530,7 @@ String getCurrentStateJson() {
   measurements["resistance"] = dut_resistance; // Assuming kOhm, adjust if needed
   measurements["temperature"] = temperature;
   measurements["fanSpeed"] = fanSpeed;
+  measurements["uptime"] = uptimeString; // Uptime string
 
   // State
   JsonObject state = doc.createNestedObject("state");

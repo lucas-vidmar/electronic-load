@@ -77,14 +77,22 @@ void LVGL_LCD::create_header(lv_obj_t* parent) {
     lv_obj_set_style_text_font(tempLabel, FONT_S, 0);
     lv_label_set_text(tempLabel, "Temp: -- C");
 
+    // Uptime Label - Placed in the middle
+    uptimeLabel = lv_label_create(headerContainer);
+    lv_obj_set_style_text_font(uptimeLabel, FONT_S, 0);
+    lv_label_set_text(uptimeLabel, "Up: 00:00:00"); // Initial text
+    lv_obj_set_flex_grow(uptimeLabel, 1); // Allow it to take space
+    lv_obj_set_style_text_align(uptimeLabel, LV_TEXT_ALIGN_CENTER, 0); // Center align text
+
     // Fan Speed Label
     fanLabel = lv_label_create(headerContainer);
     lv_obj_set_style_text_font(fanLabel, FONT_S, 0);
     lv_label_set_text(fanLabel, "Fan: -- %");
 }
 
-void LVGL_LCD::update_header(float temperature, int fan_speed) {
+void LVGL_LCD::update_header(float temperature, int fan_speed, const char* uptime) {
     if (tempLabel) lv_label_set_text(tempLabel, (String(temperature, 1) + " C").c_str()); // Format temperature to 1 decimal place
+    if (uptimeLabel) lv_label_set_text(uptimeLabel, uptime); // Update uptime text
     if (fanLabel) lv_label_set_text_fmt(fanLabel, "Fan: %d %%", fan_speed); // Use %% for literal %
 }
 
@@ -145,6 +153,7 @@ void LVGL_LCD::close_main_menu() {
         headerContainer = nullptr; 
         tempLabel = nullptr;
         fanLabel = nullptr;
+        uptimeLabel = nullptr; // Clear uptime label pointer
     }
 }
 
@@ -402,6 +411,7 @@ void LVGL_LCD::close_cx_screen(){
     headerContainer = nullptr; 
     tempLabel = nullptr;
     fanLabel = nullptr;
+    uptimeLabel = nullptr; // Clear uptime label pointer
 
     lv_style_reset(&styleValue);
     lv_style_reset(&styleValueHovered);

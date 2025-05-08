@@ -40,7 +40,14 @@
 
         </div>
         
-        <h2 id="output-title">Output</h2>
+        <div id="tags-container">
+            <h2 id="output-title">Readings</h2>
+            <h2 class="tag" id="fan-tag">
+                <div id="fan-icon">𖣘</div>
+                <div id="fan-speed">0 %</div>
+            </h2>
+            <h2 class="tag" style="z-index: -2;">00:10:00</h2>
+        </div>
         <div class="container" id="output-container">
             <div class="measurements">
                 <div class="measurement">
@@ -64,8 +71,8 @@
                     <div class="measurement-value" id="temperature">0.0 °C</div>
                 </div>
                 <div class="measurement">
-                    <div class="measurement-title">Fan Speed</div>
-                    <div class="measurement-value" id="fan-speed">0 %</div>
+                    <div class="measurement-title">Energy</div>
+                    <div class="measurement-value" id="energy">0.0 kJ</div>
                 </div>
             </div>
         

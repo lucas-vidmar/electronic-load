@@ -37,6 +37,7 @@ body {
     background-color: var(--text-light);
     border-radius: var(--corner-radius);
     border-top-left-radius: 0;
+    border-bottom-right-radius: 0;
     padding: 15px;
     box-shadow: 0 8px 8px var(--shadow);
 }
@@ -301,10 +302,11 @@ footer {
     display: flex;
     flex-flow: row wrap;
     justify-content: center;
-    padding-top: 50px;
-    padding-bottom: 10px;
+    margin-top: 20px;
+    padding: 20px 0;
     column-gap: 50px;
     row-gap: 20px;
+    border-top: 1px solid var(--border-primary);
 
     p {
         margin: 0;
@@ -331,4 +333,51 @@ footer {
 
 #output-container {
     border: 1px solid var(--color2-light);
+}
+
+#tags-container {
+    display: flex;
+    flex-wrap: nowrap;
+}
+
+.tag {
+    background-color: var(--text-light);
+    border: 1px solid var(--color2-light);
+    margin-left: -40px;
+    padding-left: 50px;
+    border-bottom: 0px;
+}
+
+#fan-tag {
+    z-index: -1;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: center;
+    column-gap: 10px;
+}
+
+#fan-icon {
+    transform-origin: center; /* Set the center for rotation */
+    display: inline-block; /* Ensure transform-origin works correctly */
+    margin: 0;
+    padding: 0;
+}
+
+/* Spinning animation */
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.spinning {
+    animation-name: spin;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+    /* animation-duration is set by JS */
+    animation-play-state: running; /* Default state */
 }

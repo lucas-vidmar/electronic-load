@@ -37,6 +37,7 @@ const powerEl = document.getElementById('power');
 const resistanceEl = document.getElementById('resistance');
 const temperatureEl = document.getElementById('temperature');
 const fanSpeedEl = document.getElementById('fan-speed');
+const fanIconEl = document.getElementById('fan-icon'); // Added fan icon element
 
 // Initialize WebSocket connection
 function connectWebSocket() {
@@ -108,7 +109,20 @@ function handleMessage(message) {
             resistanceEl.textContent = (isFinite(resistance) ? resistance.toFixed(3) : '---') + ' kΩ';
             temperatureEl.textContent = data.measurements.temperature.toFixed(1) + ' °C';
             // Update Fan Speed display
-            fanSpeedEl.textContent = data.measurements.fanSpeed + ' %';
+            const fanSpeed = data.measurements.fanSpeed;
+            fanSpeedEl.textContent = fanSpeed + ' %';
+            if (fanSpeed > 0) {
+                fanIconEl.classList.add("spinning");
+                // Calculate duration based on speed, ensuring a minimum duration for visibility
+                // Lower fan speed = slower animation (longer duration)
+                // Higher fan speed = faster animation (shorter duration)
+                // Example: 100% speed = 1s duration, 1% speed = 100s duration (adjust multiplier as needed)
+                const duration = Math.max(0.5, 100 / fanSpeed); // Ensure minimum 0.5s duration
+                fanIconEl.style.animationDuration = duration + 's';
+            }
+            else {
+                fanIconEl.classList.remove("spinning");
+            }
         }
 
         // Update state

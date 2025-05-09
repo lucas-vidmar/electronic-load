@@ -36,7 +36,6 @@ float temperature = 0.0; // Track temperature
 int fanSpeed = 0; // Get current fan speed percentage
 
 uint64_t timeMs = 0; // Track RTC time
-uint64_t startTimeMs = 0; // Track start time in milliseconds
 String uptimeString = "00:00:00"; // Track uptime string
 
 // --- Global Variables for WS/UI Sync ---
@@ -93,8 +92,8 @@ void setup() {
   // Initialize RTC
   rtc.init(&i2c);
   
-  // Set current date and time (example: January 1, 2024 at 12:00:00)
-  DateTime currentTime = {0, 0, 12, 1, 1, 1, 24};  // seconds, minutes, hours, dayOfWeek, date, month, year
+  // Set current date and time (example: January 1, 2025 at 12:00:00)
+  DateTime currentTime = {0, 0, 12, 1, 1, 1, 25};  // seconds, minutes, hours, dayOfWeek, date, month, year
   rtc.set_time(currentTime);
   
   // Store start time
@@ -117,17 +116,11 @@ void setup() {
   // Initial relay state
   analogSws.relay_dut_disable();
   output_active = false; // Ensure output is off
-
-  startTimeMs = rtc.get_timestamp_ms();
 }
 
 void loop() {
   // Handle WebSocket clients
   webServer.cleanupClients(); // Important for AsyncWebServer
-
-  // Calculate uptime
-  timeMs = rtc.get_timestamp_ms();
-  uptimeString = format_uptime(timeMs-startTimeMs); // Format uptime string
 
   // Update all global variables
   fanSpeed = fan.get_speed_percentage(); // Get current fan speed percentage
@@ -175,6 +168,8 @@ void loop() {
     lastMillis = currentMillis;
     if (output_active) {
       dut_energy += dut_power / 1000; // Update DUT energy
+      timeMs += 1000;
+      uptimeString = format_uptime(timeMs); // Format uptime string
     }
   }
   // Short delay to prevent busy-waiting
@@ -183,7 +178,8 @@ void loop() {
 
 void main_menu() {
   static int pos = 0;
-  startTimeMs = rtc.get_timestamp_ms(); 
+  timeMs = 0.0; // Reset time when entering main menu
+  uptimeString = format_uptime(timeMs); // Format uptime string
   dut_energy = 0.0; // Reset DUT energy when entering main menu
 
   if (fsm.has_changed()) { // First time entering main menu
@@ -327,7 +323,8 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
 
   // First time entering this mode, reset static vars
   if (fsm.has_changed()) {
-    startTimeMs = rtc.get_timestamp_ms();
+    timeMs = 0.0; // Reset time when entering constant_x mode
+    uptimeString = format_uptime(timeMs); // Format uptime string
     dut_energy = 0.0; // Reset DUT energy when entering constant_x mode
     encoder.set_position(0);
     digitsValues.assign(totalDigits, 0);  // Reset digits values

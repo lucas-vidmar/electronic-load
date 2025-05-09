@@ -213,26 +213,8 @@ void LVGL_LCD::create_cx_screen(float current, int selection, String unit) {
     backButton = create_button("Back", buttons, false, COLOR4_LIGHT);
     lv_obj_set_flex_grow(backButton, 1);
 
-    // Output title
-    currentSelectionTitle = create_section_header("Output", inputScreen, COLOR1_DARK);
-
-    // Output container
-    curSelection = lv_obj_create(inputScreen);
-    lv_obj_set_width(curSelection, lv_pct(100)); // Parent width
-    lv_obj_set_height(curSelection, LV_SIZE_CONTENT); // Height based on content
-
-    lv_obj_set_flex_flow(curSelection, LV_FLEX_FLOW_ROW);
-    lv_obj_set_flex_align(curSelection, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-
-    lv_obj_set_style_border_color(curSelection, lv_color_hex(COLOR_GRAY), 0); // set border color gray
-
-    // Output label
-    curSelectionLabel = lv_label_create(curSelection);
-    lv_obj_add_style(curSelectionLabel, &styleValue, LV_PART_MAIN);
-    lv_obj_set_style_text_font(curSelectionLabel, FONT_S, 0);
-
     // DUT Reading title
-    outputTitle = create_section_header("DUT Reading", inputScreen, COLOR2_DARK);
+    outputTitle = create_section_header("Readings", inputScreen, COLOR2_DARK);
 
     // DUT Container
     dutContainer = lv_obj_create(inputScreen);
@@ -263,6 +245,15 @@ void LVGL_LCD::create_cx_screen(float current, int selection, String unit) {
     lv_obj_set_style_pad_gap(dutContainerRow2, PADDING, 0); // spacing between objects
     lv_obj_set_style_border_width(dutContainerRow2, 0, 0); // No border
 
+    dutContainerRow3 = lv_obj_create(dutContainer);
+    lv_obj_set_width(dutContainerRow3, lv_pct(100)); // Parent width
+    lv_obj_set_height(dutContainerRow3, LV_SIZE_CONTENT); // Height based on content
+    lv_obj_set_flex_flow(dutContainerRow3, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(dutContainerRow3, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_set_style_pad_all(dutContainerRow3, 0, 0); // Remove padding
+    lv_obj_set_style_pad_gap(dutContainerRow3, PADDING, 0); // spacing between objects
+    lv_obj_set_style_border_width(dutContainerRow3, 0, 0); // No border
+
     // DUT Voltage
     dutVoltage = create_button("V", dutContainerRow1, false, COLOR_GRAY);
     lv_obj_set_flex_grow(dutVoltage, 1);
@@ -275,9 +266,15 @@ void LVGL_LCD::create_cx_screen(float current, int selection, String unit) {
     // DUT Resistance
     dutResistance = create_button("kR", dutContainerRow2, false, COLOR_GRAY);
     lv_obj_set_flex_grow(dutResistance, 1);
+    // DUT Temperature
+    dutTemperature = create_button("°C", dutContainerRow3, false, COLOR_GRAY);
+    lv_obj_set_flex_grow(dutTemperature, 1);
+    // DUT Energy
+    dutEnergy = create_button("kJ", dutContainerRow3, false, COLOR_GRAY);
+    lv_obj_set_flex_grow(dutEnergy, 1);
 }
 
-void LVGL_LCD::update_cx_screen(float current, int selection, String unit, float vDUT, float iDUT, int digitsBeforeDecimal, int totalDigits, String targetValueStr, bool output_active, bool is_modifying) {
+void LVGL_LCD::update_cx_screen(float current, int selection, String unit, float vDUT, float iDUT, int digitsBeforeDecimal, int totalDigits, String targetValueStr, bool output_active, bool is_modifying, float temperatureDUT, float energyDUT) {
     // Clean container before adding new digits
     lv_obj_clean(digits);
 
@@ -382,10 +379,6 @@ void LVGL_LCD::update_cx_screen(float current, int selection, String unit, float
         update_button(backButton, false);
     }
 
-    // Update target value display
-    String targetStr = targetValueStr + " " + unit;
-    lv_label_set_text(curSelectionLabel, targetStr.c_str());
-
     // Update DUT values
     String values = String(vDUT, CV_DIGITS_AFTER_DECIMAL) + " V";
     lv_label_set_text(dutVoltage, values.c_str()); // Use lv_label_set_text directly on the label child
@@ -395,6 +388,10 @@ void LVGL_LCD::update_cx_screen(float current, int selection, String unit, float
     lv_label_set_text(dutPower, values.c_str());
     values = (iDUT > 1e-6 ? String((vDUT / iDUT) / 1000.0, CR_DIGITS_AFTER_DECIMAL) : "---") + " kR"; // Check for near-zero current
     lv_label_set_text(dutResistance, values.c_str());
+    values = String(temperatureDUT, 1) + " °C";
+    lv_label_set_text(dutTemperature, values.c_str());
+    values = String(energyDUT, 3) + " kJ";
+    lv_label_set_text(dutEnergy, values.c_str());
 }
 
 void LVGL_LCD::close_cx_screen(){
@@ -405,8 +402,8 @@ void LVGL_LCD::close_cx_screen(){
     inputTitle = nullptr;
     digits = nullptr;
     buttons = nullptr; outputButton = nullptr; backButton = nullptr;
-    curSelection = nullptr; curSelectionLabel = nullptr;
-    dutContainer = nullptr; dutVoltage = nullptr; dutCurrent = nullptr; dutPower = nullptr; dutResistance = nullptr;
+    dutContainer = nullptr; dutVoltage = nullptr; dutCurrent = nullptr; dutPower = nullptr; dutResistance = nullptr; dutTemperature = nullptr; dutEnergy = nullptr;
+    dutContainerRow1 = nullptr; dutContainerRow2 = nullptr; dutContainerRow3 = nullptr;
     // Clear header pointers as they were children of inputScreen
     headerContainer = nullptr; 
     tempLabel = nullptr;

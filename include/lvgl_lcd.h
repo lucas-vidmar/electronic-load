@@ -102,8 +102,10 @@ public:
      * @param targetValueStr String representation of the actual target value (input).
      * @param output_active Whether the output is currently active.
      * @param is_modifying Whether a digit is currently being modified.
+     * @param temperatureDUT Temperature reading from DUT.
+     * @param energyDUT Energy reading from DUT.
      */
-    void update_cx_screen(float current, int selection, String unit, float vDUT, float iDUT, int digitsBeforeDecimal, int totalDigits, String targetValueStr, bool output_active, bool is_modifying);
+    void update_cx_screen(float current, int selection, String unit, float vDUT, float iDUT, int digitsBeforeDecimal, int totalDigits, String targetValueStr, bool output_active, bool is_modifying, float temperatureDUT, float energyDUT);
     
     /**
      * @brief Close and clean up the CX screen.
@@ -149,12 +151,11 @@ private:
     /* UI Elements for cx_screen */
     lv_obj_t* inputScreen = nullptr;   // Stores input screen object
     lv_style_t styleValue, styleValueHovered; // Styles for values
-    lv_obj_t *inputTitle = nullptr, *currentSelectionTitle = nullptr, *outputTitle = nullptr,
+    lv_obj_t *inputTitle = nullptr, *outputTitle = nullptr,
     *digits = nullptr,
     *buttons = nullptr, *outputButton = nullptr, *backButton = nullptr, // Buttons
-    *curSelection = nullptr, *curSelectionLabel = nullptr, // current selection
-    *dutContainer = nullptr, *dutContainerRow1 = nullptr, *dutContainerRow2 = nullptr, // DUT container
-    *dutVoltage = nullptr, *dutCurrent = nullptr, *dutPower = nullptr, *dutResistance = nullptr; // DUT values
+    *dutContainer = nullptr, *dutContainerRow1 = nullptr, *dutContainerRow2 = nullptr, *dutContainerRow3 = nullptr, // DUT container
+    *dutVoltage = nullptr, *dutCurrent = nullptr, *dutPower = nullptr, *dutResistance = nullptr, *dutTemperature = nullptr, *dutEnergy = nullptr; // DUT values
 
     /* Common UI Elements */
     lv_obj_t *headerContainer = nullptr;

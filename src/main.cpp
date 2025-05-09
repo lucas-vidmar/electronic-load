@@ -407,7 +407,7 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
   }
 
   // Update LCD screen - Pass global output_active and current edit state
-  lcd.update_cx_screen(current_value, selected_item, unit, dut_voltage, dut_current, digitsBeforeDecimal, totalDigits, String(input, digitsAfterDecimal), output_active, edit_state == CX_EDIT_STATES::MODIFYING_DIGIT);
+  lcd.update_cx_screen(current_value, selected_item, unit, dut_voltage, dut_current, digitsBeforeDecimal, totalDigits, String(input, digitsAfterDecimal), output_active, (edit_state == CX_EDIT_STATES::MODIFYING_DIGIT), temperature, dut_energy);
 
   // No delay here, rely on loop delay/timing
   // State changes (input, output_active, fsm state) are detected and broadcast in loop()

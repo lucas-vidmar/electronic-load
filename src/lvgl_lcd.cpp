@@ -72,26 +72,22 @@ void LVGL_LCD::create_header(lv_obj_t* parent) {
     lv_obj_set_flex_align(headerContainer, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER); // Space out items
     lv_obj_set_style_pad_bottom(headerContainer, PADDING / 2, 0); // Add some padding below
 
-    // Temperature Label
-    tempLabel = lv_label_create(headerContainer);
-    lv_obj_set_style_text_font(tempLabel, FONT_S, 0);
-    lv_label_set_text(tempLabel, "Temp: -- C");
-
-    // Uptime Label - Placed in the middle
-    uptimeLabel = lv_label_create(headerContainer);
-    lv_obj_set_style_text_font(uptimeLabel, FONT_S, 0);
-    lv_label_set_text(uptimeLabel, "Up: 00:00:00"); // Initial text
-    lv_obj_set_flex_grow(uptimeLabel, 1); // Allow it to take space
-    lv_obj_set_style_text_align(uptimeLabel, LV_TEXT_ALIGN_CENTER, 0); // Center align text
-
-    // Fan Speed Label
+    // Fan Speed Label - Aligned to the left
     fanLabel = lv_label_create(headerContainer);
     lv_obj_set_style_text_font(fanLabel, FONT_S, 0);
     lv_label_set_text(fanLabel, "Fan: -- %");
+    lv_obj_align(fanLabel, LV_ALIGN_LEFT_MID, 0, 0);
+
+
+    // Uptime Label - Aligned to the right
+    uptimeLabel = lv_label_create(headerContainer);
+    lv_obj_set_style_text_font(uptimeLabel, FONT_S, 0);
+    lv_label_set_text(uptimeLabel, "Up: 00:00:00"); // Initial text
+    lv_obj_align(uptimeLabel, LV_ALIGN_RIGHT_MID, 0, 0);
 }
 
 void LVGL_LCD::update_header(float temperature, int fan_speed, const char* uptime) {
-    if (tempLabel) lv_label_set_text(tempLabel, (String(temperature, 1) + " C").c_str()); // Format temperature to 1 decimal place
+    // if (tempLabel) lv_label_set_text(tempLabel, (String(temperature, 1) + " C").c_str()); // Removed
     if (uptimeLabel) lv_label_set_text(uptimeLabel, uptime); // Update uptime text
     if (fanLabel) lv_label_set_text_fmt(fanLabel, "Fan: %d %%", fan_speed); // Use %% for literal %
 }
@@ -151,7 +147,7 @@ void LVGL_LCD::close_main_menu() {
         mainMenu = nullptr; // Set pointer to nullptr to indicate it doesn't exist
         // Clear header pointers as they were children of mainMenu
         headerContainer = nullptr; 
-        tempLabel = nullptr;
+        // tempLabel = nullptr; // Removed
         fanLabel = nullptr;
         uptimeLabel = nullptr; // Clear uptime label pointer
     }
@@ -406,7 +402,7 @@ void LVGL_LCD::close_cx_screen(){
     dutContainerRow1 = nullptr; dutContainerRow2 = nullptr; dutContainerRow3 = nullptr;
     // Clear header pointers as they were children of inputScreen
     headerContainer = nullptr; 
-    tempLabel = nullptr;
+    // tempLabel = nullptr; // Removed
     fanLabel = nullptr;
     uptimeLabel = nullptr; // Clear uptime label pointer
 

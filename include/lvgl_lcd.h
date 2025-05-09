@@ -159,7 +159,6 @@ private:
 
     /* Common UI Elements */
     lv_obj_t *headerContainer = nullptr;
-    lv_obj_t *tempLabel = nullptr;
     lv_obj_t *fanLabel = nullptr;
     lv_obj_t *uptimeLabel = nullptr; // Add uptime label
 

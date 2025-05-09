@@ -154,6 +154,7 @@ private:
     lv_obj_t *inputTitle = nullptr, *outputTitle = nullptr,
     *digits = nullptr,
     *buttons = nullptr, *outputButton = nullptr, *backButton = nullptr, // Buttons
+    *enable_status_indicator = nullptr, // Enable status indicator
     *dutContainer = nullptr, *dutContainerRow1 = nullptr, *dutContainerRow2 = nullptr, *dutContainerRow3 = nullptr, // DUT container
     *dutVoltage = nullptr, *dutCurrent = nullptr, *dutPower = nullptr, *dutResistance = nullptr, *dutTemperature = nullptr, *dutEnergy = nullptr; // DUT values
 

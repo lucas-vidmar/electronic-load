@@ -205,6 +205,13 @@ void LVGL_LCD::create_cx_screen(float current, int selection, String unit) {
     outputButton = create_button("Set", buttons, false, COLOR4_LIGHT);
     lv_obj_set_flex_grow(outputButton, 1);
 
+    // Enable status indicator
+    enable_status_indicator = lv_obj_create(buttons);
+    lv_obj_set_size(enable_status_indicator, 20, 20); // Adjust size as needed
+    lv_obj_add_style(enable_status_indicator, &styleValue, LV_PART_MAIN); // Use a base style
+    lv_obj_set_style_radius(enable_status_indicator, LV_RADIUS_CIRCLE, 0);
+    lv_obj_set_style_bg_color(enable_status_indicator, lv_color_hex(COLOR_GRAY), 0); // Default color
+
     // Back button as label
     backButton = create_button("Back", buttons, false, COLOR4_LIGHT);
     lv_obj_set_flex_grow(backButton, 1);
@@ -369,6 +376,13 @@ void LVGL_LCD::update_cx_screen(float current, int selection, String unit, float
     // Change text based on output state
     lv_label_set_text(outputButton, "Toggle");
 
+    // Update enable status indicator color
+    if (output_active) {
+        lv_obj_set_style_bg_color(enable_status_indicator, lv_color_hex(COLOR2_DARK), 0); // Green for enabled
+    } else {
+        lv_obj_set_style_bg_color(enable_status_indicator, lv_color_hex(COLOR4_DARK), 0); // Red for disabled
+    }
+
     if (selection == totalDigits + 1) { // Back button selected
         update_button(backButton, true);
     } else {
@@ -397,7 +411,7 @@ void LVGL_LCD::close_cx_screen(){
     inputScreen = nullptr;
     inputTitle = nullptr;
     digits = nullptr;
-    buttons = nullptr; outputButton = nullptr; backButton = nullptr;
+    buttons = nullptr; outputButton = nullptr; backButton = nullptr; enable_status_indicator = nullptr;
     dutContainer = nullptr; dutVoltage = nullptr; dutCurrent = nullptr; dutPower = nullptr; dutResistance = nullptr; dutTemperature = nullptr; dutEnergy = nullptr;
     dutContainerRow1 = nullptr; dutContainerRow2 = nullptr; dutContainerRow3 = nullptr;
     // Clear header pointers as they were children of inputScreen

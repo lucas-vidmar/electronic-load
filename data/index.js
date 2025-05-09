@@ -109,7 +109,7 @@ function handleMessage(message) {
             energyEl.textContent = data.measurements.energy.toFixed(3) + ' kJ';
             // Ensure resistance is handled correctly (e.g., avoid Infinity)
             const resistance = data.measurements.resistance;
-            resistanceEl.textContent = (isFinite(resistance) ? resistance.toFixed(3) : '---') + ' kΩ';
+            resistanceEl.textContent = (isFinite(resistance) ? resistance.toFixed(3) : '---') + ' Ω';
             temperatureEl.textContent = data.measurements.temperature.toFixed(1) + ' °C';
             // Update Fan Speed display
             const fanSpeed = data.measurements.fanSpeed;

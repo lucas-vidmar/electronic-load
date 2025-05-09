@@ -367,7 +367,7 @@ void LVGL_LCD::update_cx_screen(float current, int selection, String unit, float
         update_button(outputButton, false);
     }
     // Change text based on output state
-    lv_label_set_text(outputButton, output_active ? "Stop" : "Set");
+    lv_label_set_text(outputButton, "Toggle");
 
     if (selection == totalDigits + 1) { // Back button selected
         update_button(backButton, true);

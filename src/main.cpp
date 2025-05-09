@@ -29,6 +29,7 @@ float dut_voltage = 0.0; // Track DUT voltage
 float dut_current = 0.0; // Track DUT current
 float dut_power = 0.0; // Track DUT power
 float dut_resistance = 0.0; // Track DUT resistance
+float dut_energy = 0.0; // Track DUT energy
 
 bool output_active = false; // Track output state
 float temperature = 0.0; // Track temperature
@@ -168,6 +169,14 @@ void loop() {
     ws_delete_main_menu = false; // Reset the flag
   }
 
+  static uint64_t lastMillis = 0;
+  uint64_t currentMillis = rtc.get_timestamp_ms();
+  if (currentMillis - lastMillis >= 1000) { // Update every second
+    lastMillis = currentMillis;
+    if (output_active) {
+      dut_energy += dut_power / 1000; // Update DUT energy
+    }
+  }
   // Short delay to prevent busy-waiting
   delay(10);
 }
@@ -175,6 +184,7 @@ void loop() {
 void main_menu() {
   static int pos = 0;
   startTimeMs = rtc.get_timestamp_ms(); 
+  dut_energy = 0.0; // Reset DUT energy when entering main menu
 
   if (fsm.has_changed()) { // First time entering main menu
     Serial.println("Main menu");
@@ -318,6 +328,7 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
   // First time entering this mode, reset static vars
   if (fsm.has_changed()) {
     startTimeMs = rtc.get_timestamp_ms();
+    dut_energy = 0.0; // Reset DUT energy when entering constant_x mode
     encoder.set_position(0);
     digitsValues.assign(totalDigits, 0);  // Reset digits values
     selected_item = 0;
@@ -531,6 +542,7 @@ String getCurrentStateJson() {
   measurements["temperature"] = temperature;
   measurements["fanSpeed"] = fanSpeed;
   measurements["uptime"] = uptimeString; // Uptime string
+  measurements["energy"] = dut_energy; // Energy in kJ
 
   // State
   JsonObject state = doc.createNestedObject("state");

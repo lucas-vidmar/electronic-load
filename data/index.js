@@ -34,6 +34,7 @@ const statusTextEl = document.getElementById('status-text'); // Select the statu
 const voltageEl = document.getElementById('voltage');
 const currentEl = document.getElementById('current');
 const powerEl = document.getElementById('power');
+const energyEl = document.getElementById('energy');
 const resistanceEl = document.getElementById('resistance');
 const temperatureEl = document.getElementById('temperature');
 const fanSpeedEl = document.getElementById('fan-speed');
@@ -105,6 +106,7 @@ function handleMessage(message) {
             voltageEl.textContent = data.measurements.voltage.toFixed(3) + ' V';
             currentEl.textContent = data.measurements.current.toFixed(3) + ' A';
             powerEl.textContent = data.measurements.power.toFixed(3) + ' W';
+            energyEl.textContent = data.measurements.energy.toFixed(3) + ' kJ';
             // Ensure resistance is handled correctly (e.g., avoid Infinity)
             const resistance = data.measurements.resistance;
             resistanceEl.textContent = (isFinite(resistance) ? resistance.toFixed(3) : '---') + ' kΩ';

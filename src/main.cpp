@@ -329,10 +329,12 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
     encoder.set_position(0);
     digitsValues.assign(totalDigits, 0);  // Reset digits values
     selected_item = 0;
-    edit_state = CX_EDIT_STATES::SELECTING_ITEM;
+    edit_state = CX_EDIT_STATES::SELECTING_ITEM; // Set state
     current_value = 0.0;
     input = 0.0; // Ensure target input is 0 initially
     output_active = false; // Ensure output is off initially
+    encoder.set_min_position(0);
+    encoder.set_max_position(totalDigits + 1); // Digits (0 to totalDigits-1) + Output_Button (totalDigits) + Back_Button (totalDigits+1)
     lcd.create_cx_screen(current_value, selected_item, unit);
     // Initial state broadcast happens in loop()
   }

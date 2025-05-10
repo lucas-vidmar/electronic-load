@@ -214,14 +214,6 @@ void LVGL_LCD::create_cx_screen(float current, int selection, String unit) {
     lv_obj_set_style_pad_gap(digits, PADDING/4, 0); // spacing between objects
     lv_obj_set_style_border_width(digits, 0, 0); // No border
     lv_obj_set_style_margin_ver(digits, PADDING, 0); // Vertical margin
-
-    // Enable status indicator
-    enable_status_indicator = lv_obj_create(digits);
-    lv_obj_set_size(enable_status_indicator, 20, 20); // Adjust size as needed
-    lv_obj_add_style(enable_status_indicator, &styleDigitNormal, LV_PART_MAIN); // Use a base style
-    lv_obj_set_style_radius(enable_status_indicator, LV_RADIUS_CIRCLE, 0);
-    lv_obj_set_style_bg_color(enable_status_indicator, lv_color_hex(COLOR_GRAY), 0); // Default color
-    lv_obj_set_style_border_width(enable_status_indicator, 0, 0); // No border
     
     // Button Container
     buttons = lv_obj_create(inputScreen);
@@ -402,13 +394,14 @@ void LVGL_LCD::update_cx_screen(float current, int selection, String unit, float
     lv_obj_set_style_border_width(unitLabel, 0, 0); // No border
 
 
-    // RECREATE the enable_status_indicator as a child of 'digits'
-    // This ensures it's part of the flex layout and placed after the unit label.
-    // It was deleted by lv_obj_clean(digits) earlier in this function.
+    // Status indicator for output enable/disable
     enable_status_indicator = lv_obj_create(digits);
-    lv_obj_set_size(enable_status_indicator, 20, 20); // Adjust size as needed
-    lv_obj_add_style(enable_status_indicator, &styleDigitNormal, LV_PART_MAIN); // Use a base style for consistency, though color is overridden
-    lv_obj_set_style_radius(enable_status_indicator, LV_RADIUS_CIRCLE, 0);
+    lv_obj_set_size(enable_status_indicator, 15, 15); // Adjust size as needed
+    lv_obj_set_style_radius(enable_status_indicator, LV_RADIUS_CIRCLE, 0); // Make it a circle.
+    lv_obj_set_style_bg_opa(enable_status_indicator, LV_OPA_COVER, 0);     // Ensure background is fully opaque.
+    lv_obj_set_style_border_width(enable_status_indicator, 0, 0);         // Explicitly set border width to 0 for all parts and states.
+    // Note: The background color is set later based on output_active state.
+
     // Default/initial color will be set below based on output_active
 
     // Update button states and text

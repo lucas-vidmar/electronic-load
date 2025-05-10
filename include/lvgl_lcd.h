@@ -150,7 +150,7 @@ private:
 
     /* UI Elements for cx_screen */
     lv_obj_t* inputScreen = nullptr;   // Stores input screen object
-    lv_style_t styleValue, styleValueHovered; // Styles for values
+    lv_style_t styleDigitNormal, styleDigitHover, styleDigitEditing; // Styles for values (renamed and new one added)
     lv_obj_t *inputTitle = nullptr, *outputTitle = nullptr,
     *digits = nullptr,
     *buttons = nullptr, *outputButton = nullptr, *backButton = nullptr, // Buttons

@@ -155,12 +155,35 @@ void LVGL_LCD::close_main_menu() {
 
 void LVGL_LCD::create_cx_screen(float current, int selection, String unit) {
     // Normal style
-    lv_style_init(&styleValue);
-    lv_style_set_text_color(&styleValue, lv_color_black()); // Common black
+    lv_style_init(&styleDigitNormal);
+    lv_style_set_text_color(&styleDigitNormal, lv_color_black()); // Common black
+    lv_style_set_pad_hor(&styleDigitNormal, PADDING); // Horizontal padding
+    lv_style_set_pad_ver(&styleDigitNormal, PADDING / 2); // Vertical padding
+    lv_style_set_radius(&styleDigitNormal, ROUNDED_CORNER_CURVE); // Border radius
+    lv_style_set_border_color(&styleDigitNormal, lv_color_hex(COLOR_GRAY)); // Set border color gray
+    lv_style_set_border_width(&styleDigitNormal, 2); // Set border width
 
-    // Highlighted style for hovered digits
-    lv_style_init(&styleValueHovered);
-    lv_style_set_text_color(&styleValueHovered, lv_color_hex(COLOR4_LIGHT)); // Highlighted in red
+    // Highlighted style for hovered digits (selecting)
+    lv_style_init(&styleDigitHover);
+    lv_style_set_text_color(&styleDigitHover, lv_color_white()); // White text
+    lv_style_set_bg_color(&styleDigitHover, lv_color_hex(COLOR4_LIGHT)); // Light Red background
+    lv_style_set_bg_opa(&styleDigitHover, LV_OPA_COVER);
+    lv_style_set_pad_hor(&styleDigitHover, PADDING); // Horizontal padding
+    lv_style_set_pad_ver(&styleDigitHover, PADDING / 2); // Vertical padding
+    lv_style_set_radius(&styleDigitHover, ROUNDED_CORNER_CURVE); // Border radius
+    lv_style_set_border_color(&styleDigitHover, lv_color_hex(COLOR4_LIGHT)); // Set border color
+    lv_style_set_border_width(&styleDigitHover, 2); // Set border width
+
+    // Highlighted style for editing digits (modifying)
+    lv_style_init(&styleDigitEditing);
+    lv_style_set_bg_color(&styleDigitEditing, lv_color_hex(COLOR4_DARK)); // Dark Red background
+    lv_style_set_text_color(&styleDigitEditing, lv_color_white()); // White text
+    lv_style_set_bg_opa(&styleDigitEditing, LV_OPA_COVER);
+    lv_style_set_pad_hor(&styleDigitEditing, PADDING); // Horizontal padding
+    lv_style_set_pad_ver(&styleDigitEditing, PADDING / 2); // Vertical padding
+    lv_style_set_radius(&styleDigitEditing, ROUNDED_CORNER_CURVE); // Border radius
+    lv_style_set_border_color(&styleDigitEditing, lv_color_hex(COLOR4_DARK)); // Set border color
+    lv_style_set_border_width(&styleDigitEditing, 2); // Set border width
 
     // Check if current container already exists
     if (inputScreen != nullptr) return;
@@ -187,14 +210,18 @@ void LVGL_LCD::create_cx_screen(float current, int selection, String unit) {
     lv_obj_set_flex_flow(digits, LV_FLEX_FLOW_ROW);
     lv_obj_set_flex_align(digits, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
 
-    lv_obj_set_style_border_color(digits, lv_color_hex(COLOR_GRAY), 0); // set border color gray
+    lv_obj_set_style_pad_all(digits, 0, 0); // Remove padding
+    lv_obj_set_style_pad_gap(digits, PADDING/4, 0); // spacing between objects
+    lv_obj_set_style_border_width(digits, 0, 0); // No border
+    lv_obj_set_style_margin_ver(digits, PADDING, 0); // Vertical margin
 
     // Enable status indicator
     enable_status_indicator = lv_obj_create(digits);
     lv_obj_set_size(enable_status_indicator, 20, 20); // Adjust size as needed
-    lv_obj_add_style(enable_status_indicator, &styleValue, LV_PART_MAIN); // Use a base style
+    lv_obj_add_style(enable_status_indicator, &styleDigitNormal, LV_PART_MAIN); // Use a base style
     lv_obj_set_style_radius(enable_status_indicator, LV_RADIUS_CIRCLE, 0);
     lv_obj_set_style_bg_color(enable_status_indicator, lv_color_hex(COLOR_GRAY), 0); // Default color
+    lv_obj_set_style_border_width(enable_status_indicator, 0, 0); // No border
     
     // Button Container
     buttons = lv_obj_create(inputScreen);
@@ -218,6 +245,7 @@ void LVGL_LCD::create_cx_screen(float current, int selection, String unit) {
 
     // DUT Reading title
     outputTitle = create_section_header("Readings", inputScreen, COLOR2_DARK);
+    lv_obj_set_style_margin_top(outputTitle, PADDING, 0); // Add margin above the title
 
     // DUT Container
     dutContainer = lv_obj_create(inputScreen);
@@ -301,12 +329,12 @@ void LVGL_LCD::update_cx_screen(float current, int selection, String unit, float
         lv_label_set_text(label, "0");
         lv_obj_set_style_text_font(label, FONT_L, 0);
         if (digit_index == selection && !is_modifying) { // Highlight selected digit when SELECTING
-             lv_obj_add_style(label, &styleValueHovered, LV_PART_MAIN);
-        } else if (digit_index == selection && is_modifying) { // Could use a different style for modifying
-             lv_obj_add_style(label, &styleValueHovered, LV_PART_MAIN); // Use same for now
+            lv_obj_add_style(label, &styleDigitHover, LV_PART_MAIN);
+        } else if (digit_index == selection && is_modifying) { // Editing the digit
+            lv_obj_add_style(label, &styleDigitEditing, LV_PART_MAIN);
         }
         else {
-            lv_obj_add_style(label, &styleValue, LV_PART_MAIN);
+            lv_obj_add_style(label, &styleDigitNormal, LV_PART_MAIN);
         }
         digit_index++;
     }
@@ -315,12 +343,12 @@ void LVGL_LCD::update_cx_screen(float current, int selection, String unit, float
         lv_obj_t* label = lv_label_create(digits);
         lv_label_set_text_fmt(label, "%c", intPartStr[i]);
         lv_obj_set_style_text_font(label, FONT_L, 0);
-         if (digit_index == selection && !is_modifying) {
-             lv_obj_add_style(label, &styleValueHovered, LV_PART_MAIN);
-        } else if (digit_index == selection && is_modifying) {
-             lv_obj_add_style(label, &styleValueHovered, LV_PART_MAIN);
+         if (digit_index == selection && !is_modifying) { // Highlight selected digit when SELECTING
+             lv_obj_add_style(label, &styleDigitHover, LV_PART_MAIN);
+        } else if (digit_index == selection && is_modifying) { // Editing the digit
+             lv_obj_add_style(label, &styleDigitEditing, LV_PART_MAIN);
         } else {
-            lv_obj_add_style(label, &styleValue, LV_PART_MAIN);
+            lv_obj_add_style(label, &styleDigitNormal, LV_PART_MAIN);
         }
         digit_index++;
     }
@@ -329,7 +357,11 @@ void LVGL_LCD::update_cx_screen(float current, int selection, String unit, float
     lv_obj_t* dotLabel = lv_label_create(digits);
     lv_label_set_text(dotLabel, ".");
     lv_obj_set_style_text_font(dotLabel, FONT_L, 0);
-    lv_obj_add_style(dotLabel, &styleValue, LV_PART_MAIN); // Never highlighted
+    lv_obj_add_style(dotLabel, &styleDigitNormal, LV_PART_MAIN); // Never highlighted
+    lv_obj_set_style_pad_all(dotLabel, 0, 0); // Remove padding
+    lv_obj_set_style_margin_hor(dotLabel, 2, 0); // Reduce horizontal margin
+    lv_obj_set_style_margin_ver(dotLabel, 0, 0); // Remove vertical margin
+    lv_obj_set_style_border_width(dotLabel, 0, 0); // No border
 
     // Add decimal part
     String decPartStr = String(round((current - floor(current)) * pow(10, totalDigits - digitsBeforeDecimal)), 0);
@@ -348,12 +380,12 @@ void LVGL_LCD::update_cx_screen(float current, int selection, String unit, float
              lv_label_set_text(label, "0"); // Pad with trailing zeros if needed
          }
          lv_obj_set_style_text_font(label, FONT_L, 0);
-         if (digit_index == selection && !is_modifying) {
-             lv_obj_add_style(label, &styleValueHovered, LV_PART_MAIN);
-        } else if (digit_index == selection && is_modifying) {
-             lv_obj_add_style(label, &styleValueHovered, LV_PART_MAIN);
+         if (digit_index == selection && !is_modifying) { // Highlight selected digit when SELECTING
+             lv_obj_add_style(label, &styleDigitHover, LV_PART_MAIN);
+        } else if (digit_index == selection && is_modifying) { // Editing the digit
+             lv_obj_add_style(label, &styleDigitEditing, LV_PART_MAIN);
         } else {
-            lv_obj_add_style(label, &styleValue, LV_PART_MAIN);
+            lv_obj_add_style(label, &styleDigitNormal, LV_PART_MAIN);
         }
         digit_index++;
     }
@@ -363,7 +395,11 @@ void LVGL_LCD::update_cx_screen(float current, int selection, String unit, float
     lv_obj_t* unitLabel = lv_label_create(digits);
     lv_label_set_text(unitLabel, unit.c_str());
     lv_obj_set_style_text_font(unitLabel, FONT_L, 0);
-    lv_obj_add_style(unitLabel, &styleValue, LV_PART_MAIN); // Never highlighted
+    lv_obj_add_style(unitLabel, &styleDigitNormal, LV_PART_MAIN); // Never highlighted
+    lv_obj_set_style_pad_all(unitLabel, 0, 0); // Remove padding
+    lv_obj_set_style_margin_hor(unitLabel, PADDING / 2, 0); // Reduce horizontal margin
+    lv_obj_set_style_margin_ver(unitLabel, 0, 0); // Remove vertical margin
+    lv_obj_set_style_border_width(unitLabel, 0, 0); // No border
 
 
     // RECREATE the enable_status_indicator as a child of 'digits'
@@ -371,10 +407,9 @@ void LVGL_LCD::update_cx_screen(float current, int selection, String unit, float
     // It was deleted by lv_obj_clean(digits) earlier in this function.
     enable_status_indicator = lv_obj_create(digits);
     lv_obj_set_size(enable_status_indicator, 20, 20); // Adjust size as needed
-    lv_obj_add_style(enable_status_indicator, &styleValue, LV_PART_MAIN); // Use a base style
+    lv_obj_add_style(enable_status_indicator, &styleDigitNormal, LV_PART_MAIN); // Use a base style for consistency, though color is overridden
     lv_obj_set_style_radius(enable_status_indicator, LV_RADIUS_CIRCLE, 0);
     // Default/initial color will be set below based on output_active
-
 
     // Update button states and text
     // Selection: 0..totalDigits-1 = digits, totalDigits = Trigger/Stop, totalDigits+1 = Exit
@@ -430,8 +465,9 @@ void LVGL_LCD::close_cx_screen(){
     fanLabel = nullptr;
     uptimeLabel = nullptr; // Clear uptime label pointer
 
-    lv_style_reset(&styleValue);
-    lv_style_reset(&styleValueHovered);
+    lv_style_reset(&styleDigitNormal);
+    lv_style_reset(&styleDigitHover);
+    lv_style_reset(&styleDigitEditing);
 }
 
 lv_obj_t* LVGL_LCD::create_section_header(String label, lv_obj_t* parent, int color) {

@@ -188,6 +188,13 @@ void LVGL_LCD::create_cx_screen(float current, int selection, String unit) {
     lv_obj_set_flex_align(digits, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
 
     lv_obj_set_style_border_color(digits, lv_color_hex(COLOR_GRAY), 0); // set border color gray
+
+    // Enable status indicator
+    enable_status_indicator = lv_obj_create(digits);
+    lv_obj_set_size(enable_status_indicator, 20, 20); // Adjust size as needed
+    lv_obj_add_style(enable_status_indicator, &styleValue, LV_PART_MAIN); // Use a base style
+    lv_obj_set_style_radius(enable_status_indicator, LV_RADIUS_CIRCLE, 0);
+    lv_obj_set_style_bg_color(enable_status_indicator, lv_color_hex(COLOR_GRAY), 0); // Default color
     
     // Button Container
     buttons = lv_obj_create(inputScreen);
@@ -204,13 +211,6 @@ void LVGL_LCD::create_cx_screen(float current, int selection, String unit) {
     // Output button as label
     outputButton = create_button("Set", buttons, false, COLOR4_LIGHT);
     lv_obj_set_flex_grow(outputButton, 1);
-
-    // Enable status indicator
-    enable_status_indicator = lv_obj_create(buttons);
-    lv_obj_set_size(enable_status_indicator, 20, 20); // Adjust size as needed
-    lv_obj_add_style(enable_status_indicator, &styleValue, LV_PART_MAIN); // Use a base style
-    lv_obj_set_style_radius(enable_status_indicator, LV_RADIUS_CIRCLE, 0);
-    lv_obj_set_style_bg_color(enable_status_indicator, lv_color_hex(COLOR_GRAY), 0); // Default color
 
     // Back button as label
     backButton = create_button("Back", buttons, false, COLOR4_LIGHT);
@@ -364,6 +364,16 @@ void LVGL_LCD::update_cx_screen(float current, int selection, String unit, float
     lv_label_set_text(unitLabel, unit.c_str());
     lv_obj_set_style_text_font(unitLabel, FONT_L, 0);
     lv_obj_add_style(unitLabel, &styleValue, LV_PART_MAIN); // Never highlighted
+
+
+    // RECREATE the enable_status_indicator as a child of 'digits'
+    // This ensures it's part of the flex layout and placed after the unit label.
+    // It was deleted by lv_obj_clean(digits) earlier in this function.
+    enable_status_indicator = lv_obj_create(digits);
+    lv_obj_set_size(enable_status_indicator, 20, 20); // Adjust size as needed
+    lv_obj_add_style(enable_status_indicator, &styleValue, LV_PART_MAIN); // Use a base style
+    lv_obj_set_style_radius(enable_status_indicator, LV_RADIUS_CIRCLE, 0);
+    // Default/initial color will be set below based on output_active
 
 
     // Update button states and text

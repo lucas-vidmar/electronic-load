@@ -10,7 +10,7 @@
  * @note This class assumes that the underlying hardware supports rotary encoders.
  * @note This class assumes only one encoder is used.
  * 
- * @date 2024-11-01
+ * @date 2025-04-24
  */
 #pragma once
 
@@ -24,8 +24,18 @@
 // Timing constants for debouncing and button handling
 #define ENCODER_ROTATION_DEBOUNCE 5 // milliseconds (Reduced from 15)
 #define ENCODER_BUTTON_DEBOUNCE 200 // miliseconds
-#define ENCODER_BUTTON_LONG_PRESS 1000
+#define ENCODER_BUTTON_LONG_PRESS 1000 // milliseconds for long button press detection
 
+/**
+ * @class Encoder
+ * @brief A class to interface with a rotary encoder.
+ *
+ * The Encoder class provides methods to initialize the encoder hardware,
+ * detect rotation and button presses, retrieve and set position limits,
+ * and handle interrupts for accurate input detection.
+ *
+ * @note This implementation assumes a single encoder instance.
+ */
 class Encoder {
 public:
 

@@ -1,17 +1,32 @@
+/**
+ * @file FanController.h
+ * @brief Header file for fan control and PID fan controller classes.
+ * @date 2025-04-29
+ */
 #pragma once
 
 #include <Arduino.h>
 
 // Fan control pin definitions
-#define EN_FAN_PIN     GPIO_NUM_2
-#define PWM_FAN_PIN    GPIO_NUM_0
-#define LOCK_FAN_PIN   GPIO_NUM_16
-// PID controller tuning parameters
-#define PID_KP          20.0
-#define PID_KI          1
-#define PID_KD          0.5
-#define PID_SETPOINT   35.0 // Target temperature in degrees C
+#define EN_FAN_PIN     GPIO_NUM_2   /*!< GPIO pin to enable/disable the fan */
+#define PWM_FAN_PIN    GPIO_NUM_0   /*!< GPIO pin for PWM control of fan speed */
+#define LOCK_FAN_PIN   GPIO_NUM_16  /*!< GPIO pin to detect fan lock/stall */
 
+// PID controller tuning parameters
+#define PID_KP         20.0f        /*!< Proportional gain */
+#define PID_KI         1.0f         /*!< Integral gain */
+#define PID_KD         0.5f         /*!< Derivative gain */
+#define PID_SETPOINT   35.0f        /*!< Target temperature in degrees Celsius */
+
+/**
+ * @class Fan
+ * @brief A class to control a cooling fan via PWM and status detection.
+ *
+ * The Fan class provides methods to initialize hardware pins,
+ * enable/disable the fan, set speed via PWM, and detect fan lock/stall status.
+ *
+ * @note PWM speed range is 0 (off) to 255 (full speed).
+ */
 class Fan {
 private:
     uint8_t pwmPin;
@@ -32,6 +47,16 @@ public:
     int get_speed_percentage() const;
 };
 
+/**
+ * @class PIDFanController
+ * @brief A PID controller to regulate fan speed based on temperature.
+ *
+ * The PIDFanController class calculates fan speed adjustments
+ * based on proportional, integral, and derivative gains to maintain
+ * a target temperature.
+ *
+ * @note Configure output limits via set_output_limits().
+ */
 class PIDFanController {
 private:
     Fan& fan;

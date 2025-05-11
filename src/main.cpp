@@ -25,23 +25,23 @@ FSM fsm = FSM();
 
 // --- Global Variables for State Management ---
 float input = 0.0;
-float dut_voltage = 0.0; // Track DUT voltage
-float dut_current = 0.0; // Track DUT current
-float dut_power = 0.0; // Track DUT power
-float dut_resistance = 0.0; // Track DUT resistance
-float dut_energy = 0.0; // Track DUT energy
+float dutVoltage = 0.0; // Track DUT voltage (was dut_voltage)
+float dutCurrent = 0.0; // Track DUT current (was dut_current)
+float dutPower = 0.0;   // Track DUT power (was dut_power)
+float dutResistance = 0.0; // Track DUT resistance (was dut_resistance)
+float dutEnergy = 0.0;  // Track DUT energy (was dut_energy)
 
-bool output_active = false; // Track output state
-float temperature = 0.0; // Track temperature
-int fanSpeed = 0; // Get current fan speed percentage
+bool outputActive = false; // Track output state (was output_active)
+float temperature = 0.0;   // Track temperature
+int fanSpeed = 0;          // Get current fan speed percentage
 
-uint64_t timeMs = 0; // Track RTC time
+uint64_t timeMs = 0;       // Track RTC time
 String uptimeString = "00:00:00"; // Track uptime string
 
 // --- Global Variables for WS/UI Sync ---
-float ws_requested_value = 0.0;
-bool ws_value_updated = false;
-bool ws_delete_main_menu = false; // Track if in main menu
+float wsRequestedValue = 0.0; // Last requested value from WebSocket (was ws_requested_value)
+bool wsValueUpdated = false;  // Flag indicating WS value update (was ws_value_updated)
+bool wsDeleteMainMenu = false; // Track if in main menu (was ws_delete_main_menu)
 
 // Helper function to format uptime
 String format_uptime(uint64_t ms) {
@@ -68,10 +68,10 @@ void setup() {
   scanner.Init();
   scanner.Scan();
 
-  // Inicializar SPIFFS
-  Serial.println("Inicializando SPIFFS...");
+  // Initialize SPIFFS
+  Serial.println("Initializing SPIFFS...");
   if (!SPIFFS.begin(true)) {
-    Serial.println("Error al montar SPIFFS");
+    Serial.println("Error mounting SPIFFS");
     return;
   }
 
@@ -107,15 +107,15 @@ void setup() {
   // Initialize FSM
   fsm.init();
 
-  // Iniciar el servidor web y WebSocket
-  Serial.println("Iniciando servidor web y WebSocket...");
+  // Start web server and WebSocket
+  Serial.println("Starting web server and WebSocket...");
   webServer.set_default_file("index.html");
-  webServer.attachWsHandler(onWsEvent); // Attach the WebSocket handler
+  webServer.attachWsHandler(on_ws_event); // Attach the WebSocket handler
   webServer.begin();
 
   // Initial relay state
   analogSws.relay_dut_disable();
-  output_active = false; // Ensure output is off
+  outputActive = false; // Ensure output is off
 }
 
 void loop() {
@@ -125,10 +125,10 @@ void loop() {
   // Update all global variables
   fanSpeed = fan.get_speed_percentage(); // Get current fan speed percentage
   temperature = adc.read_temperature(); // Read temperature from ADC
-  dut_voltage = adc.read_vDUT(); // Read DUT voltage
-  dut_current = adc.read_iDUT(); // Read DUT current
-  dut_power = dut_voltage * dut_current; // Calculate DUT power
-  dut_resistance = (dut_current != 0) ? (dut_voltage / dut_current) : 0; // Calculate DUT resistance
+  dutVoltage = adc.read_v_dut(); // Read DUT voltage
+  dutCurrent = adc.read_i_dut(); // Read DUT current
+  dutPower = dutVoltage * dutCurrent; // Calculate DUT power
+  dutResistance = (dutCurrent != 0) ? (dutVoltage / dutCurrent) : 0; // Calculate DUT resistance
 
   lcd.update();
   lcd.update_header(temperature, fanSpeed, uptimeString.c_str()); // Update header with temperature, fan speed, and uptime
@@ -136,10 +136,10 @@ void loop() {
   // Store previous state to detect changes
   FSM_MAIN_STATES prevState = fsm.get_current_state();
   float prevInput = input;
-  bool prevOutputActive = output_active;
+  bool prevOutputActive = outputActive;
 
   // Run FSM which might change state or apply 'input'
-  fsm.run(input, dac, analogSws, &output_active, adc);
+  fsm.run(input, dac, analogSws, &outputActive, adc);
 
   // Compute and adjust fan speed based on temperature
   pidController.compute(temperature);
@@ -150,24 +150,24 @@ void loop() {
   unsigned long currentTime = millis();
   bool stateChanged = (fsm.get_current_state() != prevState) ||
                       (input != prevInput) ||
-                      (output_active != prevOutputActive);
+                      (outputActive != prevOutputActive);
 
   if (stateChanged || (currentTime - lastBroadcastTime >= BROADCAST_INTERVAL)) {
-    broadcastState();
+    broadcast_state();
     lastBroadcastTime = currentTime;
   }
 
-  if (ws_delete_main_menu) {
+  if (wsDeleteMainMenu) {
     lcd.close_cx_screen(); // Close CX screen if in main menu, moved here because it was taking too long to close
-    ws_delete_main_menu = false; // Reset the flag
+    wsDeleteMainMenu = false; // Reset the flag
   }
 
   static uint64_t lastMillis = 0;
   uint64_t currentMillis = rtc.get_timestamp_ms();
   if (currentMillis - lastMillis >= 1000) { // Update every second
     lastMillis = currentMillis;
-    if (output_active) {
-      dut_energy += dut_power / 1000; // Update DUT energy
+    if (outputActive) {
+      dutEnergy += dutPower / 1000; // Update DUT energy
       timeMs += 1000;
       uptimeString = format_uptime(timeMs); // Format uptime string
     }
@@ -180,7 +180,7 @@ void main_menu() {
   static int pos = 0;
   timeMs = 0.0; // Reset time when entering main menu
   uptimeString = format_uptime(timeMs); // Format uptime string
-  dut_energy = 0.0; // Reset DUT energy when entering main menu
+  dutEnergy = 0.0; // Reset DUT energy when entering main menu
 
   if (fsm.has_changed()) { // First time entering main menu
     Serial.println("Main menu");
@@ -209,7 +209,7 @@ void main_menu() {
     Serial.println("Exiting main menu to option " + String(FSM_MAIN_STATES::CC + pos));
     lcd.close_main_menu();
     input = 0.0; // Reset input when changing mode
-    output_active = false; // Ensure output is off
+    outputActive = false; // Ensure output is off
     // No return here, let loop handle broadcast
   }
 
@@ -310,29 +310,29 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
   static float current_value = 0.0; // The value being edited (mirrors digitsValues)
 
   // Check for updates from WebSocket when output is off
-  if (ws_value_updated) {
-    Serial.printf("constant_x: Detected WS value update to %.3f\n", ws_requested_value);
-    current_value = ws_requested_value;
+  if (wsValueUpdated) {
+    Serial.printf("constant_x: Detected WS value update to %.3f\n", wsRequestedValue);
+    current_value = wsRequestedValue;
     // Convert the new float value back into the digits array
     number_to_digits(current_value, digitsValues, digitsBeforeDecimal, digitsAfterDecimal, totalDigits);
-    ws_value_updated = false; // Consume the update flag
+    wsValueUpdated = false; // Consume the update flag
     // If output is active, WS should have updated 'input' directly.
     // If output is inactive, 'input' remains 0, only the display value changes.
   }
-  else ws_requested_value = current_value;
+  else wsRequestedValue = current_value;
 
   // First time entering this mode, reset static vars
   if (fsm.has_changed()) {
     timeMs = 0.0; // Reset time when entering constant_x mode
     uptimeString = format_uptime(timeMs); // Format uptime string
-    dut_energy = 0.0; // Reset DUT energy when entering constant_x mode
+    dutEnergy = 0.0; // Reset DUT energy when entering constant_x mode
     encoder.set_position(0);
     digitsValues.assign(totalDigits, 0);  // Reset digits values
     selected_item = 0;
     edit_state = CX_EDIT_STATES::SELECTING_ITEM; // Set state
     current_value = 0.0;
     input = 0.0; // Ensure target input is 0 initially
-    output_active = false; // Ensure output is off initially
+    outputActive = false; // Ensure output is off initially
     encoder.set_min_position(0);
     encoder.set_max_position(totalDigits + 1); // Digits (0 to totalDigits-1) + Output_Button (totalDigits) + Back_Button (totalDigits+1)
     lcd.create_cx_screen(current_value, selected_item, unit);
@@ -353,21 +353,21 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
           Serial.println("Starting modify digit " + String(selected_item));
         }
         else if (selected_item == totalDigits) { // Trigger/Stop output pressed
-          output_active = !output_active; // Toggle output state (global flag)
-          if (output_active) {
+          outputActive = !outputActive; // Toggle output state (global flag)
+          if (outputActive) {
               input = current_value; // Set target value from edited value
               Serial.println("Output activated: " + String(input, digitsAfterDecimal));
           } else {
               input = 0.0; // Set target to 0
               Serial.println("Output deactivated");
           }
-          // State change (output_active) will be broadcast by loop()
+          // State change (outputActive) will be broadcast by loop()
         }
         else { // Exit pressed (selected_item == totalDigits + 1)
           Serial.println("Exiting CX mode");
           fsm.change_state(FSM_MAIN_STATES::MAIN_MENU);
           input = 0.0; // Reset input
-          output_active = false; // Ensure output is off
+          outputActive = false; // Ensure output is off
           lcd.close_cx_screen();
           // FSM state change will be broadcast by loop()
           return; // Exit function early as state changed
@@ -397,7 +397,7 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
         current_value = digits_to_number(digitsValues, digitsBeforeDecimal, digitsAfterDecimal, totalDigits);
         Serial.println("Digit " + String(selected_item) + " changed to " + String(digitsValues[selected_item]) + ", New Value: " + String(current_value));
         // If output is active while modifying, update the target 'input' immediately
-        if (output_active) {
+        if (outputActive) {
             input = current_value; // Update global input
         }
         // Value change will be broadcast by loop()
@@ -405,20 +405,20 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
     }
   }
 
-  // Update LCD screen - Pass global output_active and current edit state
-  lcd.update_cx_screen(current_value, selected_item, unit, dut_voltage, dut_current, digitsBeforeDecimal, totalDigits, String(input, digitsAfterDecimal), output_active, (edit_state == CX_EDIT_STATES::MODIFYING_DIGIT), temperature, dut_energy);
+  // Update LCD screen - Pass global outputActive and current edit state
+  lcd.update_cx_screen(current_value, selected_item, unit, dutVoltage, dutCurrent, digitsBeforeDecimal, totalDigits, String(input, digitsAfterDecimal), outputActive, (edit_state == CX_EDIT_STATES::MODIFYING_DIGIT), temperature, dutEnergy);
 
   // No delay here, rely on loop delay/timing
-  // State changes (input, output_active, fsm state) are detected and broadcast in loop()
+  // State changes (input, outputActive, fsm state) are detected and broadcast in loop()
 }
 
 // --- WebSocket Handler ---
-void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
+void on_ws_event(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
   switch (type) {
     case WS_EVT_CONNECT: {
       Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
       // Send current state to the newly connected client
-      client->text(getCurrentStateJson());
+      client->text(get_current_state_json());
       break;
     case WS_EVT_DISCONNECT:
       Serial.printf("WebSocket client #%u disconnected\n", client->id());
@@ -441,7 +441,7 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
         }
 
         // Handle the command
-        handleWsCommand(client, doc);
+        handle_ws_command(client, doc);
       }
       break;
     }
@@ -453,31 +453,31 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
 }
 
 // --- Command Handlers ---
-void handleWsCommand(AsyncWebSocketClient *client, JsonDocument& doc) {
+void handle_ws_command(AsyncWebSocketClient *client, JsonDocument& doc) {
   const char* command = doc["command"];
   if (!command) {
     client->text("{\"error\":\"Missing command\"}");
     return;
   }
 
-  if (strcmp(command, "getMeasurements") == 0) handleGetMeasurements(client);
-  else if (strcmp(command, "setMode") == 0) handleSetMode(doc);
-  else if (strcmp(command, "setValue") == 0) handleSetValue(doc);
-  else if (strcmp(command, "setRelay") == 0) handleSetRelay(doc);
-  else if (strcmp(command, "exit") == 0) handleExit();
+  if (strcmp(command, "getMeasurements") == 0) handle_get_measurements(client);
+  else if (strcmp(command, "setMode") == 0) handle_set_mode(doc);
+  else if (strcmp(command, "setValue") == 0) handle_set_value(doc);
+  else if (strcmp(command, "setRelay") == 0) handle_set_relay(doc);
+  else if (strcmp(command, "exit") == 0) handle_exit();
   else client->text("{\"error\":\"Unknown command\"}");
 
   // After handling command, broadcast the updated state
-  broadcastState();
+  broadcast_state();
 }
 
-void handleGetMeasurements(AsyncWebSocketClient *client) {
+void handle_get_measurements(AsyncWebSocketClient *client) {
   // Measurements are sent periodically via broadcastState,
   // but we can send an immediate update if requested.
-  client->text(getCurrentStateJson());
+  client->text(get_current_state_json());
 }
 
-void handleSetMode(JsonDocument& doc) {
+void handle_set_mode(JsonDocument& doc) {
   const char* modeStr = doc["value"];
   if (!modeStr) return;
 
@@ -488,28 +488,28 @@ void handleSetMode(JsonDocument& doc) {
   else if (strcmp(modeStr, "CP") == 0) fsm.change_state(FSM_MAIN_STATES::CW);
   // Reset input value when changing mode via WS
   input = 0.0;
-  output_active = false; // Turn off output when changing mode
+  outputActive = false; // Turn off output when changing mode
   // Update physical interface if necessary (e.g., LCD screen)
   // Note: The FSM state change should trigger screen updates in the main loop
 }
 
-void handleSetValue(JsonDocument& doc) {
+void handle_set_value(JsonDocument& doc) {
   if (!doc["value"].is<float>() && !doc["value"].is<int>()) return;
   float newValue = doc["value"];
   Serial.printf("WS: Setting value to %.3f\n", newValue);
-  ws_value_updated = true; // Mark that the value has been updated via WS
-  ws_requested_value = newValue; // Store the requested value
+  wsValueUpdated = true; // Mark that the value has been updated via WS
+  wsRequestedValue = newValue; // Store the requested value
 
-  if (output_active) input = newValue; // Update input if output is active
+  if (outputActive) input = newValue; // Update input if output is active
 }
 
-void handleSetRelay(JsonDocument& doc) {
+void handle_set_relay(JsonDocument& doc) {
   if (!doc["value"].is<bool>()) return;
   
-  output_active = doc["value"];
-  Serial.printf("WS: Setting relay %s\n", output_active ? "ON" : "OFF");
-  if (output_active) {
-    input = ws_requested_value; // Set input to the requested value
+  outputActive = doc["value"];
+  Serial.printf("WS: Setting relay %s\n", outputActive ? "ON" : "OFF");
+  if (outputActive) {
+    input = wsRequestedValue; // Set input to the requested value
     analogSws.relay_dut_enable();
   } else {
     input = 0.0; // Set input to 0 when turning off
@@ -517,31 +517,31 @@ void handleSetRelay(JsonDocument& doc) {
   }
 }
 
-void handleExit() {
+void handle_exit() {
   Serial.println("WS: Exiting current mode to Main Menu");
   fsm.change_state(FSM_MAIN_STATES::MAIN_MENU);
   input = 0.0;
-  output_active = false;
+  outputActive = false;
   analogSws.relay_dut_disable(); // Physically disable the relay
-  ws_delete_main_menu = true; // Set flag to close main menu
-  broadcastState(); // Broadcast the state after exiting
+  wsDeleteMainMenu = true; // Set flag to close main menu
+  broadcast_state(); // Broadcast the state after exiting
 }
 
 
 // --- State Management ---
-String getCurrentStateJson() {
+String get_current_state_json() {
   StaticJsonDocument<512> doc; // Adjust size as needed
 
   // Measurements
   JsonObject measurements = doc.createNestedObject("measurements");
-  measurements["voltage"] = dut_voltage;
-  measurements["current"] = dut_current;
-  measurements["power"] = dut_power;
-  measurements["resistance"] = dut_resistance; // Assuming kOhm, adjust if needed
+  measurements["voltage"] = dutVoltage;
+  measurements["current"] = dutCurrent;
+  measurements["power"] = dutPower;
+  measurements["resistance"] = dutResistance; // Assuming kOhm, adjust if needed
   measurements["temperature"] = temperature;
   measurements["fanSpeed"] = fanSpeed;
   measurements["uptime"] = uptimeString; // Uptime string
-  measurements["energy"] = dut_energy; // Energy in kJ
+  measurements["energy"] = dutEnergy; // Energy in kJ
 
   // State
   JsonObject state = doc.createNestedObject("state");
@@ -555,16 +555,16 @@ String getCurrentStateJson() {
       case FSM_MAIN_STATES::SETTINGS: modeStr = "SETTINGS"; break; // Add if needed
   }
   state["mode"] = modeStr;
-  state["outputActive"] = output_active;
+  state["outputActive"] = outputActive;
   // Include the current value being set/targeted if applicable
   // This might need refinement based on how 'constant_x' manages its value
-  state["value"] = (fsm.get_current_state() >= FSM_MAIN_STATES::CC && fsm.get_current_state() <= FSM_MAIN_STATES::CW) ? ws_requested_value : 0.0; // Send target value if in CX mode
+  state["value"] = (fsm.get_current_state() >= FSM_MAIN_STATES::CC && fsm.get_current_state() <= FSM_MAIN_STATES::CW) ? wsRequestedValue : 0.0; // Send target value if in CX mode
 
   String jsonString;
   serializeJson(doc, jsonString);
   return jsonString;
 }
 
-void broadcastState() {
-  webServer.notifyClients(getCurrentStateJson());
+void broadcast_state() {
+  webServer.notifyClients(get_current_state_json());
 }

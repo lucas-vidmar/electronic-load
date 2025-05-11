@@ -8,7 +8,7 @@
  * 
  * @note This file is part of the Electronic Load project.
  * 
- * @date 2024-11-01
+ * @date 2025-04-22
  */
 #pragma once
 

@@ -11,7 +11,7 @@
  * @note The DAC resolution is 12 bits, with a reference voltage of 4.096V.
  * The maximum output voltage is 0.5V, and the maximum digital value is 4095.
  * 
- * @date 2024-11-01
+ * @date 2025-05-02
  */
 #pragma once
 
@@ -30,7 +30,6 @@
 #define DAC_QMV (DAC_Q * 1000)  /*!< Voltage step in mV */
 #define DAC_V_MAX_CC 0.5   /*!< Maximum voltage output in V for CC mode*/
 #define DAC_V_MAX_CV 0.45   /*!< Maximum voltage output in V for CV mode*/
-#define DAC_OUTPUT_VOLTAGE_DIVIDER (DAC_V_MAX / DAC_REF_VOLTAGE)    /*!< Output voltage divider */
 #define DAC_MAX_DIGITAL_VALUE 4095 // To limit either current or voltage
 
 /* ----------------- MAXs ----------------- */

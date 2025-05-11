@@ -9,7 +9,7 @@
  * 
  * @note This class requires an I2C instance for communication.
  * 
- * @date 2024-11-01
+ * @date 2025-05-02
  */
 #pragma once
 
@@ -19,9 +19,9 @@
 
 #define ADS1115_ADDR 0x48
 #define ADC_CONVERSION_TIME 8
-#define ADC_CHANNEL_IDUT 0
+#define ADC_CHANNEL_I_DUT 0  // Old name: rename to ADC_CHANNEL_I_DUT
 #define ADC_CHANNEL_TEMP 1
-#define ADC_CHANNEL_VDUT 2
+#define ADC_CHANNEL_V_DUT 2  // Old name: rename to ADC_CHANNEL_V_DUT
 #define ADC_MAX_VALUE (1 << 16)
 #define ADC_PGA 6.144
 
@@ -69,7 +69,7 @@ public:
      * 
      * @return float The current value in amperes.
      */
-    float read_iDUT();
+    float read_i_dut();
 
     /**
      * @brief Reads the temperature from the sensor.
@@ -89,7 +89,7 @@ public:
      * 
      * @return float The voltage value read from the DUT.
      */
-    float read_vDUT();
+    float read_v_dut();
 
 private:
     /**

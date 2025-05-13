@@ -39,7 +39,7 @@ uint64_t timeMs = 0;       // Track RTC time
 String uptimeString = "00:00:00"; // Track uptime string
 
 // --- Global Variables for WS/UI Sync ---
-float wsRequestedValue = 0.0; // Last requested value from WebSocket (was ws_requested_value)
+float wsRequestedValue = 0.0; // Last requested value from WebSocket (was wsRequestedValue)
 bool wsValueUpdated = false;  // Flag indicating WS value update (was ws_value_updated)
 bool wsDeleteMainMenu = false; // Track if in main menu (was ws_delete_main_menu)
 
@@ -259,40 +259,40 @@ void number_to_digits(float number, std::vector<int>& digitsValues, int digitsBe
     // Extract digits from right to left
     for (int i = totalDigits - 1; i >= 0; --i) {
         if (i == digitsBeforeDecimal -1) { // Position before the implied decimal point
-             // This handles the integer part's last digit
-             digitsValues[i] = scaled_number % 10;
+          // This handles the integer part's last digit
+          digitsValues[i] = scaled_number % 10;
         } else if (i < digitsBeforeDecimal) { // Integer part digits (except the last one)
-             digitsValues[i] = (scaled_number / (long long int)pow(10, digitsBeforeDecimal - 1 - i + digitsAfterDecimal)) % 10;
+          digitsValues[i] = (scaled_number / (long long int)pow(10, digitsBeforeDecimal - 1 - i + digitsAfterDecimal)) % 10;
         }
          else { // Decimal part digits
-             digitsValues[i] = (scaled_number / (long long int)pow(10, totalDigits - 1 - i)) % 10;
+          digitsValues[i] = (scaled_number / (long long int)pow(10, totalDigits - 1 - i)) % 10;
         }
 
         // Basic validation (should ideally not happen with round/abs)
         if (digitsValues[i] < 0 || digitsValues[i] > 9) {
-            digitsValues[i] = 0; // Default to 0 if out of range
+          digitsValues[i] = 0; // Default to 0 if out of range
         }
     }
 
      // Correct calculation for integer part
     long long int integer_part_val = static_cast<long long int>(number);
     for (int i = digitsBeforeDecimal - 1; i >= 0; --i) {
-        digitsValues[i] = integer_part_val % 10;
-        integer_part_val /= 10;
+      digitsValues[i] = integer_part_val % 10;
+      integer_part_val /= 10;
     }
 
     // Correct calculation for decimal part
     long long int decimal_part_val = static_cast<long long int>(round((number - floor(number)) * pow(10, digitsAfterDecimal)));
     for (int i = totalDigits - 1; i >= digitsBeforeDecimal; --i) {
-        digitsValues[i] = decimal_part_val % 10;
-        decimal_part_val /= 10;
+      digitsValues[i] = decimal_part_val % 10;
+      decimal_part_val /= 10;
     }
 
      // Validate digits again after calculation
     for (int i = 0; i < totalDigits; ++i) {
-        if (digitsValues[i] < 0 || digitsValues[i] > 9) {
-            digitsValues[i] = 0;
-        }
+      if (digitsValues[i] < 0 || digitsValues[i] > 9) {
+        digitsValues[i] = 0;
+      }
     }
 }
 
@@ -307,19 +307,19 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
   static std::vector<int> digitsValues(totalDigits, 0); // Digit values initialized to 0
   static int selected_item = 0; // Currently selected item (0..totalDigits-1 = digits, totalDigits = Trigger, totalDigits+1 = Exit)
   static CX_EDIT_STATES edit_state = CX_EDIT_STATES::SELECTING_ITEM; // State machine for editing
-  static float current_value = 0.0; // The value being edited (mirrors digitsValues)
+  static float currentValue = 0.0; // The value being edited (mirrors digitsValues)
 
   // Check for updates from WebSocket when output is off
   if (wsValueUpdated) {
     Serial.printf("constant_x: Detected WS value update to %.3f\n", wsRequestedValue);
-    current_value = wsRequestedValue;
+    currentValue = wsRequestedValue;
     // Convert the new float value back into the digits array
-    number_to_digits(current_value, digitsValues, digitsBeforeDecimal, digitsAfterDecimal, totalDigits);
+    number_to_digits(currentValue, digitsValues, digitsBeforeDecimal, digitsAfterDecimal, totalDigits);
     wsValueUpdated = false; // Consume the update flag
     // If output is active, WS should have updated 'input' directly.
     // If output is inactive, 'input' remains 0, only the display value changes.
   }
-  else wsRequestedValue = current_value;
+  else wsRequestedValue = currentValue;
 
   // First time entering this mode, reset static vars
   if (fsm.has_changed()) {
@@ -330,12 +330,12 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
     digitsValues.assign(totalDigits, 0);  // Reset digits values
     selected_item = 0;
     edit_state = CX_EDIT_STATES::SELECTING_ITEM; // Set state
-    current_value = 0.0;
+    currentValue = 0.0;
     input = 0.0; // Ensure target input is 0 initially
     outputActive = false; // Ensure output is off initially
     encoder.set_min_position(0);
     encoder.set_max_position(totalDigits + 1); // Digits (0 to totalDigits-1) + Output_Button (totalDigits) + Back_Button (totalDigits+1)
-    lcd.create_cx_screen(current_value, selected_item, unit);
+    lcd.create_cx_screen(currentValue, selected_item, unit);
     // Initial state broadcast happens in loop()
   }
 
@@ -355,11 +355,11 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
         else if (selected_item == totalDigits) { // Trigger/Stop output pressed
           outputActive = !outputActive; // Toggle output state (global flag)
           if (outputActive) {
-              input = current_value; // Set target value from edited value
-              Serial.println("Output activated: " + String(input, digitsAfterDecimal));
+            input = currentValue; // Set target value from edited value
+            Serial.println("Output activated: " + String(input, digitsAfterDecimal));
           } else {
-              input = 0.0; // Set target to 0
-              Serial.println("Output deactivated");
+            input = 0.0; // Set target to 0
+            Serial.println("Output deactivated");
           }
           // State change (outputActive) will be broadcast by loop()
         }
@@ -394,19 +394,18 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
         break;
       case CX_EDIT_STATES::MODIFYING_DIGIT:
         digitsValues[selected_item] = encoder.get_position(); // Update digit value
-        current_value = digits_to_number(digitsValues, digitsBeforeDecimal, digitsAfterDecimal, totalDigits);
-        Serial.println("Digit " + String(selected_item) + " changed to " + String(digitsValues[selected_item]) + ", New Value: " + String(current_value));
+        currentValue = digits_to_number(digitsValues, digitsBeforeDecimal, digitsAfterDecimal, totalDigits);
+        Serial.println("Digit " + String(selected_item) + " changed to " + String(digitsValues[selected_item]) + ", New Value: " + String(currentValue));
         // If output is active while modifying, update the target 'input' immediately
-        if (outputActive) {
-            input = current_value; // Update global input
-        }
+        if (outputActive) input = currentValue; // Update global input
+        wsRequestedValue = currentValue; // Update WS requested value
         // Value change will be broadcast by loop()
         break;
     }
   }
 
   // Update LCD screen - Pass global outputActive and current edit state
-  lcd.update_cx_screen(current_value, selected_item, unit, dutVoltage, dutCurrent, digitsBeforeDecimal, totalDigits, String(input, digitsAfterDecimal), outputActive, (edit_state == CX_EDIT_STATES::MODIFYING_DIGIT), temperature, dutEnergy);
+  lcd.update_cx_screen(currentValue, selected_item, unit, dutVoltage, dutCurrent, digitsBeforeDecimal, totalDigits, String(input, digitsAfterDecimal), outputActive, (edit_state == CX_EDIT_STATES::MODIFYING_DIGIT), temperature, dutEnergy);
 
   // No delay here, rely on loop delay/timing
   // State changes (input, outputActive, fsm state) are detected and broadcast in loop()
@@ -547,18 +546,18 @@ String get_current_state_json() {
   JsonObject state = doc.createNestedObject("state");
   const char* modeStr = "UNKNOWN";
   switch (fsm.get_current_state()) {
-      case FSM_MAIN_STATES::MAIN_MENU: modeStr = "MENU"; break; // Or handle differently
-      case FSM_MAIN_STATES::CC: modeStr = "CC"; break;
-      case FSM_MAIN_STATES::CV: modeStr = "CV"; break;
-      case FSM_MAIN_STATES::CR: modeStr = "CR"; break;
-      case FSM_MAIN_STATES::CW: modeStr = "CW"; break;
-      case FSM_MAIN_STATES::SETTINGS: modeStr = "SETTINGS"; break; // Add if needed
+    case FSM_MAIN_STATES::MAIN_MENU: modeStr = "MENU"; break; // Or handle differently
+    case FSM_MAIN_STATES::CC: modeStr = "CC"; break;
+    case FSM_MAIN_STATES::CV: modeStr = "CV"; break;
+    case FSM_MAIN_STATES::CR: modeStr = "CR"; break;
+    case FSM_MAIN_STATES::CW: modeStr = "CW"; break;
+    case FSM_MAIN_STATES::SETTINGS: modeStr = "SETTINGS"; break; // Add if needed
   }
   state["mode"] = modeStr;
   state["outputActive"] = outputActive;
   // Include the current value being set/targeted if applicable
   // This might need refinement based on how 'constant_x' manages its value
-  state["value"] = (fsm.get_current_state() >= FSM_MAIN_STATES::CC && fsm.get_current_state() <= FSM_MAIN_STATES::CW) ? wsRequestedValue : 0.0; // Send target value if in CX mode
+  state["value"] = wsRequestedValue; // Current target value
 
   String jsonString;
   serializeJson(doc, jsonString);

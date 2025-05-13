@@ -25,13 +25,13 @@ FSM fsm = FSM();
 
 // --- Global Variables for State Management ---
 float input = 0.0;
-float dutVoltage = 0.0; // Track DUT voltage (was dut_voltage)
-float dutCurrent = 0.0; // Track DUT current (was dut_current)
-float dutPower = 0.0;   // Track DUT power (was dut_power)
-float dutResistance = 0.0; // Track DUT resistance (was dut_resistance)
-float dutEnergy = 0.0;  // Track DUT energy (was dut_energy)
+float dutVoltage = 0.0; // Track DUT voltage
+float dutCurrent = 0.0; // Track DUT current
+float dutPower = 0.0;   // Track DUT power
+float dutResistance = 0.0; // Track DUT resistance
+float dutEnergy = 0.0;  // Track DUT energy
 
-bool outputActive = false; // Track output state (was output_active)
+bool outputActive = false; // Track output state
 float temperature = 0.0;   // Track temperature
 int fanSpeed = 0;          // Get current fan speed percentage
 
@@ -39,9 +39,7 @@ uint64_t timeMs = 0;       // Track RTC time
 String uptimeString = "00:00:00"; // Track uptime string
 
 // --- Global Variables for WS/UI Sync ---
-float wsRequestedValue = 0.0; // Last requested value from WebSocket (was wsRequestedValue)
-bool wsValueUpdated = false;  // Flag indicating WS value update (was ws_value_updated)
-bool wsDeleteMainMenu = false; // Track if in main menu (was ws_delete_main_menu)
+bool wsDeleteMainMenu = false; // Track if in main menu
 
 // Helper function to format uptime
 String format_uptime(uint64_t ms) {
@@ -307,19 +305,9 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
   static std::vector<int> digitsValues(totalDigits, 0); // Digit values initialized to 0
   static int selected_item = 0; // Currently selected item (0..totalDigits-1 = digits, totalDigits = Trigger, totalDigits+1 = Exit)
   static CX_EDIT_STATES edit_state = CX_EDIT_STATES::SELECTING_ITEM; // State machine for editing
-  static float currentValue = 0.0; // The value being edited (mirrors digitsValues)
 
-  // Check for updates from WebSocket when output is off
-  if (wsValueUpdated) {
-    Serial.printf("constant_x: Detected WS value update to %.3f\n", wsRequestedValue);
-    currentValue = wsRequestedValue;
-    // Convert the new float value back into the digits array
-    number_to_digits(currentValue, digitsValues, digitsBeforeDecimal, digitsAfterDecimal, totalDigits);
-    wsValueUpdated = false; // Consume the update flag
-    // If output is active, WS should have updated 'input' directly.
-    // If output is inactive, 'input' remains 0, only the display value changes.
-  }
-  else wsRequestedValue = currentValue;
+  // Sincronizar pantalla con el valor actual de input
+  number_to_digits(input, digitsValues, digitsBeforeDecimal, digitsAfterDecimal, totalDigits);
 
   // First time entering this mode, reset static vars
   if (fsm.has_changed()) {
@@ -330,12 +318,11 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
     digitsValues.assign(totalDigits, 0);  // Reset digits values
     selected_item = 0;
     edit_state = CX_EDIT_STATES::SELECTING_ITEM; // Set state
-    currentValue = 0.0;
     input = 0.0; // Ensure target input is 0 initially
     outputActive = false; // Ensure output is off initially
     encoder.set_min_position(0);
     encoder.set_max_position(totalDigits + 1); // Digits (0 to totalDigits-1) + Output_Button (totalDigits) + Back_Button (totalDigits+1)
-    lcd.create_cx_screen(currentValue, selected_item, unit);
+    lcd.create_cx_screen(selected_item, unit);
     // Initial state broadcast happens in loop()
   }
 
@@ -355,10 +342,8 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
         else if (selected_item == totalDigits) { // Trigger/Stop output pressed
           outputActive = !outputActive; // Toggle output state (global flag)
           if (outputActive) {
-            input = currentValue; // Set target value from edited value
             Serial.println("Output activated: " + String(input, digitsAfterDecimal));
           } else {
-            input = 0.0; // Set target to 0
             Serial.println("Output deactivated");
           }
           // State change (outputActive) will be broadcast by loop()
@@ -394,18 +379,15 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
         break;
       case CX_EDIT_STATES::MODIFYING_DIGIT:
         digitsValues[selected_item] = encoder.get_position(); // Update digit value
-        currentValue = digits_to_number(digitsValues, digitsBeforeDecimal, digitsAfterDecimal, totalDigits);
-        Serial.println("Digit " + String(selected_item) + " changed to " + String(digitsValues[selected_item]) + ", New Value: " + String(currentValue));
-        // If output is active while modifying, update the target 'input' immediately
-        if (outputActive) input = currentValue; // Update global input
-        wsRequestedValue = currentValue; // Update WS requested value
+        input = digits_to_number(digitsValues, digitsBeforeDecimal, digitsAfterDecimal, totalDigits);
+        Serial.println("Digit " + String(selected_item) + " changed to " + String(digitsValues[selected_item]) + ", New Value: " + String(input));
         // Value change will be broadcast by loop()
         break;
     }
   }
 
   // Update LCD screen - Pass global outputActive and current edit state
-  lcd.update_cx_screen(currentValue, selected_item, unit, dutVoltage, dutCurrent, digitsBeforeDecimal, totalDigits, String(input, digitsAfterDecimal), outputActive, (edit_state == CX_EDIT_STATES::MODIFYING_DIGIT), temperature, dutEnergy);
+  lcd.update_cx_screen(input, selected_item, unit, dutVoltage, dutCurrent, digitsBeforeDecimal, totalDigits, String(input, digitsAfterDecimal), outputActive, (edit_state == CX_EDIT_STATES::MODIFYING_DIGIT), temperature, dutEnergy);
 
   // No delay here, rely on loop delay/timing
   // State changes (input, outputActive, fsm state) are detected and broadcast in loop()
@@ -484,7 +466,7 @@ void handle_set_mode(JsonDocument& doc) {
   if (strcmp(modeStr, "CC") == 0) fsm.change_state(FSM_MAIN_STATES::CC);
   else if (strcmp(modeStr, "CV") == 0) fsm.change_state(FSM_MAIN_STATES::CV);
   else if (strcmp(modeStr, "CR") == 0) fsm.change_state(FSM_MAIN_STATES::CR);
-  else if (strcmp(modeStr, "CP") == 0) fsm.change_state(FSM_MAIN_STATES::CW);
+  else if (strcmp(modeStr, "CW") == 0) fsm.change_state(FSM_MAIN_STATES::CW);
   // Reset input value when changing mode via WS
   input = 0.0;
   outputActive = false; // Turn off output when changing mode
@@ -496,10 +478,7 @@ void handle_set_value(JsonDocument& doc) {
   if (!doc["value"].is<float>() && !doc["value"].is<int>()) return;
   float newValue = doc["value"];
   Serial.printf("WS: Setting value to %.3f\n", newValue);
-  wsValueUpdated = true; // Mark that the value has been updated via WS
-  wsRequestedValue = newValue; // Store the requested value
-
-  if (outputActive) input = newValue; // Update input if output is active
+  input = newValue;
 }
 
 void handle_set_relay(JsonDocument& doc) {
@@ -507,13 +486,8 @@ void handle_set_relay(JsonDocument& doc) {
   
   outputActive = doc["value"];
   Serial.printf("WS: Setting relay %s\n", outputActive ? "ON" : "OFF");
-  if (outputActive) {
-    input = wsRequestedValue; // Set input to the requested value
-    analogSws.relay_dut_enable();
-  } else {
-    input = 0.0; // Set input to 0 when turning off
-    analogSws.relay_dut_disable();
-  }
+  if (outputActive) analogSws.relay_dut_enable();
+  else analogSws.relay_dut_disable();
 }
 
 void handle_exit() {
@@ -555,9 +529,7 @@ String get_current_state_json() {
   }
   state["mode"] = modeStr;
   state["outputActive"] = outputActive;
-  // Include the current value being set/targeted if applicable
-  // This might need refinement based on how 'constant_x' manages its value
-  state["value"] = wsRequestedValue; // Current target value
+  state["value"] = input;
 
   String jsonString;
   serializeJson(doc, jsonString);

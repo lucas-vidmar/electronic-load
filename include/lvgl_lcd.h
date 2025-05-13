@@ -83,11 +83,10 @@ public:
     /**
      * @brief Create a constant current/voltage/resistance/power screen.
      * 
-     * @param current Initial value to display.
      * @param selection Currently selected digit position.
      * @param unit Unit of measurement (A, V, W, R).
      */
-    void create_cx_screen(float current, int selection, String unit);
+    void create_cx_screen(int selection, String unit);
     
     /**
      * @brief Update the CX screen with new values.

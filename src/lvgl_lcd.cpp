@@ -153,7 +153,7 @@ void LVGL_LCD::close_main_menu() {
     }
 }
 
-void LVGL_LCD::create_cx_screen(float current, int selection, String unit) {
+void LVGL_LCD::create_cx_screen(int selection, String unit) {
     // Normal style
     lv_style_init(&styleDigitNormal);
     lv_style_set_text_color(&styleDigitNormal, lv_color_black()); // Common black

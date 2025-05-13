@@ -12,7 +12,7 @@ const modeConfig = {
     'CC': { unit: 'A', decimals: 2, maxDigits: 4, beforeDecimal: 2 },
     'CV': { unit: 'V', decimals: 2, maxDigits: 5, beforeDecimal: 3 },
     'CR': { unit: 'kΩ', decimals: 3, maxDigits: 5, beforeDecimal: 2 },
-    'CP': { unit: 'W', decimals: 2, maxDigits: 5, beforeDecimal: 3 }
+    'CW': { unit: 'W', decimals: 2, maxDigits: 5, beforeDecimal: 3 }
 };
 
 // DOM Elements
@@ -237,10 +237,6 @@ function updateDigitDisplay(mode) {
 
 // Initialize the interface
 function init() {
-    // Set initial mode and update display (e.g., CC)
-    // currentMode = 'CC'; // Set a default mode if needed
-    // updateDigitDisplay(currentMode); // Create initial digits
-    // setMode(currentMode); // Activate the button and set unit
 
     // Add event listeners for static elements
     modeButtons.forEach(button => {

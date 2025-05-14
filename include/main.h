@@ -44,6 +44,11 @@ extern bool ws_value_updated;      /*!< Flag indicating a WebSocket value update
 void main_menu();
 
 /**
+ * @brief Displays and handles the settings menu interface
+ */
+void setting();
+
+/**
  * @brief Handles constant mode operation (CC, CV, etc.)
  * @param unit Unit of measurement (e.g., "A", "V")
  * @param digitsBeforeDecimal Number of digits before decimal point

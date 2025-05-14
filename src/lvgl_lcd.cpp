@@ -5,6 +5,8 @@
  */
 
 #include "lvgl_lcd.h"
+#include "main.h" // For SSID, PASSWORD
+#include <WiFi.h>  // For WiFi.softAPIP()
 
 TFT_eSPI* LVGL_LCD::tftPointer = nullptr;
 
@@ -505,4 +507,66 @@ void LVGL_LCD::update_button(lv_obj_t* button, bool selected) {
     else {
         lv_obj_set_style_bg_opa(button, LV_OPA_TRANSP, 0); // Transparent
     }
+}
+
+void LVGL_LCD::create_settings_menu() {
+    if (settingsMenu != nullptr) return; // Already open
+
+    settingsMenu = lv_obj_create(lv_scr_act());
+    lv_obj_set_size(settingsMenu, lv_disp_get_hor_res(NULL), lv_disp_get_ver_res(NULL));
+    lv_obj_align(settingsMenu, LV_ALIGN_TOP_LEFT, 0, 0);
+    lv_obj_set_style_pad_all(settingsMenu, PADDING, 0);
+    lv_obj_set_flex_flow(settingsMenu, LV_FLEX_FLOW_COLUMN);
+    lv_obj_set_flex_align(settingsMenu, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_START);
+    lv_obj_set_style_pad_gap(settingsMenu, PADDING * 2, 0); // Increased gap for more spacing
+
+    // Header
+    create_header(settingsMenu);
+    lv_obj_t* titleLabel = create_section_header("Settings", settingsMenu, COLOR3_DARK);
+
+    // SSID
+    String ssidStr = "SSID: " + SSID;
+    settingsSSIDLabel = lv_label_create(settingsMenu);
+    lv_label_set_text(settingsSSIDLabel, ssidStr.c_str());
+    lv_obj_set_style_text_font(settingsSSIDLabel, FONT_S, 0);
+    lv_obj_set_width(settingsSSIDLabel, lv_pct(100));
+    lv_obj_set_style_pad_ver(settingsSSIDLabel, PADDING/2, 0);
+
+    // Password
+    String passStr = "Password: " + PASSWORD;
+    settingsPasswordLabel = lv_label_create(settingsMenu);
+    lv_label_set_text(settingsPasswordLabel, passStr.c_str());
+    lv_obj_set_style_text_font(settingsPasswordLabel, FONT_S, 0);
+    lv_obj_set_width(settingsPasswordLabel, lv_pct(100));
+    lv_obj_set_style_pad_ver(settingsPasswordLabel, PADDING/2, 0);
+
+    // IP Address
+    String ipStr = "IP: " + WiFi.softAPIP().toString();
+    settingsIPLabel = lv_label_create(settingsMenu);
+    lv_label_set_text(settingsIPLabel, ipStr.c_str());
+    lv_obj_set_style_text_font(settingsIPLabel, FONT_S, 0);
+    lv_obj_set_width(settingsIPLabel, lv_pct(100));
+    lv_obj_set_style_pad_ver(settingsIPLabel, PADDING/2, 0);
+
+    // Spacer
+    lv_obj_t* spacer = lv_obj_create(settingsMenu);
+    lv_obj_set_height(spacer, 20);
+    lv_obj_set_style_border_width(spacer, 0, 0);
+    lv_obj_set_style_bg_opa(spacer, LV_OPA_TRANSP, 0);
+
+    // Back button
+    settingsBackButton = create_button("Back", settingsMenu, true, COLOR3_DARK); // Use dark color for selected
+    lv_obj_set_style_text_color(settingsBackButton, lv_color_white(), 0);
+    lv_obj_set_width(settingsBackButton, lv_pct(100));
+    lv_obj_set_style_pad_ver(settingsBackButton, PADDING, 0);
+}
+
+void LVGL_LCD::close_settings_menu() {
+    if (settingsMenu == nullptr) return;
+    lv_obj_del(settingsMenu);
+    settingsMenu = nullptr;
+    settingsBackButton = nullptr;
+    settingsSSIDLabel = nullptr;
+    settingsPasswordLabel = nullptr;
+    settingsIPLabel = nullptr;
 }

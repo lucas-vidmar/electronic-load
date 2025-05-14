@@ -120,6 +120,17 @@ public:
      */
     void update_header(float temperature, int fan_speed, const char* uptime);
 
+    /**
+     * @brief Create the settings menu on the display.
+     * Displays SSID, password, IP, and a back button.
+     */
+    void create_settings_menu();
+
+    /**
+     * @brief Close and clean up the settings menu.
+     */
+    void close_settings_menu();
+
 private:
     TFT_eSPI tft;
     static TFT_eSPI* tftPointer;
@@ -161,6 +172,13 @@ private:
     lv_obj_t *headerContainer = nullptr;
     lv_obj_t *fanLabel = nullptr;
     lv_obj_t *uptimeLabel = nullptr; // Add uptime label
+
+    // --- Settings Menu UI Elements ---
+    lv_obj_t *settingsMenu = nullptr;
+    lv_obj_t *settingsBackButton = nullptr;
+    lv_obj_t *settingsSSIDLabel = nullptr;
+    lv_obj_t *settingsPasswordLabel = nullptr;
+    lv_obj_t *settingsIPLabel = nullptr;
 
     /**
      * @brief Create a common header for screens.

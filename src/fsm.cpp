@@ -61,6 +61,7 @@ void FSM::run(float input, DAC dac, AnalogSws sws, bool* output_active, ADC adc)
             dac.cw_mode_set_power(input, adc.read_v_dut());
             break;
         case FSM_MAIN_STATES::SETTINGS:
+            setting();
             break;
         default:
             break;

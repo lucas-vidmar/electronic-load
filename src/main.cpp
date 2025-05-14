@@ -216,6 +216,25 @@ void main_menu() {
   // We rely on the FSM state change broadcast in loop().
 }
 
+void setting() {
+  // Settings menu logic
+  if (fsm.has_changed()) { // First time entering settings
+    Serial.println("Settings menu");
+    encoder.set_min_position(0);
+    encoder.set_max_position(0); //  quantity of options in settings menu
+    encoder.set_position(0);
+    lcd.create_settings_menu(); // Create settings menu
+  }
+
+  // Check if encoder button is pressed
+  if (encoder.is_button_pressed()) {
+    Serial.println("Button pressed - Back to Main Menu");
+    fsm.change_state(FSM_MAIN_STATES::MAIN_MENU); // Change to selected main menu
+    lcd.close_settings_menu();
+  }
+
+}
+
 float digits_to_number(std::vector<int> digitsValues, int digitsBeforeDecimal, int digitsAfterDecimal, int totalDigits) {
   float number = 0.0;
 

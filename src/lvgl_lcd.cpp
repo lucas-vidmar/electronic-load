@@ -89,9 +89,8 @@ void LVGL_LCD::create_header(lv_obj_t* parent) {
 }
 
 void LVGL_LCD::update_header(float temperature, int fan_speed, const char* uptime) {
-    // if (tempLabel) lv_label_set_text(tempLabel, (String(temperature, 1) + " C").c_str()); // Removed
-    if (uptimeLabel) lv_label_set_text(uptimeLabel, uptime); // Update uptime text
-    if (fanLabel) lv_label_set_text_fmt(fanLabel, "Fan: %d %%", fan_speed); // Use %% for literal %
+    if (uptimeLabel != nullptr) lv_label_set_text(uptimeLabel, uptime); // Update uptime text
+    if (fanLabel != nullptr) lv_label_set_text_fmt(fanLabel, "Fan: %d %%", fan_speed); // Use %% for literal %
 }
 
 void LVGL_LCD::create_main_menu() {
@@ -569,4 +568,6 @@ void LVGL_LCD::close_settings_menu() {
     settingsSSIDLabel = nullptr;
     settingsPasswordLabel = nullptr;
     settingsIPLabel = nullptr;
+    uptimeLabel = nullptr; //
+    headerContainer = nullptr; //
 }

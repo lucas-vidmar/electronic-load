@@ -121,7 +121,7 @@ void LVGL_LCD::create_main_menu() {
     lv_obj_t* titleLabel = create_section_header("Main Menu", mainMenu, COLOR1_DARK);
 
     // Items for main menu
-    items = {"Corriente Constante", "Voltaje Constante", "Resistencia Constante", "Potencia Constante", "Ajustes"};
+    items = {"Constant Current", "Constant Voltage", "Constant Resistance", "Constant Power", "Settings"};
     for (int i = 0; i < items.size(); ++i) {
         // Create a label for each item
         lv_obj_t* label = create_button(items[i], mainMenu, false, COLOR1_LIGHT);

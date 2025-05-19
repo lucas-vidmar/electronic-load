@@ -21,8 +21,7 @@ The electronic load system is a versatile testing device designed to simulate va
 
 ## High-Level System Architecture
 
-```
-mermaid
+```mermaid
 ---
 config:
   theme: redux
@@ -68,13 +67,8 @@ flowchart LR
 
 ## Key Components & Data Flow
 
-```
-mermaid
----
-config:
-  theme: redux
-  layout: elk
----
+```mermaid
+
 flowchart TD
  subgraph s1["Adquisición"]
         ADC["ADC: Tensión, Corriente, Temp"]

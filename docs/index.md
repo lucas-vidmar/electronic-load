@@ -1,6 +1,12 @@
 <script type="module">
-  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-  mermaid.initialize({ startOnLoad: true });
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@latest/dist/mermaid.esm.min.mjs"
+  import elkLayouts from "https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@latest/dist/mermaid-layout-elk.esm.min.mjs"
+
+  // register ELK
+  mermaid.registerLayoutLoaders(elkLayouts)
+
+  // then render the diagrams as usual
+  mermaid.initialize({ startOnLoad: true })
 </script>
 
 ## Electronic Load System Overview
@@ -67,6 +73,7 @@ flowchart LR
 ## Key Components & Data Flow
 
 ```mermaid
+%%{ init: { "flowchart": { "defaultRenderer": "elk" } } }%%
 flowchart TD
  subgraph s1["Acquisition"]
         ADC["ADC: Voltage, Current, Temp"]
@@ -101,7 +108,7 @@ flowchart TD
 
 The main control loop performs several critical operations during each iteration:
 
-<div class="mermaid">
+```
 sequenceDiagram
     participant Main as "Main Loop"
     participant Meas as "Measurements"
@@ -120,7 +127,7 @@ sequenceDiagram
         Main->>UI: Update LCD screen
         Main->>WS: Send status updates
     end
-</div>
+```
 
 ---
 

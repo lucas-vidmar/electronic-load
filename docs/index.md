@@ -22,6 +22,7 @@ The electronic load system is a versatile testing device designed to simulate va
 ## High-Level System Architecture
 
 ```
+mermaid
 ---
 config:
   theme: redux
@@ -68,6 +69,7 @@ flowchart LR
 ## Key Components & Data Flow
 
 ```
+mermaid
 ---
 config:
   theme: redux
@@ -105,16 +107,33 @@ flowchart TD
 
 ## Main Loop Operations
 
-On each iteration:
+The main control loop performs several critical operations during each iteration:
 
-1. **Measurements**: Read voltage, current, temperature
-2. **Calculations**: Compute power & resistance
-3. **FSM**: Update operating mode logic
-4. **Outputs**:
-
-   * Update DAC & relays
-   * Adjust fan with PID
-5. **Display**: Refresh LCD & broadcast over WebSocket
+```
+mermaid
+---
+config:
+  theme: redux
+---
+sequenceDiagram
+    participant Main as "Main Loop"
+    participant Meas as "Measurements"
+    participant FSM as "FSM"
+    participant Fan as "Fan Control"
+    participant UI as "UI Updates"
+    participant WS as "WebSocket"
+    loop Cada iteración del bucle
+        Main->>Meas: Leer tensión, corriente y temperatura
+        Note right of Meas: Calcular potencia, resistencia
+        Main->>FSM: Ejecutar FSM con mediciones actualizadas
+        Note right of FSM: Ejecutar operaciones específicas del modo
+        FSM-->>Main: Actualizar salidas (DAC, relés)
+        Main->>Fan: Actualizar controlador PID
+        Note right of Fan: Ajustar velocidad del ventilador según temperatura
+        Main->>UI: Actualizar pantalla LCD
+        Main->>WS: Enviar actualizaciones de estado
+    end
+```
 
 ---
 

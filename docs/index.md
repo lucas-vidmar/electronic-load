@@ -1,8 +1,3 @@
----
-layout: default
-title: Electronic Load System
----
-
 ## Electronic Load System Overview
 
 ### Purpose and Scope

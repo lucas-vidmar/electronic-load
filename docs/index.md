@@ -26,7 +26,7 @@ The electronic load system is a versatile testing device designed to simulate va
 
 ## High-Level System Architecture
 
-```
+```mermaid
 flowchart LR
  subgraph subGraph0["User Interface"]
     direction TB
@@ -101,7 +101,7 @@ flowchart TD
 
 The main control loop performs several critical operations during each iteration:
 
-```
+```mermaid
 sequenceDiagram
     participant Main as "Main Loop"
     participant Meas as "Measurements"

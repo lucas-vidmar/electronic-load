@@ -1,6 +1,12 @@
 <script type="module">
-  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-  mermaid.initialize({ startOnLoad: true });
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@latest/dist/mermaid.esm.min.mjs"
+  import elkLayouts from "https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@latest/dist/mermaid-layout-elk.esm.min.mjs"
+
+  // register ELK
+  mermaid.registerLayoutLoaders(elkLayouts)
+
+  // then render the diagrams as usual
+  mermaid.initialize({ startOnLoad: true })
 </script>
 
 ## Electronic Load System Overview

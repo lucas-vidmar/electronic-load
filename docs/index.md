@@ -22,11 +22,6 @@ The electronic load system is a versatile testing device designed to simulate va
 ## High-Level System Architecture
 
 <div class="mermaid">
----
-config:
-  theme: redux
-  layout: elk
----
 flowchart LR
  subgraph subGraph0["User Interface"]
     direction TB
@@ -67,11 +62,6 @@ flowchart LR
 ## Key Components & Data Flow
 
 <div class="mermaid">
----
-config:
-  theme: redux
-  layout: elk
----
 flowchart TD
  subgraph s1["Acquisition"]
         ADC["ADC: Voltage, Current, Temp"]
@@ -107,11 +97,6 @@ flowchart TD
 The main control loop performs several critical operations during each iteration:
 
 <div class="mermaid">
----
-config:
-  theme: redux
-  layout: elk
----
 sequenceDiagram
     participant Main as "Main Loop"
     participant Meas as "Measurements"

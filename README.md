@@ -22,79 +22,86 @@ This PlatformIO-based project implements a configurable electronic load on an ES
 - Real-time monitoring of input parameters
 - Expandable code structure for sensors and hardware drivers
 
-## Registro de Versiones del Proyecto
+## Project Version History
 
-### Versión 0.1 (Junio - Julio 2024): Exploración Inicial con Arduino
+### Version 0.1 (June - July 2024): Initial Arduino Exploration
 
-- Inicio del proyecto utilizando el entorno Arduino.
-- Pruebas básicas de Entrada/Salida de Propósito General (GPIO) para verificar el hardware fundamental (LEDs, lectura de pines).
-- Configuración inicial de la comunicación serial para depuración.
+- Project started using the Arduino environment.
+- Basic General Purpose Input/Output (GPIO) tests to verify fundamental hardware (LEDs, pin reading).
+- Initial setup of serial communication for debugging.
 
-### Versión 0.2 (Julio - Agosto 2024): Migración a ESP-IDF y Pantalla Básica
+### Version 0.2 (July - August 2024): Migration to ESP-IDF and Basic Display
 
-- Migración del código base de Arduino a Espressif IDF (ESP-IDF) utilizando C.
-- Reimplementación de las pruebas GPIO en el entorno ESP-IDF.
-- Integración de una librería de pantalla básica (TFT eSPI) para mostrar información simple (texto, formas básicas).
-- Primeras pruebas de visualización en la pantalla LCD.
+- Migration of the base code from Arduino to Espressif IDF (ESP-IDF) using C.
+- Reimplementation of GPIO tests in the ESP-IDF environment.
+- Integration of a basic display library (TFT eSPI) to show simple information (text, basic shapes).
+- First display tests on the LCD screen.
 
-### Versión 0.3 (Agosto - Septiembre 2024): Intento de Integración con LVGL en ESP-IDF
+### Version 0.3 (August - September 2024): Attempted LVGL Integration in ESP-IDF
 
-- Intento de integrar la librería gráfica LVGL directamente dentro del entorno ESP-IDF.
-- Configuración inicial de los drivers de pantalla y táctil (si aplica) para LVGL.
-- Dificultades encontradas al configurar y hacer funcionar LVGL de manera estable con ESP-IDF.
-- Pruebas iniciales con widgets básicos de LVGL con resultados inconsistentes.
+- Attempt to integrate the LVGL graphics library directly within the ESP-IDF environment.
+- Initial setup of display and touch drivers (if applicable) for LVGL.
+- Difficulties encountered in configuring and running LVGL stably with ESP-IDF.
+- Initial tests with basic LVGL widgets with inconsistent results.
 
-### Versión 1.0 (Octubre - Noviembre 2024): Establecimiento en PlatformIO y Hardware Básico
+### Version 1.0 (October - November 2024): PlatformIO Establishment and Basic Hardware
 
-- **Hito:** Migración exitosa del proyecto a PlatformIO buscando un mejor manejo de dependencias y entorno de desarrollo.
-- Configuración inicial del hardware en PlatformIO: LED, interruptores analógicos, I2C.
-- Implementación y correcciones iniciales para DAC y ADC dentro de PlatformIO.
+- Successful migration of the project to PlatformIO for better dependency and development environment management.
+- Initial hardware setup in PlatformIO: LED, analog switches, I2C.
+- Initial implementation and fixes for DAC and ADC within PlatformIO.
 
-### Versión 1.1 (Noviembre 2024): Integración de UI Básica con LVGL (en PlatformIO)
+### Version 1.1 (November 2024): Basic UI Integration with LVGL (in PlatformIO)
 
-- Integración exitosa de la librería gráfica LVGL (ahora dentro de PlatformIO).
-- Desarrollo de la estructura básica del menú y la UI.
-- Implementación inicial (no completamente funcional) de la UI para el modo CC.
+- Successful integration of the LVGL graphics library (now within PlatformIO).
+- Development of the basic menu and UI structure.
+- Initial (not fully functional) implementation of the UI for CC mode.
 
-### Versión 2.0 (Febrero - Principios de Marzo 2025): Modo CC Funcional y Refactorización Mayor
+### Version 2.0 (February - Early March 2025): Functional CC Mode and Major Refactoring
 
-- **Hito Funcional:** Implementación completa y funcional del modo de Corriente Constante (CC).
-- Refactorización significativa de la UI (pantalla, botones, menús, colores, fuentes).
-- Refactorización del manejo del encoder y la máquina de estados (FSM).
-- Optimización de memoria para la UI.
-- Configuración de dígitos en la UI disponible.
+- Complete and functional implementation of Constant Current (CC) mode.
+- Significant UI refactoring (screen, buttons, menus, colors, fonts).
+- Refactoring of encoder handling and the state machine (FSM).
+- Memory optimization for the UI.
+- Digit configuration available in the UI.
 
-### Versión 2.1 (Marzo 2025): Modos CV, CR, CW y Pruebas
+### Version 2.1 (March 2025): CV, CR, CW Modes and Testing
 
-- **Hito Funcional:** Adición de los modos funcionales de Voltaje Constante (CV), Resistencia Constante (CR) y Potencia Constante (CW).
-- Pruebas de laboratorio realizadas y ajustes aplicados (límites, modo CC).
-- Refactorización de la lectura del DUT.
+- Addition of functional Constant Voltage (CV), Constant Resistance (CR), and Constant Power (CW) modes.
+- Laboratory tests performed and adjustments applied (limits, CC mode).
+- Refactoring of DUT reading.
 
-### Versión 3.0 (Finales de Marzo - Principios de Abril 2025): Servidor Web y UI Web Inicial
+### Version 3.0 (Late March - Early April 2025): Web Server and Initial Web UI
 
-- **Hito Funcional:** Adición de un servidor web funcional.
-- Separación del código HTML y JavaScript.
-- Desarrollo de la interfaz web (frontend) inicial.
-- Implementación básica de la comunicación vía WebSockets para la UI web.
-- Documentación y limpieza.
+- Addition of a functional web server.
+- Separation of HTML and JavaScript code.
+- Development of the initial web interface (frontend).
+- Basic implementation of WebSocket communication for the web UI.
+- Documentation and cleanup.
 
-### Versión 3.1 (Abril 2025): Control de Ventiladores y RTC
+### Version 3.1 (April 2025): Fan Control and RTC
 
-- **Hito Funcional:** Implementación del control de ventiladores (fans).
-- **Hito Funcional:** Adición de un Reloj de Tiempo Real (RTC).
-- Ajustes en pines de hardware y parámetros de ventiladores.
+- Implementation of fan control.
+- Addition of a Real-Time Clock (RTC).
+- Adjustments to hardware pins and fan parameters.
 
-### Versión 3.2 (Abril 2025): Mejoras Web UI y Correcciones Finales
+### Version 3.2 (April 2025): Web UI Improvements and Final Fixes
 
-- Integración de información de ventiladores en la interfaz web.
-- Unificación de la recolección de datos para la web y mejoras en WebSockets.
-- Corrección de errores generales y específicos (encoder, cálculo DAC, actualización UI web).
-- Mejoras en el estilo y diseño de la interfaz web (CSS, HTML).
+- Integration of fan information in the web interface.
+- Unification of data collection for the web and WebSocket improvements.
+- General and specific bug fixes (encoder, DAC calculation, web UI update).
+- Improvements in the style and design of the web interface (CSS, HTML).
 
+### Version 3.3 (May 2025): Settings, UI, and PID Improvements
+
+- Tuning and optimization of the fan PID control.
+- Critical bug fixes in the settings menu (crashes and parameter synchronization).
+- Addition of a settings menu accessible from the UI.
+- Cleanup and restructuring of the LVGL UI code (new layout, status indicators, minor visual adjustments).
+- Documentation improvements and updates.
 
 ## Contributing
 
-Pull requests for improvements or bug fixes are welcome. Please open an issue first to discuss ideas and coordinate development. 
+Pull requests for improvements or bug fixes are welcome. Please open an issue first to discuss ideas and coordinate development.
 
 ## License
 

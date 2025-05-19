@@ -28,28 +28,28 @@ config:
   layout: elk
 ---
 flowchart LR
- subgraph subGraph0["Interfaz de Usuario"]
+ subgraph subGraph0["User Interface"]
     direction TB
-        C1["Lectura Encoder"]
-        C["Interfaz de Usuario"]
-        C2["Actualización Display LCD"]
-        C3["Comunicación WebServer"]
+        C1["Encoder Reading"]
+        C["User Interface"]
+        C2["LCD Display Update"]
+        C3["WebServer Communication"]
   end
- subgraph subGraph1["Control de Potencia"]
+ subgraph subGraph1["Power Control"]
     direction TB
-        D1["Lectura ADC"]
-        D["Control de Potencia"]
-        D2["Cálculo de parámetros"]
-        D3["Configuración DAC"]
+        D1["ADC Reading"]
+        D["Power Control"]
+        D2["Parameter Calculation"]
+        D3["DAC Configuration"]
   end
- subgraph subGraph2["Monitoreo y Protección"]
+ subgraph subGraph2["Monitoring and Protection"]
     direction TB
-        E1["Lectura Temperatura ADC"]
-        E["Monitoreo y Protección"]
-        E2["Control de ventiladores"]
-        E3["Protección por sobrecarga"]
+        E1["Temperature ADC Reading"]
+        E["Monitoring and Protection"]
+        E2["Fan Control"]
+        E3["Overload Protection"]
   end
-    A["Inicio"] --> B["Inicialización del sistema"]
+    A["Start"] --> B["System Initialization"]
     B --> C & D & E
     C --> C1 & C2 & C3
     D --> D1 & D2 & D3
@@ -73,31 +73,31 @@ config:
   layout: elk
 ---
 flowchart TD
- subgraph s1["Adquisición"]
-        ADC["ADC: Tensión, Corriente, Temp"]
+ subgraph s1["Acquisition"]
+        ADC["ADC: Voltage, Current, Temp"]
         RTC["RTC: Timestamp"]
-        Enc["Encoder + Botón"]
+        Enc["Encoder + Button"]
   end
  subgraph Control["Control"]
         MCU["ESP32"]
         FSM["FSM"]
-        PID["Control PID (Ventilador)"]
+        PID["PID Control (Fan)"]
   end
- subgraph s2["Generación"]
+ subgraph s2["Generation"]
         DAC["DAC"]
-        SW["Switch Analógicos"]
+        SW["Analog Switches"]
   end
- subgraph s3["Visualización"]
-        LCD["LCD Táctil"]
+ subgraph s3["Visualization"]
+        LCD["Touch LCD"]
         WS["WebSocket"]
-        LED["LED Integrado"]
+        LED["Integrated LED"]
   end
     ADC --> MCU
     RTC --> MCU
     Enc --> MCU
     MCU --> FSM & PID & LCD & WS & LED
     FSM --> DAC & SW
-    PID --> FAN["Ventilador"]
+    PID --> FAN["Fan"]
 </div>
 
 ---
@@ -119,16 +119,16 @@ sequenceDiagram
     participant Fan as "Fan Control"
     participant UI as "UI Updates"
     participant WS as "WebSocket"
-    loop Cada iteración del bucle
-        Main->>Meas: Leer tensión, corriente y temperatura
-        Note right of Meas: Calcular potencia, resistencia
-        Main->>FSM: Ejecutar FSM con mediciones actualizadas
-        Note right of FSM: Ejecutar operaciones específicas del modo
-        FSM-->>Main: Actualizar salidas (DAC, relés)
-        Main->>Fan: Actualizar controlador PID
-        Note right of Fan: Ajustar velocidad del ventilador según temperatura
-        Main->>UI: Actualizar pantalla LCD
-        Main->>WS: Enviar actualizaciones de estado
+    loop Each loop iteration
+        Main->>Meas: Read voltage, current, and temperature
+        Note right of Meas: Calculate power, resistance
+        Main->>FSM: Run FSM with updated measurements
+        Note right of FSM: Execute mode-specific operations
+        FSM-->>Main: Update outputs (DAC, relays)
+        Main->>Fan: Update PID controller
+        Note right of Fan: Adjust fan speed based on temperature
+        Main->>UI: Update LCD screen
+        Main->>WS: Send status updates
     end
 </div>
 

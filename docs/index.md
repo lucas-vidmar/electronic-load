@@ -1,5 +1,5 @@
 <script type="module">
-  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
   mermaid.initialize({ startOnLoad: true });
 </script>
 
@@ -67,7 +67,6 @@ flowchart LR
 ## Key Components & Data Flow
 
 ```mermaid
-%%{ init: { "flowchart": { "defaultRenderer": "elk" } } }%%
 flowchart TD
  subgraph s1["Acquisition"]
         ADC["ADC: Voltage, Current, Temp"]

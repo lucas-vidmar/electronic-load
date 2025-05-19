@@ -26,7 +26,7 @@ The electronic load system is a versatile testing device designed to simulate va
 
 ## High-Level System Architecture
 
-<div class="mermaid">
+```
 flowchart LR
  subgraph subGraph0["User Interface"]
     direction TB
@@ -54,7 +54,7 @@ flowchart LR
     C --> C1 & C2 & C3
     D --> D1 & D2 & D3
     E --> E1 & E2 & E3
-</div>
+```
 
 * **ADC**: Measures voltage, current, and temperature
 * **DAC**: Controls the load level
@@ -66,7 +66,7 @@ flowchart LR
 
 ## Key Components & Data Flow
 
-<div class="mermaid">
+```mermaid
 flowchart TD
  subgraph s1["Acquisition"]
         ADC["ADC: Voltage, Current, Temp"]
@@ -93,7 +93,7 @@ flowchart TD
     MCU --> FSM & PID & LCD & WS & LED
     FSM --> DAC & SW
     PID --> FAN["Fan"]
-</div>
+```
 
 ---
 

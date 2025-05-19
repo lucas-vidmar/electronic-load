@@ -6,7 +6,10 @@
   mermaid.registerLayoutLoaders(elkLayouts)
 
   // then render the diagrams as usual
-  mermaid.initialize({ startOnLoad: true })
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: "default",
+  })
 </script>
 
 ## Electronic Load System Overview
@@ -75,32 +78,34 @@ The electronic load system is a versatile testing device designed to simulate va
 ## Key Components & Data Flow
 
 <pre class="mermaid">
-flowchart TD
- subgraph s1["Acquisition"]
-        ADC["ADC: Voltage, Current, Temp"]
-        RTC["RTC: Timestamp"]
-        Enc["Encoder + Button"]
-  end
- subgraph Control["Control"]
-        MCU["ESP32"]
-        FSM["FSM"]
-        PID["PID Control (Fan)"]
-  end
- subgraph s2["Generation"]
-        DAC["DAC"]
-        SW["Analog Switches"]
-  end
- subgraph s3["Visualization"]
-        LCD["Touch LCD"]
-        WS["WebSocket"]
-        LED["Integrated LED"]
-  end
-    ADC --> MCU
-    RTC --> MCU
-    Enc --> MCU
-    MCU --> FSM & PID & LCD & WS & LED
-    FSM --> DAC & SW
-    PID --> FAN["Fan"]
+  %%{ init: { "flowchart": { "defaultRenderer": "elk" } } }%%
+  
+  flowchart TD
+  subgraph s1["Acquisition"]
+          ADC["ADC: Voltage, Current, Temp"]
+          RTC["RTC: Timestamp"]
+          Enc["Encoder + Button"]
+    end
+  subgraph Control["Control"]
+          MCU["ESP32"]
+          FSM["FSM"]
+          PID["PID Control (Fan)"]
+    end
+  subgraph s2["Generation"]
+          DAC["DAC"]
+          SW["Analog Switches"]
+    end
+  subgraph s3["Visualization"]
+          LCD["Touch LCD"]
+          WS["WebSocket"]
+          LED["Integrated LED"]
+    end
+      ADC --> MCU
+      RTC --> MCU
+      Enc --> MCU
+      MCU --> FSM & PID & LCD & WS & LED
+      FSM --> DAC & SW
+      PID --> FAN["Fan"]
 </pre>
 
 ---
@@ -110,24 +115,24 @@ flowchart TD
 The main control loop performs several critical operations during each iteration:
 
 <pre class="mermaid">
-sequenceDiagram
-    participant Main as "Main Loop"
-    participant Meas as "Measurements"
-    participant FSM as "FSM"
-    participant Fan as "Fan Control"
-    participant UI as "UI Updates"
-    participant WS as "WebSocket"
-    loop Each loop iteration
-        Main->>Meas: Read voltage, current, and temperature
-        Note right of Meas: Calculate power, resistance
-        Main->>FSM: Run FSM with updated measurements
-        Note right of FSM: Execute mode-specific operations
-        FSM-->>Main: Update outputs (DAC, relays)
-        Main->>Fan: Update PID controller
-        Note right of Fan: Adjust fan speed based on temperature
-        Main->>UI: Update LCD screen
-        Main->>WS: Send status updates
-    end
+  sequenceDiagram
+      participant Main as "Main Loop"
+      participant Meas as "Measurements"
+      participant FSM as "FSM"
+      participant Fan as "Fan Control"
+      participant UI as "UI Updates"
+      participant WS as "WebSocket"
+      loop Each loop iteration
+          Main->>Meas: Read voltage, current, and temperature
+          Note right of Meas: Calculate power, resistance
+          Main->>FSM: Run FSM with updated measurements
+          Note right of FSM: Execute mode-specific operations
+          FSM-->>Main: Update outputs (DAC, relays)
+          Main->>Fan: Update PID controller
+          Note right of Fan: Adjust fan speed based on temperature
+          Main->>UI: Update LCD screen
+          Main->>WS: Send status updates
+      end
 </pre>
 
 ---

@@ -32,35 +32,37 @@ The electronic load system is a versatile testing device designed to simulate va
 
 ## High-Level System Architecture
 
-<div class="mermaid">
-flowchart LR
- subgraph subGraph0["User Interface"]
-    direction TB
-        C1["Encoder Reading"]
-        C["User Interface"]
-        C2["LCD Display Update"]
-        C3["WebServer Communication"]
-  end
- subgraph subGraph1["Power Control"]
-    direction TB
-        D1["ADC Reading"]
-        D["Power Control"]
-        D2["Parameter Calculation"]
-        D3["DAC Configuration"]
-  end
- subgraph subGraph2["Monitoring and Protection"]
-    direction TB
-        E1["Temperature ADC Reading"]
-        E["Monitoring and Protection"]
-        E2["Fan Control"]
-        E3["Overload Protection"]
-  end
-    A["Start"] --> B["System Initialization"]
-    B --> C & D & E
-    C --> C1 & C2 & C3
-    D --> D1 & D2 & D3
-    E --> E1 & E2 & E3
-</div>
+<pre class="mermaid">
+  %%{ init: { "flowchart": { "defaultRenderer": "elk" } } }%%
+
+  flowchart LR
+  subgraph subGraph0["User Interface"]
+      direction TB
+          C1["Encoder Reading"]
+          C["User Interface"]
+          C2["LCD Display Update"]
+          C3["WebServer Communication"]
+    end
+  subgraph subGraph1["Power Control"]
+      direction TB
+          D1["ADC Reading"]
+          D["Power Control"]
+          D2["Parameter Calculation"]
+          D3["DAC Configuration"]
+    end
+  subgraph subGraph2["Monitoring and Protection"]
+      direction TB
+          E1["Temperature ADC Reading"]
+          E["Monitoring and Protection"]
+          E2["Fan Control"]
+          E3["Overload Protection"]
+    end
+      A["Start"] --> B["System Initialization"]
+      B --> C & D & E
+      C --> C1 & C2 & C3
+      D --> D1 & D2 & D3
+      E --> E1 & E2 & E3
+</pre>
 
 * **ADC**: Measures voltage, current, and temperature
 * **DAC**: Controls the load level
@@ -72,7 +74,7 @@ flowchart LR
 
 ## Key Components & Data Flow
 
-<div class="mermaid">
+<pre class="mermaid">
 flowchart TD
  subgraph s1["Acquisition"]
         ADC["ADC: Voltage, Current, Temp"]
@@ -99,7 +101,7 @@ flowchart TD
     MCU --> FSM & PID & LCD & WS & LED
     FSM --> DAC & SW
     PID --> FAN["Fan"]
-</div>
+</pre>
 
 ---
 
@@ -107,7 +109,7 @@ flowchart TD
 
 The main control loop performs several critical operations during each iteration:
 
-<div class="mermaid">
+<pre class="mermaid">
 sequenceDiagram
     participant Main as "Main Loop"
     participant Meas as "Measurements"
@@ -126,7 +128,7 @@ sequenceDiagram
         Main->>UI: Update LCD screen
         Main->>WS: Send status updates
     end
-</div>
+</pre>
 
 ---
 

@@ -157,7 +157,7 @@ Each mode uses specific DAC settings and switch configurations, managed by the F
 * Mode-specific screens for parameter adjustment
 * Real-time measurements & status indicators
 
-![LCD Interface Screenshot](../assets/web-interface.png)
+![LCD Interface Screenshot](./img/lcd_interface.png)
 
 
 ### Web Interface

@@ -11,7 +11,7 @@ This project is an electronic load designed as a final project for electronic en
 ## Device Gallery
 
 ![Front photo of the device](img/el_ps.JPEG)
-![Top view of the device](img/top_view.jpeg)
+![Top view of the device](img/top_view.JPEG)
 ![Front photo of the PCB](img/pcb_front.png)
 ![Back photo of the PCB](img/pcb_back.png)
 

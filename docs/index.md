@@ -1,3 +1,8 @@
+---
+layout: default
+title: Electronic Load System
+---
+
 ## Electronic Load System Overview
 
 ### Purpose and Scope
@@ -20,11 +25,6 @@ The electronic load system is a versatile testing device designed to simulate va
 ---
 
 ## High-Level System Architecture
-
-<pre class="mermaid">
-flowchart TD
-     A-->B
-</pre>
 
 ```mermaid
 ---

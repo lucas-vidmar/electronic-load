@@ -6,7 +6,7 @@ This project is an electronic load designed as a final project for electronic en
 ## Project Objectives
 - Develop a versatile and economical electronic load
 - Implement precise digital control with real-time feedback
-- Facilitate user interaction through modern interfaces (touchscreen and web)
+- Facilitate user interaction through modern interfaces (lcd screen and web)
 
 ## Device Gallery
 

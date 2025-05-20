@@ -1,4 +1,4 @@
-# Electronic Load System - Overview
+# Index
 
 ## General Description
 This project is an electronic load designed as a final project for electronic engineering. The device allows simulation of different load conditions to validate power supplies, batteries, and electronic components. It offers both local and remote control, as well as multiple operating modes.

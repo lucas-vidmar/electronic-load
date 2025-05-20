@@ -12,9 +12,9 @@
   })
 </script>
 
-## Electronic Load System Overview
+# Software
 
-### Purpose and Scope
+## Purpose and Scope
 
 The electronic load system is a versatile testing device designed to simulate various electrical loads for power supply testing, battery characterization, and other electronic component validation. It operates in multiple modes (Constant Current, Constant Voltage, Constant Resistance, Constant Power) and provides precision control through both a local lcd interface and a remote web interface.
 

@@ -45,7 +45,7 @@ void FSM::run(float input, DAC dac, AnalogSws sws, bool* output_active, ADC adc)
             }
             break;
         case FSM_MAIN_STATES::CR:
-            constant_x(String("kR"), CR_DIGITS_BEFORE_DECIMAL, CR_DIGITS_AFTER_DECIMAL, CR_DIGITS_TOTAL, DAC_CR_MAX_RESISTANCE);
+            constant_x(String("kR"), CR_DIGITS_BEFORE_DECIMAL, CR_DIGITS_AFTER_DECIMAL, CR_DIGITS_TOTAL, DAC_CR_MAX_RESISTANCE / 1000);
             if (lastInput != input) {
                 sws.mosfet_input_cc_mode();
                 sws.v_dac_enable();

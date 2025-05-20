@@ -7,6 +7,7 @@
 #include "lvgl_lcd.h"
 #include "main.h" // For SSID, PASSWORD
 #include <WiFi.h>  // For WiFi.softAPIP()
+#include "lvgl.h"
 
 TFT_eSPI* LVGL_LCD::tftPointer = nullptr;
 
@@ -570,4 +571,38 @@ void LVGL_LCD::close_settings_menu() {
     settingsIPLabel = nullptr;
     uptimeLabel = nullptr; //
     headerContainer = nullptr; //
+}
+
+void LVGL_LCD::show_warning_popup(const String& message, uint32_t timeout_ms) {
+    // Create a modal container (centered, small, rounded)
+    lv_obj_t* popup = lv_obj_create(lv_scr_act());
+    lv_obj_set_size(popup, 180, 60);
+    lv_obj_center(popup);
+    lv_obj_set_style_radius(popup, ROUNDED_CORNER_CURVE, 0);
+    lv_obj_set_style_bg_color(popup, lv_color_hex(COLOR4_DARK), 0);
+    lv_obj_set_style_bg_opa(popup, LV_OPA_COVER, 0);
+    lv_obj_set_style_border_width(popup, 2, 0);
+    lv_obj_set_style_border_color(popup, lv_color_hex(COLOR4_LIGHT), 0);
+    lv_obj_set_style_pad_all(popup, PADDING, 0);
+
+    // Add warning label
+    lv_obj_t* label = lv_label_create(popup);
+    lv_label_set_text(label, message.c_str());
+    lv_obj_set_style_text_color(label, lv_color_white(), 0);
+    lv_obj_set_style_text_font(label, FONT_S, 0);
+    lv_obj_center(label);
+
+    // Timer callback to delete popup
+    struct TimerContext {
+        lv_obj_t* obj;
+    };
+    TimerContext* ctx = new TimerContext{popup};
+    auto timer_cb = [](lv_timer_t* timer) {
+        TimerContext* ctx = (TimerContext*)lv_timer_get_user_data(timer);
+        if(ctx && ctx->obj) lv_obj_del(ctx->obj);
+        delete ctx;
+        lv_timer_del(timer);
+    };
+    lv_timer_t* t = lv_timer_create(timer_cb, timeout_ms, ctx);
+    lv_timer_set_repeat_count(t, 1);
 }

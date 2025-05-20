@@ -131,6 +131,13 @@ public:
      */
     void close_settings_menu();
 
+    /**
+     * @brief Create a small popup warning that auto-deletes after a timeout.
+     * @param message The warning message to display.
+     * @param timeout_ms How long to show the popup (milliseconds).
+     */
+    void show_warning_popup(const String& message, uint32_t timeout_ms);
+
 private:
     TFT_eSPI tft;
     static TFT_eSPI* tftPointer;

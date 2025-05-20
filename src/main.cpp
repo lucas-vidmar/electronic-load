@@ -409,6 +409,7 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
   if (input > maxInputValue) {
     input = maxInputValue; // Clamp to max value
     Serial.println("Input clamped to max value: " + String(maxInputValue));
+    lcd.show_warning_popup("Limit: " + String(maxInputValue) + unit, 2000); // Show warning popup
   }
 
   // Update LCD screen - Pass global outputActive and current edit state

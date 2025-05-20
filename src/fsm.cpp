@@ -29,7 +29,7 @@ void FSM::run(float input, DAC dac, AnalogSws sws, bool* output_active, ADC adc)
             }
             break;
         case FSM_MAIN_STATES::CC:
-            constant_x(String("A"), CC_DIGITS_BEFORE_DECIMAL, CC_DIGITS_AFTER_DECIMAL, CC_DIGITS_TOTAL);
+            constant_x(String("A"), CC_DIGITS_BEFORE_DECIMAL, CC_DIGITS_AFTER_DECIMAL, CC_DIGITS_TOTAL, DAC_CC_MAX_CURRENT);
             if (lastInput != input) {
                 sws.mosfet_input_cc_mode();
                 sws.v_dac_enable();
@@ -37,7 +37,7 @@ void FSM::run(float input, DAC dac, AnalogSws sws, bool* output_active, ADC adc)
             }
             break;
         case FSM_MAIN_STATES::CV:
-            constant_x(String("V"), CV_DIGITS_BEFORE_DECIMAL, CV_DIGITS_AFTER_DECIMAL, CV_DIGITS_TOTAL);
+            constant_x(String("V"), CV_DIGITS_BEFORE_DECIMAL, CV_DIGITS_AFTER_DECIMAL, CV_DIGITS_TOTAL, DAC_CV_MAX_VOLTAGE);
             if (lastInput != input) {
                 sws.mosfet_input_cv_mode();
                 sws.v_dac_enable();
@@ -45,7 +45,7 @@ void FSM::run(float input, DAC dac, AnalogSws sws, bool* output_active, ADC adc)
             }
             break;
         case FSM_MAIN_STATES::CR:
-            constant_x(String("kR"), CR_DIGITS_BEFORE_DECIMAL, CR_DIGITS_AFTER_DECIMAL, CR_DIGITS_TOTAL);
+            constant_x(String("kR"), CR_DIGITS_BEFORE_DECIMAL, CR_DIGITS_AFTER_DECIMAL, CR_DIGITS_TOTAL, DAC_CR_MAX_RESISTANCE);
             if (lastInput != input) {
                 sws.mosfet_input_cc_mode();
                 sws.v_dac_enable();
@@ -53,7 +53,7 @@ void FSM::run(float input, DAC dac, AnalogSws sws, bool* output_active, ADC adc)
             dac.cr_mode_set_resistance(input, adc.read_v_dut());
             break;
         case FSM_MAIN_STATES::CW:
-            constant_x(String("W"), CW_DIGITS_BEFORE_DECIMAL, CW_DIGITS_AFTER_DECIMAL, CW_DIGITS_TOTAL);
+            constant_x(String("W"), CW_DIGITS_BEFORE_DECIMAL, CW_DIGITS_AFTER_DECIMAL, CW_DIGITS_TOTAL, DAC_CW_MAX_POWER);
             if (lastInput != input) {
                 sws.mosfet_input_cc_mode();
                 sws.v_dac_enable();

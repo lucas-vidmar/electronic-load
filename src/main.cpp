@@ -313,7 +313,7 @@ void number_to_digits(float number, std::vector<int>& digitsValues, int digitsBe
     }
 }
 
-void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, int totalDigits) {
+void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, int totalDigits, int maxInputValue) {
   // State definitions for constant mode editing
   enum CX_EDIT_STATES {
     SELECTING_ITEM, // Selecting digit, trigger, or exit
@@ -403,6 +403,12 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
         // Value change will be broadcast by loop()
         break;
     }
+  }
+
+  // Check if values are over the limits
+  if (input > maxInputValue) {
+    input = maxInputValue; // Clamp to max value
+    Serial.println("Input clamped to max value: " + String(maxInputValue));
   }
 
   // Update LCD screen - Pass global outputActive and current edit state

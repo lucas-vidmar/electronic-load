@@ -54,8 +54,9 @@ void setting();
  * @param digitsBeforeDecimal Number of digits before decimal point
  * @param digitsAfterDecimal Number of digits after decimal point
  * @param totalDigits Total number of digits for the value
+ * @param maxInputValue Maximum input value for the mode
  */
-void constant_x(String unit, int digits_before_decimal, int digits_after_decimal, int total_digits);
+void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, int totalDigits, int maxInputValue);
 
 /**
  * @brief Converts an array of digits to a floating-point number

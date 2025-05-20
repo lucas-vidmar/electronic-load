@@ -16,7 +16,7 @@
 
 ### Purpose and Scope
 
-The electronic load system is a versatile testing device designed to simulate various electrical loads for power supply testing, battery characterization, and other electronic component validation. It operates in multiple modes (Constant Current, Constant Voltage, Constant Resistance, Constant Power) and provides precision control through both a local touchscreen interface and a remote web interface.
+The electronic load system is a versatile testing device designed to simulate various electrical loads for power supply testing, battery characterization, and other electronic component validation. It operates in multiple modes (Constant Current, Constant Voltage, Constant Resistance, Constant Power) and provides precision control through both a local lcd interface and a remote web interface.
 
 ---
 
@@ -25,7 +25,7 @@ The electronic load system is a versatile testing device designed to simulate va
 | Feature                | Description                                                                                 |
 | ---------------------- | ------------------------------------------------------------------------------------------- |
 | **Operating Modes**    | Constant Current (CC), Constant Voltage (CV), Constant Resistance (CR), Constant Power (CW) |
-| **User Interfaces**    | Local LCD touch interface and web-based remote interface                                    |
+| **User Interfaces**    | Local LCD interface and web-based remote interface                                    |
 | **Precision Control**  | Digital control of load parameters with real-time feedback                                  |
 | **Thermal Management** | PID-controlled fan with temperature monitoring                                              |
 | **Data Monitoring**    | Real-time voltage, current, power, resistance, and temperature measurements                 |
@@ -96,7 +96,7 @@ The electronic load system is a versatile testing device designed to simulate va
           SW["Analog Switches"]
     end
   subgraph s3["Visualization"]
-          LCD["Touch LCD"]
+          LCD["LCD"]
           WS["WebSocket"]
           LED["Integrated LED"]
     end
@@ -197,7 +197,7 @@ Each mode uses specific DAC settings and switch configurations, managed by the F
 | Analog Switches             | `AnalogSws`                | Configures mode-select relays          |
 | Cooling Fan                 | `Fan` & `PIDFanController` | Maintains safe temperature             |
 | Real-Time Clock             | `RTC`                      | Tracks time for energy & uptime        |
-| LCD Display                 | `LVGL_LCD`                 | Touchscreen UI                         |
+| LCD Display                 | `LVGL_LCD`                 |  UI                         |
 | Rotary Encoder              | `Encoder`                  | User input for parameter selection     |
 
 ---

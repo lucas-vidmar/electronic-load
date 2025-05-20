@@ -12,10 +12,21 @@ This project is an electronic load designed as a final project for electronic en
 
 ![Front photo of the device](img/el_ps.JPEG)
 ![Top view of the device](img/top_view.JPEG)
-![Front photo of the PCB](img/pcb_front.png)
-![Back photo of the PCB](img/pcb_back.png)
 
-![Side view of the system with fan and connectors](images/side_view.jpg)
+### PCB
+<!-- PCB front and back photos side by side -->
+<table>
+  <tr>
+    <td><img src="img/pcb_front.png" alt="Front photo of the PCB" width="350"/></td>
+    <td><img src="img/pcb_back.png" alt="Back photo of the PCB" width="350"/></td>
+  </tr>
+  <tr>
+    <td align="center">Front of PCB</td>
+    <td align="center">Back of PCB</td>
+  </tr>
+</table>
+
+### Label
 
 ![Front Label](img/front_label.png)
 

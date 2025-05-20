@@ -354,8 +354,8 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
         if (selected_item < totalDigits) { // Selection is a digit -> Start modifying
           edit_state = CX_EDIT_STATES::MODIFYING_DIGIT;
           encoder.set_position(digitsValues[selected_item]); // Set encoder to digit's current value
-          encoder.set_min_position(0);
-          encoder.set_max_position(9);
+          encoder.set_min_position(-1); // Allow -1 for decrement
+          encoder.set_max_position(10); // Allow 10 for increment
           Serial.println("Starting modify digit " + String(selected_item));
         }
         else if (selected_item == totalDigits) { // Trigger/Stop output pressed
@@ -398,6 +398,22 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
         break;
       case CX_EDIT_STATES::MODIFYING_DIGIT:
         digitsValues[selected_item] = encoder.get_position(); // Update digit value
+        
+        if (digitsValues[selected_item] == 10) { // Overflow 9 -> 0 add 1 to next digit
+          digitsValues[selected_item] = 0; // Reset current digit
+          encoder.set_position(0); // Reset encoder to 0
+          if (selected_item > 0) { // If not the leftmost digit
+            digitsValues[selected_item - 1] += 1; // Increment digit to the left
+          }
+        }
+        else if (digitsValues[selected_item] == -1 ) { // Underflow 0 -> 9 subtract 1 from next digit
+          digitsValues[selected_item] = 9; // Reset current digit
+          encoder.set_position(9); // Reset encoder to 9
+          if (selected_item > 0) { // If not the leftmost digit
+            digitsValues[selected_item - 1] -= 1; // Decrement digit to the left
+          }
+        }
+
         input = digits_to_number(digitsValues, digitsBeforeDecimal, digitsAfterDecimal, totalDigits);
         Serial.println("Digit " + String(selected_item) + " changed to " + String(digitsValues[selected_item]) + ", New Value: " + String(input));
         // Value change will be broadcast by loop()

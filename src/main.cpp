@@ -270,46 +270,25 @@ void number_to_digits(float number, std::vector<int>& digitsValues, int digitsBe
     // Handle potential negative numbers if necessary (assuming non-negative for load)
     number = abs(number);
 
-    // Scale number based on decimal places for integer conversion
-    long long int scaled_number = static_cast<long long int>(round(number * pow(10, digitsAfterDecimal)));
-
-    // Extract digits from right to left
-    for (int i = totalDigits - 1; i >= 0; --i) {
-        if (i == digitsBeforeDecimal -1) { // Position before the implied decimal point
-          // This handles the integer part's last digit
-          digitsValues[i] = scaled_number % 10;
-        } else if (i < digitsBeforeDecimal) { // Integer part digits (except the last one)
-          digitsValues[i] = (scaled_number / (long long int)pow(10, digitsBeforeDecimal - 1 - i + digitsAfterDecimal)) % 10;
-        }
-         else { // Decimal part digits
-          digitsValues[i] = (scaled_number / (long long int)pow(10, totalDigits - 1 - i)) % 10;
-        }
-
-        // Basic validation (should ideally not happen with round/abs)
-        if (digitsValues[i] < 0 || digitsValues[i] > 9) {
-          digitsValues[i] = 0; // Default to 0 if out of range
-        }
-    }
-
-     // Correct calculation for integer part
+    // Correct calculation for integer part
     long long int integer_part_val = static_cast<long long int>(number);
     for (int i = digitsBeforeDecimal - 1; i >= 0; --i) {
-      digitsValues[i] = integer_part_val % 10;
-      integer_part_val /= 10;
+        digitsValues[i] = integer_part_val % 10;
+        integer_part_val /= 10;
     }
 
     // Correct calculation for decimal part
     long long int decimal_part_val = static_cast<long long int>(round((number - floor(number)) * pow(10, digitsAfterDecimal)));
     for (int i = totalDigits - 1; i >= digitsBeforeDecimal; --i) {
-      digitsValues[i] = decimal_part_val % 10;
-      decimal_part_val /= 10;
+        digitsValues[i] = decimal_part_val % 10;
+        decimal_part_val /= 10;
     }
 
-     // Validate digits again after calculation
+    // Validate digits again after calculation
     for (int i = 0; i < totalDigits; ++i) {
-      if (digitsValues[i] < 0 || digitsValues[i] > 9) {
-        digitsValues[i] = 0;
-      }
+        if (digitsValues[i] < 0 || digitsValues[i] > 9) {
+            digitsValues[i] = 0;
+        }
     }
 }
 
@@ -397,24 +376,30 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
         selected_item = encoder.get_position();
         break;
       case CX_EDIT_STATES::MODIFYING_DIGIT:
+        input = digits_to_number(digitsValues, digitsBeforeDecimal, digitsAfterDecimal, totalDigits);
         digitsValues[selected_item] = encoder.get_position(); // Update digit value
+        Serial.println("Before decimal: " + String(digitsBeforeDecimal) + " Selected item: " + String(selected_item) + " Pow: " + String(pow(10, digitsBeforeDecimal - selected_item)));
         
         if (digitsValues[selected_item] == 10) { // Overflow 9 -> 0 add 1 to next digit
           digitsValues[selected_item] = 0; // Reset current digit
           encoder.set_position(0); // Reset encoder to 0
-          if (selected_item > 0) { // If not the leftmost digit
-            digitsValues[selected_item - 1] += 1; // Increment digit to the left
-          }
+          input += pow(10, digitsBeforeDecimal - selected_item); // Increment digit to the left
+          input -= 9 * pow(10, digitsBeforeDecimal - selected_item - 1); // Add 9 to the left digit
+          Serial.println("Input 1: " + String(input));
+          number_to_digits(input, digitsValues, digitsBeforeDecimal, digitsAfterDecimal, totalDigits); // Update input value
         }
         else if (digitsValues[selected_item] == -1 ) { // Underflow 0 -> 9 subtract 1 from next digit
           digitsValues[selected_item] = 9; // Reset current digit
           encoder.set_position(9); // Reset encoder to 9
-          if (selected_item > 0) { // If not the leftmost digit
-            digitsValues[selected_item - 1] -= 1; // Decrement digit to the left
-          }
+          input -= pow(10, digitsBeforeDecimal - selected_item); // Decrement digit to the left
+          input += 9 * pow(10, digitsBeforeDecimal - selected_item - 1); // Add 9 to the left digit
+          Serial.println("Input 1: " + String(input));
+          number_to_digits(input, digitsValues, digitsBeforeDecimal, digitsAfterDecimal, totalDigits); // Update digits values
         }
+        Serial.println("Input 2: " + String(input));
 
-        input = digits_to_number(digitsValues, digitsBeforeDecimal, digitsAfterDecimal, totalDigits);
+        input = digits_to_number(digitsValues, digitsBeforeDecimal, digitsAfterDecimal, totalDigits); // Update input value
+        Serial.println("Input 3: " + String(input));
         Serial.println("Digit " + String(selected_item) + " changed to " + String(digitsValues[selected_item]) + ", New Value: " + String(input));
         // Value change will be broadcast by loop()
         break;

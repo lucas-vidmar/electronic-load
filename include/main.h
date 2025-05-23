@@ -59,26 +59,6 @@ void setting();
 void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, int totalDigits, int maxInputValue);
 
 /**
- * @brief Converts an array of digits to a floating-point number
- * @param digitsValues Vector containing individual digits
- * @param digitsBeforeDecimal Number of digits before decimal point
- * @param digitsAfterDecimal Number of digits after decimal point
- * @param totalDigits Total number of digits
- * @return The floating-point value represented by the digits
- */
-float digits_to_number(std::vector<int> digitsValues, int digitsBeforeDecimal, int digitsAfterDecimal, int totalDigits);
-
-/**
- * @brief Converts a floating-point number to an array of digits.
- * @param number The number to convert.
- * @param digitsValues Vector to store the resulting digits.
- * @param digitsBeforeDecimal Number of digits before the decimal point.
- * @param digitsAfterDecimal Number of digits after the decimal point.
- * @param totalDigits Total number of digits.
- */
-void number_to_digits(float number, std::vector<int>& digitsValues, int digitsBeforeDecimal, int digitsAfterDecimal, int totalDigits);
-
-/**
  * @brief WebSocket event handler function.
  */
 void on_ws_event(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len);

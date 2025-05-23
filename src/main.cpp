@@ -181,6 +181,11 @@ void main_menu() {
   dutEnergy = 0.0; // Reset DUT energy when entering main menu
 
   if (fsm.has_changed()) { // First time entering main menu
+    #ifdef DEBUG_ENCODER
+    Serial.println("Encoder position: " + String(encoder.get_position()));
+    Serial.println("Max:" + String(encoder.get_encoder_max_position()) + " - Min: " + String(encoder.get_encoder_min_position()));
+    #endif
+
     Serial.println("Main menu");
     encoder.set_min_position(0);
     encoder.set_max_position(FSM_MAIN_STATES::SETTINGS - FSM_MAIN_STATES::CC); //  quantity of options in main menu
@@ -193,10 +198,6 @@ void main_menu() {
   if (encoder.has_changed()) { // Update menu with selected option
     pos = encoder.get_position();
     lcd.update_main_menu(pos);
-    #ifdef DEBUG_ENCODER
-    Serial.println("Encoder position: " + String(encoder.get_position()));
-    Serial.println("Max:" + String(encoder.get_encoder_max_position()) + " - Min: " + String(encoder.get_encoder_min_position()));
-    #endif
   }
 
   // Check if encoder button is pressed
@@ -235,189 +236,110 @@ void setting() {
 
 }
 
-float digits_to_number(std::vector<int> digitsValues, int digitsBeforeDecimal, int digitsAfterDecimal, int totalDigits) {
-  float number = 0.0;
-
-  // Validate each element to be in range [0, 9]
-  for (int i = 0; i < totalDigits; i++) {
-    if (digitsValues[i] < 0) {
-      digitsValues[i] = 0;
-    } else if (digitsValues[i] > 9) {
-      digitsValues[i] = 9;
-    }
+int get_digit_value(int selected_item, int digitsBeforeDecimal, int digitsAfterDecimal, float input) {
+  int digit_value = 0;
+  if (selected_item < digitsBeforeDecimal) { // Before decimal point
+    int pow10 = pow(10, digitsBeforeDecimal - selected_item - 1);
+    digit_value = static_cast<int>(input / pow10) % 10;
+  } else { // After decimal point
+    int dec_pos = selected_item - digitsBeforeDecimal + 1;
+    digit_value = static_cast<int>(input * pow(10, dec_pos)) % 10;
   }
-
-  // Calculate the integer part
-  for (int i = 0; i < digitsBeforeDecimal; i++) {
-    number += digitsValues[i] * pow(10, digitsBeforeDecimal - i - 1); // Add digits before decimal
-  }
-  // Calculate the decimal part
-  for (int i = 0; i < digitsAfterDecimal; i++) {
-    number += digitsValues[digitsBeforeDecimal + i] * pow(10, -i - 1); // Add digits after decimal
-  }
-  return number;
-}
-
-/**
- * @brief Converts a floating-point number back into digits for the UI.
- */
-void number_to_digits(float number, std::vector<int>& digitsValues, int digitsBeforeDecimal, int digitsAfterDecimal, int totalDigits) {
-    // Ensure the vector has the correct size
-    if (digitsValues.size() != totalDigits) {
-        digitsValues.resize(totalDigits);
-    }
-
-    // Handle potential negative numbers if necessary (assuming non-negative for load)
-    number = abs(number);
-
-    // Correct calculation for integer part
-    long long int integer_part_val = static_cast<long long int>(number);
-    for (int i = digitsBeforeDecimal - 1; i >= 0; --i) {
-        digitsValues[i] = integer_part_val % 10;
-        integer_part_val /= 10;
-    }
-
-    // Correct calculation for decimal part
-    long long int decimal_part_val = static_cast<long long int>(round((number - floor(number)) * pow(10, digitsAfterDecimal)));
-    for (int i = totalDigits - 1; i >= digitsBeforeDecimal; --i) {
-        digitsValues[i] = decimal_part_val % 10;
-        decimal_part_val /= 10;
-    }
-
-    // Validate digits again after calculation
-    for (int i = 0; i < totalDigits; ++i) {
-        if (digitsValues[i] < 0 || digitsValues[i] > 9) {
-            digitsValues[i] = 0;
-        }
-    }
+  return digit_value;
 }
 
 void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, int totalDigits, int maxInputValue) {
-  // State definitions for constant mode editing
   enum CX_EDIT_STATES {
-    SELECTING_ITEM, // Selecting digit, trigger, or exit
-    MODIFYING_DIGIT // Modifying the selected digit's value
+    SELECTING_ITEM,
+    MODIFYING_DIGIT
   };
 
-  // Static variables for the state within constant_x
-  static std::vector<int> digitsValues(totalDigits, 0); // Digit values initialized to 0
-  static int selected_item = 0; // Currently selected item (0..totalDigits-1 = digits, totalDigits = Trigger, totalDigits+1 = Exit)
-  static CX_EDIT_STATES edit_state = CX_EDIT_STATES::SELECTING_ITEM; // State machine for editing
+  static int selected_item = 0;
+  static CX_EDIT_STATES edit_state = CX_EDIT_STATES::SELECTING_ITEM;
 
-  // Sincronizar pantalla con el valor actual de input
-  number_to_digits(input, digitsValues, digitsBeforeDecimal, digitsAfterDecimal, totalDigits);
-
-  // First time entering this mode, reset static vars
   if (fsm.has_changed()) {
-    timeMs = 0.0; // Reset time when entering constant_x mode
-    uptimeString = format_uptime(timeMs); // Format uptime string
-    dutEnergy = 0.0; // Reset DUT energy when entering constant_x mode
+    timeMs = 0.0;
+    uptimeString = format_uptime(timeMs);
+    dutEnergy = 0.0;
     encoder.set_position(0);
-    digitsValues.assign(totalDigits, 0);  // Reset digits values
     selected_item = 0;
-    edit_state = CX_EDIT_STATES::SELECTING_ITEM; // Set state
-    input = 0.0; // Ensure target input is 0 initially
-    outputActive = false; // Ensure output is off initially
+    edit_state = CX_EDIT_STATES::SELECTING_ITEM;
+    input = 0.0;
+    outputActive = false;
     encoder.set_min_position(0);
-    encoder.set_max_position(totalDigits + 1); // Digits (0 to totalDigits-1) + Output_Button (totalDigits) + Back_Button (totalDigits+1)
+    encoder.set_max_position(totalDigits + 1);
     lcd.create_cx_screen(selected_item, unit);
-    // Initial state broadcast happens in loop()
   }
 
-  // Check if encoder button is pressed
   if (encoder.is_button_pressed()) {
     Serial.println("Button pressed - CX Mode");
     Serial.println("CX Edit State: " + String(edit_state) + ", Selected Item: " + String(selected_item));
     switch (edit_state) {
-      case CX_EDIT_STATES::SELECTING_ITEM: // Button press selects item
-        if (selected_item < totalDigits) { // Selection is a digit -> Start modifying
-          edit_state = CX_EDIT_STATES::MODIFYING_DIGIT;
-          encoder.set_position(digitsValues[selected_item]); // Set encoder to digit's current value
-          encoder.set_min_position(-1); // Allow -1 for decrement
-          encoder.set_max_position(10); // Allow 10 for increment
+      case CX_EDIT_STATES::SELECTING_ITEM:
+        if (selected_item < totalDigits) {
+          edit_state = CX_EDIT_STATES::MODIFYING_DIGIT; // Enter digit modification mode
+          // Set encoder to current digit value (calculate from input)
+          encoder.set_position(0);
+          encoder.set_min_position(-1); // negative decreses
+          encoder.set_max_position(1); // positive increases
           Serial.println("Starting modify digit " + String(selected_item));
-        }
-        else if (selected_item == totalDigits) { // Trigger/Stop output pressed
-          outputActive = !outputActive; // Toggle output state (global flag)
+        } else if (selected_item == totalDigits) {
+          outputActive = !outputActive;
           if (outputActive) {
             Serial.println("Output activated: " + String(input, digitsAfterDecimal));
           } else {
             Serial.println("Output deactivated");
           }
-          // State change (outputActive) will be broadcast by loop()
-        }
-        else { // Exit pressed (selected_item == totalDigits + 1)
+        } else {
           Serial.println("Exiting CX mode");
           fsm.change_state(FSM_MAIN_STATES::MAIN_MENU);
-          input = 0.0; // Reset input
-          outputActive = false; // Ensure output is off
+          input = 0.0;
+          outputActive = false;
           lcd.close_cx_screen();
-          // FSM state change will be broadcast by loop()
-          return; // Exit function early as state changed
+          return;
         }
         break;
-
-      case CX_EDIT_STATES::MODIFYING_DIGIT: // Button press confirms digit modification
+      case CX_EDIT_STATES::MODIFYING_DIGIT: // Exit digit modification mode
         Serial.println("Finished modifying digit " + String(selected_item));
         edit_state = CX_EDIT_STATES::SELECTING_ITEM;
-        encoder.set_position(selected_item); // Set encoder back to selecting items
+        encoder.set_position(selected_item);
         encoder.set_min_position(0);
-        encoder.set_max_position(totalDigits - 1 + 2); // Digits + Trigger + Exit
-        // Value already updated below, state change (input if active) broadcast by loop()
+        encoder.set_max_position(totalDigits - 1 + 2);
         break;
     }
-    // Button press always causes a state change or action, trigger broadcast via loop check
   }
 
-  // Handle encoder changes based on state
   if (encoder.has_changed()) {
+    #ifdef DEBUG_ENCODER
+    Serial.println("Encoder position: " + String(encoder.get_position()));
+    Serial.println("Max:" + String(encoder.get_encoder_max_position()) + " - Min: " + String(encoder.get_encoder_min_position()));
+    #endif
+
     switch (edit_state) {
       case CX_EDIT_STATES::SELECTING_ITEM:
         selected_item = encoder.get_position();
         break;
-      case CX_EDIT_STATES::MODIFYING_DIGIT:
-        input = digits_to_number(digitsValues, digitsBeforeDecimal, digitsAfterDecimal, totalDigits);
-        digitsValues[selected_item] = encoder.get_position(); // Update digit value
-        Serial.println("Before decimal: " + String(digitsBeforeDecimal) + " Selected item: " + String(selected_item) + " Pow: " + String(pow(10, digitsBeforeDecimal - selected_item)));
+      case CX_EDIT_STATES::MODIFYING_DIGIT: {
+        int encValue = encoder.get_position(); // can be -1, 0, or 1
+        input += encValue * pow(10, digitsBeforeDecimal - selected_item - 1); // Adjust input based on selected item
+        encoder.set_position(0); // Reset encoder position
+        encoder.set_position(0); // Twice to also reset has_changed
         
-        if (digitsValues[selected_item] == 10) { // Overflow 9 -> 0 add 1 to next digit
-          digitsValues[selected_item] = 0; // Reset current digit
-          encoder.set_position(0); // Reset encoder to 0
-          input += pow(10, digitsBeforeDecimal - selected_item); // Increment digit to the left
-          input -= 9 * pow(10, digitsBeforeDecimal - selected_item - 1); // Add 9 to the left digit
-          Serial.println("Input 1: " + String(input));
-          number_to_digits(input, digitsValues, digitsBeforeDecimal, digitsAfterDecimal, totalDigits); // Update input value
-        }
-        else if (digitsValues[selected_item] == -1 ) { // Underflow 0 -> 9 subtract 1 from next digit
-          digitsValues[selected_item] = 9; // Reset current digit
-          encoder.set_position(9); // Reset encoder to 9
-          input -= pow(10, digitsBeforeDecimal - selected_item); // Decrement digit to the left
-          input += 9 * pow(10, digitsBeforeDecimal - selected_item - 1); // Add 9 to the left digit
-          Serial.println("Input 1: " + String(input));
-          number_to_digits(input, digitsValues, digitsBeforeDecimal, digitsAfterDecimal, totalDigits); // Update digits values
-        }
-        Serial.println("Input 2: " + String(input));
+        if (input < 0) input = 0;
 
-        input = digits_to_number(digitsValues, digitsBeforeDecimal, digitsAfterDecimal, totalDigits); // Update input value
-        Serial.println("Input 3: " + String(input));
-        Serial.println("Digit " + String(selected_item) + " changed to " + String(digitsValues[selected_item]) + ", New Value: " + String(input));
-        // Value change will be broadcast by loop()
+        Serial.println("Digit " + String(selected_item) + " changed, New Value: " + String(input));
         break;
+      }
     }
   }
 
-  // Check if values are over the limits
   if (input > maxInputValue) {
-    input = maxInputValue; // Clamp to max value
+    input = maxInputValue;
     Serial.println("Input clamped to max value: " + String(maxInputValue));
-    lcd.show_warning_popup("Limit: " + String(maxInputValue) + unit, 2000); // Show warning popup
+    lcd.show_warning_popup("Limit: " + String(maxInputValue) + unit, 2000);
   }
 
-  // Update LCD screen - Pass global outputActive and current edit state
   lcd.update_cx_screen(input, selected_item, unit, dutVoltage, dutCurrent, digitsBeforeDecimal, totalDigits, String(input, digitsAfterDecimal), outputActive, (edit_state == CX_EDIT_STATES::MODIFYING_DIGIT), temperature, dutEnergy);
-
-  // No delay here, rely on loop delay/timing
-  // State changes (input, outputActive, fsm state) are detected and broadcast in loop()
 }
 
 // --- WebSocket Handler ---

@@ -259,8 +259,8 @@ function init() {
         });
     });
 
-    valueUp.addEventListener('click', incrementDigit);
-    valueDown.addEventListener('click', decrementDigit);
+    valueUp.addEventListener('click', () => { modifyDigit(1); });
+    valueDown.addEventListener('click', () => { modifyDigit(-1); });
 
     toggleOperation.addEventListener('click', () => {
         relayEnabled = !relayEnabled;
@@ -300,26 +300,31 @@ function selectDigit(digitElement) {
     selectedDigit = digitElement;
 }
 
-// Increment selected digit
-function incrementDigit() {
-    if (!selectedDigit) return;
-    
-    const position = parseInt(selectedDigit.getAttribute('data-position'));
-    digitValues[position] = (digitValues[position] + 1) % 10;
-    selectedDigit.textContent = digitValues[position];
-    // Send updated value only if output is active OR if user explicitly changes it
-    // Avoid sending intermediate values during editing if output is off?
-    // Let's send it always for now, backend can decide.
-    sendValue();
-}
+// Modify selected digit
+function modifyDigit(sign) {
+    if (!selectedDigit) return; // No digit selected
 
-// Decrement selected digit
-function decrementDigit() {
-    if (!selectedDigit) return;
-    
     const position = parseInt(selectedDigit.getAttribute('data-position'));
-    digitValues[position] = (digitValues[position] - 1 + 10) % 10;
-    selectedDigit.textContent = digitValues[position];
+    const config = modeConfig[currentMode];
+    if (!config) return;
+
+    // Calculate the decimal place value of the selected digit
+    // Position 0 is the leftmost digit (highest place value)
+    const digitPlaceValue = Math.pow(10, config.beforeDecimal - position - 1);
+    
+    // Get current total value
+    const currentValue = convertDigitsToNumber();
+    
+    // Calculate new value by adding/subtracting the place value
+    let newValue = currentValue + (sign * digitPlaceValue);
+    
+    // Clamp to reasonable bounds (0 to max possible value for this mode)
+    const maxValue = Math.pow(10, config.beforeDecimal) - Math.pow(10, -config.decimals);
+    newValue = Math.max(0, Math.min(newValue, maxValue));
+    
+    // Update all digits from the new value
+    updateValueFromNumber(newValue);
+    
     sendValue();
 }
 

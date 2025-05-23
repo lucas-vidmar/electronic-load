@@ -8,20 +8,24 @@ void WebServerESP32::begin() {
     Serial.begin(115200);
 
     // Configure Wi-Fi
+    Serial.println("[WEBSERVER] Configuring Wi-Fi Access Point...");
     setup_wifi();
 
     // Mount SPIFFS
+    Serial.println("[WEBSERVER] Mounting SPIFFS filesystem...");
     if (!SPIFFS.begin(true)) {
-        Serial.println("Error mounting SPIFFS");
+        Serial.println("[WEBSERVER] ERROR: Failed to mount SPIFFS");
         return;
     }
+    Serial.println("[WEBSERVER] SPIFFS mounted successfully");
 
     // Configure web server (including WebSocket)
+    Serial.println("[WEBSERVER] Configuring web server...");
     setup_server();
 
     // Start server
     _server.begin();
-    Serial.println("HTTP and WebSocket server started");
+    Serial.println("[WEBSERVER] HTTP and WebSocket server started successfully");
 }
 
 void WebServerESP32::setup_wifi() {
@@ -37,16 +41,18 @@ void WebServerESP32::setup_wifi() {
 
     // Display access point information
     Serial.println();
-    Serial.print("Access point started. IP: ");
-    Serial.println(WiFi.softAPIP());
+    Serial.printf("[WEBSERVER] Access point started successfully\n");
+    Serial.printf("[WEBSERVER] SSID: %s\n", _ssidAP);
+    Serial.printf("[WEBSERVER] IP Address: %s\n", WiFi.softAPIP().toString().c_str());
 }
 
 void WebServerESP32::setup_server() {
     // Attach the WebSocket event handler if it's set
     if (_wsHandler) {
         _ws.onEvent(_wsHandler);
+        Serial.println("[WEBSERVER] WebSocket handler attached");
     } else {
-         Serial.println("WebSocket handler not set!");
+         Serial.println("[WEBSERVER] WARNING: WebSocket handler not set!");
     }
     _server.addHandler(&_ws); // Add WebSocket handler to the server
 }

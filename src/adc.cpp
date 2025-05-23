@@ -4,6 +4,7 @@ ADC::ADC() : i2c(nullptr) {}
 
 void ADC::init(I2C* i2cPointer) {
     i2c = i2cPointer;
+    Serial.println("[ADC] Initialized ADC (ADS1115) module");
 }
 
 float ADC::read_i_dut() {
@@ -25,7 +26,10 @@ float ADC::read_v_dut() {
 
 void ADC::read(uint8_t channel, int16_t* value) {
     // Validate the channel (0 to 3)
-    if (channel > 3) return;
+    if (channel > 3) {
+        Serial.printf("[ADC] ERROR: Invalid channel %d (valid range: 0-3)\n", channel);
+        return;
+    }
 
     // Configure MUX[14:12] for the selected channel in single-ended mode
     uint8_t mux = 0x04 + channel; // MUX[14:12] = 100 + channel

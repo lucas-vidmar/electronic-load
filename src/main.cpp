@@ -55,34 +55,41 @@ String format_uptime(uint64_t ms) {
 void setup() {
   Serial.begin(115200);
 
-  Serial.println("Starting...");
+  Serial.println("[MAIN] Starting Electronic Load System...");
 
   // I2C Scanner
+  Serial.println("[MAIN] Initializing I2C Scanner...");
   scanner.Init();
   scanner.Scan();
 
   // Initialize SPIFFS
-  Serial.println("Initializing SPIFFS...");
+  Serial.println("[MAIN] Initializing SPIFFS...");
   if (!SPIFFS.begin(true)) {
-    Serial.println("Error mounting SPIFFS");
+    Serial.println("[MAIN] ERROR: Failed to mount SPIFFS");
     return;
   }
+  Serial.println("[MAIN] SPIFFS mounted successfully");
 
   // Initialize encoder
+  Serial.println("[MAIN] Initializing encoder...");
   encoder.init();
   // Initialize builtin led
+  Serial.println("[MAIN] Initializing built-in LED...");
   led.init();
   led.blink(500);
   // Initialize relays
+  Serial.println("[MAIN] Initializing analog switches and relays...");
   analogSws.init();
   analogSws.relay_dut_disable();
   analogSws.mosfet_input_cc_mode();
   analogSws.v_dac_enable();
   // Initialize I2C devices
+  Serial.println("[MAIN] Initializing I2C devices...");
   i2c.init();
   dac.init(&i2c);
   adc.init(&i2c);
   // Initialize RTC
+  Serial.println("[MAIN] Initializing RTC...");
   rtc.init(&i2c);
   
   // Set current date and time (example: January 1, 2025 at 12:00:00)
@@ -90,18 +97,21 @@ void setup() {
   rtc.set_time(currentTime);
   
   // Store start time
-  Serial.println("RTC initialized. Start time recorded for uptime.");
+  Serial.println("[MAIN] RTC initialized. Start time recorded for uptime tracking.");
   
   // Initialize LVGL Display
+  Serial.println("[MAIN] Initializing LVGL LCD...");
   lcd.init();
   // Initialize FANs and PID controllers
+  Serial.println("[MAIN] Initializing fan control and PID controller...");
   pidController.init(PID_SETPOINT); // Set target temperature for fan
   fan.set_speed(0); // Set initial speed to 0
   // Initialize FSM
+  Serial.println("[MAIN] Initializing Finite State Machine...");
   fsm.init();
 
   // Start web server and WebSocket
-  Serial.println("Starting web server and WebSocket...");
+  Serial.println("[MAIN] Starting web server and WebSocket...");
   webServer.set_default_file("index.html");
   webServer.attachWsHandler(on_ws_event); // Attach the WebSocket handler
   webServer.begin();
@@ -109,6 +119,7 @@ void setup() {
   // Initial relay state
   analogSws.relay_dut_disable();
   outputActive = false; // Ensure output is off
+  Serial.println("[MAIN] System initialization completed successfully");
 }
 
 void loop() {
@@ -145,18 +156,37 @@ void loop() {
                       (input != prevInput) ||
                       (outputActive != prevOutputActive);
 
+  // Log state changes
+  if (fsm.get_current_state() != prevState) {
+    Serial.printf("[MAIN] FSM state changed from %d to %d\n", prevState, fsm.get_current_state());
+  }
+  
+  if (outputActive != prevOutputActive) {
+    Serial.printf("[MAIN] Output state changed: %s\n", outputActive ? "ENABLED" : "DISABLED");
+  }
+
   if (stateChanged || (currentTime - lastBroadcastTime >= BROADCAST_INTERVAL)) {
     broadcast_state();
     lastBroadcastTime = currentTime;
   }
 
   if (wsDeleteMainMenu) {
+    Serial.println("[MAIN] Closing CX screen due to WebSocket request");
     lcd.close_cx_screen(); // Close CX screen if in main menu, moved here because it was taking too long to close
     wsDeleteMainMenu = false; // Reset the flag
   }
 
   static uint64_t lastMillis = 0;
+  static uint64_t lastStatusLog = 0;
   uint64_t currentMillis = rtc.get_timestamp_ms();
+  
+  // Periodic system status logging (every 30 seconds)
+  if (currentMillis - lastStatusLog >= 30000) {
+    Serial.printf("[STATUS] Temp: %.1f°C, Fan: %d%%, V: %.3fV, I: %.3fA, P: %.3fW\n", 
+                  temperature, fanSpeed, dutVoltage, dutCurrent, dutPower);
+    lastStatusLog = currentMillis;
+  }
+  
   if (currentMillis - lastMillis >= 1000) { // Update every second
     lastMillis = currentMillis;
     if (outputActive) {
@@ -177,11 +207,11 @@ void main_menu() {
 
   if (fsm.has_changed()) { // First time entering main menu
     #ifdef DEBUG_ENCODER
-    Serial.println("Encoder position: " + String(encoder.get_position()));
-    Serial.println("Max:" + String(encoder.get_encoder_max_position()) + " - Min: " + String(encoder.get_encoder_min_position()));
+    Serial.println("[MAIN_MENU] Encoder position: " + String(encoder.get_position()));
+    Serial.println("[MAIN_MENU] Max:" + String(encoder.get_encoder_max_position()) + " - Min: " + String(encoder.get_encoder_min_position()));
     #endif
 
-    Serial.println("Main menu");
+    Serial.println("[MAIN_MENU] Entering main menu");
     encoder.set_min_position(0);
     encoder.set_max_position(FSM_MAIN_STATES::SETTINGS - FSM_MAIN_STATES::CC); //  quantity of options in main menu
     encoder.set_position(0);
@@ -197,10 +227,10 @@ void main_menu() {
 
   // Check if encoder button is pressed
   if (encoder.is_button_pressed()) {
-    Serial.println("Button pressed - Main Menu Selection");
+    Serial.println("[MAIN_MENU] Button pressed - Main Menu Selection");
     fsm.change_state(static_cast<FSM_MAIN_STATES>(FSM_MAIN_STATES::CC + pos)); // Change to selected option
     // Reset vars and close main menu
-    Serial.println("Exiting main menu to option " + String(FSM_MAIN_STATES::CC + pos));
+    Serial.println("[MAIN_MENU] Exiting main menu to option " + String(FSM_MAIN_STATES::CC + pos));
     lcd.close_main_menu();
     input = 0.0; // Reset input when changing mode
     outputActive = false; // Ensure output is off
@@ -215,7 +245,7 @@ void main_menu() {
 void setting() {
   // Settings menu logic
   if (fsm.has_changed()) { // First time entering settings
-    Serial.println("Settings menu");
+    Serial.println("[SETTINGS] Entering settings menu");
     encoder.set_min_position(0);
     encoder.set_max_position(0); //  quantity of options in settings menu
     encoder.set_position(0);
@@ -224,7 +254,7 @@ void setting() {
 
   // Check if encoder button is pressed
   if (encoder.is_button_pressed()) {
-    Serial.println("Button pressed - Back to Main Menu");
+    Serial.println("[SETTINGS] Button pressed - Back to Main Menu");
     fsm.change_state(FSM_MAIN_STATES::MAIN_MENU); // Change to selected main menu
     lcd.close_settings_menu();
   }
@@ -267,8 +297,8 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
   }
 
   if (encoder.is_button_pressed()) {
-    Serial.println("Button pressed - CX Mode");
-    Serial.println("CX Edit State: " + String(edit_state) + ", Selected Item: " + String(selected_item));
+    Serial.println("[CX_MODE] Button pressed - CX Mode");
+    Serial.println("[CX_MODE] Edit State: " + String(edit_state) + ", Selected Item: " + String(selected_item));
     switch (edit_state) {
       case CX_EDIT_STATES::SELECTING_ITEM:
         if (selected_item < totalDigits) {
@@ -277,16 +307,16 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
           encoder.set_position(0);
           encoder.set_min_position(-1); // negative decreses
           encoder.set_max_position(1); // positive increases
-          Serial.println("Starting modify digit " + String(selected_item));
+          Serial.println("[CX_MODE] Starting modify digit " + String(selected_item));
         } else if (selected_item == totalDigits) {
           outputActive = !outputActive;
           if (outputActive) {
-            Serial.println("Output activated: " + String(input, digitsAfterDecimal));
+            Serial.println("[CX_MODE] Output activated: " + String(input, digitsAfterDecimal));
           } else {
-            Serial.println("Output deactivated");
+            Serial.println("[CX_MODE] Output deactivated");
           }
         } else {
-          Serial.println("Exiting CX mode");
+          Serial.println("[CX_MODE] Exiting CX mode");
           fsm.change_state(FSM_MAIN_STATES::MAIN_MENU);
           input = 0.0;
           outputActive = false;
@@ -295,7 +325,7 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
         }
         break;
       case CX_EDIT_STATES::MODIFYING_DIGIT: // Exit digit modification mode
-        Serial.println("Finished modifying digit " + String(selected_item));
+        Serial.println("[CX_MODE] Finished modifying digit " + String(selected_item));
         edit_state = CX_EDIT_STATES::SELECTING_ITEM;
         encoder.set_position(selected_item);
         encoder.set_min_position(0);
@@ -306,8 +336,8 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
 
   if (encoder.has_changed()) {
     #ifdef DEBUG_ENCODER
-    Serial.println("Encoder position: " + String(encoder.get_position()));
-    Serial.println("Max:" + String(encoder.get_encoder_max_position()) + " - Min: " + String(encoder.get_encoder_min_position()));
+    Serial.println("[CX_MODE] Encoder position: " + String(encoder.get_position()));
+    Serial.println("[CX_MODE] Max:" + String(encoder.get_encoder_max_position()) + " - Min: " + String(encoder.get_encoder_min_position()));
     #endif
 
     switch (edit_state) {
@@ -322,8 +352,7 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
         
         if (input < 0) input = 0;
 
-        //Serial.println("Digit " + String(selected_item) + " changed, New Value: " + String(input));
-        ESP_LOGI("main", "Digit %d changed, New Value: %.3f", selected_item, input);
+        Serial.println("[CX_MODE] Digit " + String(selected_item) + " changed | New Value: " + String(input));
         break;
       }
     }
@@ -331,7 +360,7 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
 
   if (input > maxInputValue) {
     input = maxInputValue;
-    Serial.println("Input clamped to max value: " + String(maxInputValue));
+    Serial.println("[CX_MODE] Input clamped to max value: " + String(maxInputValue));
     lcd.show_warning_popup("Limit: " + String(maxInputValue) + unit, 2000);
   }
 
@@ -342,25 +371,25 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
 void on_ws_event(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
   switch (type) {
     case WS_EVT_CONNECT: {
-      Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
+      Serial.printf("[WEBSOCKET] Client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
       // Send current state to the newly connected client
       client->text(get_current_state_json());
       break;
     case WS_EVT_DISCONNECT:
-      Serial.printf("WebSocket client #%u disconnected\n", client->id());
+      Serial.printf("[WEBSOCKET] Client #%u disconnected\n", client->id());
       break;
     case WS_EVT_DATA:
       AwsFrameInfo *info = (AwsFrameInfo*)arg;
       if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
         data[len] = 0; // Null-terminate
-        Serial.printf("Received WS message from #%u: %s\n", client->id(), (char*)data);
+        Serial.printf("[WEBSOCKET] Received message from client #%u: %s\n", client->id(), (char*)data);
 
         // Parse JSON command
         StaticJsonDocument<256> doc; // Adjust size as needed
         DeserializationError error = deserializeJson(doc, (char*)data);
 
         if (error) {
-          Serial.print(F("deserializeJson() failed: "));
+          Serial.print("[WEBSOCKET] ERROR: deserializeJson() failed: ");
           Serial.println(error.f_str());
           client->text("{\"error\":\"Invalid JSON\"}");
           return;
@@ -407,7 +436,7 @@ void handle_set_mode(JsonDocument& doc) {
   const char* modeStr = doc["value"];
   if (!modeStr) return;
 
-  Serial.printf("WS: Setting mode to %s\n", modeStr);
+  Serial.printf("[WEBSOCKET] Setting mode to %s\n", modeStr);
   if (strcmp(modeStr, "CC") == 0) fsm.change_state(FSM_MAIN_STATES::CC);
   else if (strcmp(modeStr, "CV") == 0) fsm.change_state(FSM_MAIN_STATES::CV);
   else if (strcmp(modeStr, "CR") == 0) fsm.change_state(FSM_MAIN_STATES::CR);
@@ -422,7 +451,7 @@ void handle_set_mode(JsonDocument& doc) {
 void handle_set_value(JsonDocument& doc) {
   if (!doc["value"].is<float>() && !doc["value"].is<int>()) return;
   float newValue = doc["value"];
-  Serial.printf("WS: Setting value to %.3f\n", newValue);
+  Serial.printf("[WEBSOCKET] Setting value to %.3f\n", newValue);
   input = newValue;
 }
 
@@ -430,13 +459,13 @@ void handle_set_relay(JsonDocument& doc) {
   if (!doc["value"].is<bool>()) return;
   
   outputActive = doc["value"];
-  Serial.printf("WS: Setting relay %s\n", outputActive ? "ON" : "OFF");
+  Serial.printf("[WEBSOCKET] Setting relay %s\n", outputActive ? "ON" : "OFF");
   if (outputActive) analogSws.relay_dut_enable();
   else analogSws.relay_dut_disable();
 }
 
 void handle_exit() {
-  Serial.println("WS: Exiting current mode to Main Menu");
+  Serial.println("[WEBSOCKET] Exiting current mode to Main Menu");
   fsm.change_state(FSM_MAIN_STATES::MAIN_MENU);
   input = 0.0;
   outputActive = false;

@@ -5,6 +5,7 @@ FSM::FSM() {}
 void FSM::init() {
     currentState = FSM_MAIN_STATES::MAIN_MENU;
     lastState = FSM_MAIN_STATES::INITAL;
+    Serial.println("[FSM] Initialized - Starting in MAIN_MENU state");
 }
 
 void FSM::run(float input, DAC dac, AnalogSws sws, bool* output_active, ADC adc) {
@@ -73,6 +74,15 @@ void FSM::run(float input, DAC dac, AnalogSws sws, bool* output_active, ADC adc)
 
 void FSM::change_state(FSM_MAIN_STATES newState) {
     if (newState < FSM_MAIN_STATES::INITAL || newState > FSM_MAIN_STATES::FINAL) return;
+    
+    // Log state change
+    const char* stateNames[] = {"INITIAL", "MAIN_MENU", "CC", "CV", "CR", "CW", "SETTINGS", "FINAL"};
+    if (newState != currentState) {
+        Serial.printf("[FSM] State change: %s -> %s\n", 
+                     stateNames[static_cast<int>(currentState)], 
+                     stateNames[static_cast<int>(newState)]);
+    }
+    
     lastState = currentState;
     currentState = newState;
 }

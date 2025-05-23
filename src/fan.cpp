@@ -13,6 +13,7 @@ void Fan::init() {
     // Initialize with fan disabled
     disable();
     analogWrite(pwmPin, 0);
+    Serial.printf("[FAN] Initialized - PWM: %d, Enable: %d, Lock: %d\n", pwmPin, enablePin, lockPin);
 }
 
 void Fan::enable() {
@@ -20,6 +21,7 @@ void Fan::enable() {
     enabled = true;
     // Apply current speed setting
     analogWrite(pwmPin, speed);
+    Serial.printf("[FAN] Enabled with speed: %d (%d%%)\n", speed, get_speed_percentage());
 }
 
 void Fan::disable() {
@@ -28,12 +30,17 @@ void Fan::disable() {
     digitalWrite(pwmPin, LOW); 
     analogWrite(pwmPin, 0);
     enabled = false;
+    Serial.println("[FAN] Disabled");
 }
 
 void Fan::set_speed(uint8_t speed) {
+    uint8_t oldSpeed = this->speed;
     this->speed = speed;
     if (enabled) {
         analogWrite(pwmPin, speed);
+    }
+    if (oldSpeed != speed) {
+        Serial.printf("[FAN] Speed changed: %d -> %d (%d%%)\n", oldSpeed, speed, get_speed_percentage());
     }
 }
 
@@ -48,8 +55,11 @@ uint8_t Fan::get_speed() const {
 bool Fan::is_locked() const {
     unsigned long highTime = pulseIn(lockPin, HIGH, 1000000); // Read the lock pin state
     unsigned long lowTime = pulseIn(lockPin, LOW, 1000000);
-    if (highTime == 0 && lowTime == 0) return true; // Fan is locked
-    else return false; // Fan is not locked
+    bool locked = (highTime == 0 && lowTime == 0);
+    if (locked) {
+        Serial.println("[FAN] Warning: Fan is locked!");
+    }
+    return locked; // Fan is locked if no pulses detected
 }
 
 int Fan::get_speed_percentage() const {
@@ -65,10 +75,15 @@ void PIDFanController::init(float targetTemperature) {
     reset();
     fan.init();
     fan.enable();
+    Serial.printf("[PID_FAN] Initialized with target temperature: %.1f°C\n", targetTemperature);
 }
 
 void PIDFanController::set_target_temperature(float temp) {
+    float oldTarget = targetTemp;
     targetTemp = temp;
+    if (oldTarget != temp) {
+        Serial.printf("[PID_FAN] Target temperature changed: %.1f°C -> %.1f°C\n", oldTarget, temp);
+    }
 }
 
 float PIDFanController::get_target_temperature() const {

@@ -16,6 +16,8 @@ void Encoder::init() {
     // Change CHANGE to FALLING to trigger only once per detent
     attachInterrupt(digitalPinToInterrupt(ENCODER_CLK), handle_interrupt, FALLING);
     attachInterrupt(digitalPinToInterrupt(ENCODER_SW), handle_button_interrupt, FALLING);
+    
+    Serial.printf("[ENCODER] Initialized - CLK: %d, DT: %d, SW: %d\n", ENCODER_CLK, ENCODER_DT, ENCODER_SW);
 }
 
 void IRAM_ATTR Encoder::handle_interrupt() {
@@ -60,6 +62,9 @@ void IRAM_ATTR Encoder::handle_button_interrupt() {
 bool Encoder::is_button_pressed() {
     bool wasPressed = buttonPressed;
     buttonPressed = false;  // Reset after reading
+    if (wasPressed) {
+        Serial.println("[ENCODER] Button pressed");
+    }
     return wasPressed;
 }
 
@@ -70,10 +75,12 @@ int Encoder::get_position() {
 void Encoder::set_position(int pos) {
     lastPosition = position;
     position = pos;
+    Serial.printf("[ENCODER] Position set to: %d\n", pos);
 }
 
 void Encoder::set_max_position(int maxPos) {
     encoderMaxPosition = maxPos;
+    Serial.printf("[ENCODER] Max position set to: %d\n", maxPos);
 }
 
 void Encoder::set_min_position(int minPos) {

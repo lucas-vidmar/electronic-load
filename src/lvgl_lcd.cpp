@@ -19,25 +19,28 @@ void LVGL_LCD::init() {
 
     String lvglArduino = "LVGL Version: ";
     lvglArduino += String('v') + lv_version_major() + "." + lv_version_minor() + "." + lv_version_patch();
-    Serial.println(lvglArduino);
+    Serial.println("[LVGL_LCD] " + lvglArduino);
 
+    Serial.println("[LVGL_LCD] Initializing LVGL library...");
     lv_init();
 
     /* Set a tick source so LVGL knows how much time has elapsed */
     lv_tick_set_cb(tick);
 
     /* TFT_eSPI can be enabled in lv_conf.h to initialize the screen easily */
+    Serial.println("[LVGL_LCD] Creating display driver...");
     disp = lv_tft_espi_create(TFT_HOR_RES, TFT_VER_RES, drawBuf, sizeof(drawBuf));
     lv_display_set_rotation(disp, TFT_ROTATION);
     lv_display_set_flush_cb(disp, flush_lv);
 
     tftPointer = &tft;
 
-    Serial.println("LVGL configuration completed");
+    Serial.println("[LVGL_LCD] Configuration completed successfully");
 
     // Turn on the screen backlight
     pinMode(TFT_BL, OUTPUT);
     digitalWrite(TFT_BL, HIGH);
+    Serial.println("[LVGL_LCD] Screen backlight enabled");
 }
 
 void LVGL_LCD::update() {

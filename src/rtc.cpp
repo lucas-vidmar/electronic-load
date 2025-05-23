@@ -4,6 +4,11 @@ RTC::RTC() : i2c(nullptr) {}
 
 void RTC::init(I2C* i2cPointer) {
     i2c = i2cPointer;
+    if (i2c != nullptr) {
+        Serial.println("[RTC] Initialized with I2C interface");
+    } else {
+        Serial.println("[RTC] Error: I2C pointer is null");
+    }
 }
 
 void RTC::set_time(const DateTime &dt) {
@@ -24,6 +29,10 @@ void RTC::set_time(const DateTime &dt) {
     // Write data to RTC
     if (i2c != nullptr) {
         i2c->write(MCP7941X_ADDRESS, data, 8);
+        Serial.printf("[RTC] Time set: %02d:%02d:%02d %02d/%02d/%04d\n", 
+                     dt.hours, dt.minutes, dt.seconds, dt.date, dt.month, 2000 + dt.year);
+    } else {
+        Serial.println("[RTC] Error: Cannot set time, I2C not initialized");
     }
 }
 
@@ -47,6 +56,10 @@ DateTime RTC::get_time() {
         dt.date = bcd_to_dec(data[4]);
         dt.month = bcd_to_dec(data[5] & 0x1F); // Mask out any control bits
         dt.year = bcd_to_dec(data[6]);
+    } else {
+        Serial.println("[RTC] Error: Cannot read time, I2C not initialized");
+        // Return zero DateTime if I2C not available
+        dt.seconds = dt.minutes = dt.hours = dt.date = dt.month = dt.year = dt.dayOfWeek = 0;
     }
     
     return dt;

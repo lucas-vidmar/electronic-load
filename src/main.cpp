@@ -1,10 +1,4 @@
 #include "main.h"
-#include "webserver.h"
-#include "I2CScanner.h"
-#include <SPIFFS.h>
-#include <ArduinoJson.h> // Include ArduinoJson
-
-#define BROADCAST_INTERVAL 1000 // Interval for broadcasting state updates (in milliseconds)
 
 /* ------- Global Variables ------- */
 WebServerESP32 webServer(SSID.c_str(), PASSWORD.c_str());
@@ -60,6 +54,7 @@ String format_uptime(uint64_t ms) {
 
 void setup() {
   Serial.begin(115200);
+
   Serial.println("Starting...");
 
   // I2C Scanner
@@ -327,7 +322,8 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
         
         if (input < 0) input = 0;
 
-        Serial.println("Digit " + String(selected_item) + " changed, New Value: " + String(input));
+        //Serial.println("Digit " + String(selected_item) + " changed, New Value: " + String(input));
+        ESP_LOGI("main", "Digit %d changed, New Value: %.3f", selected_item, input);
         break;
       }
     }

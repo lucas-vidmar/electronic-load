@@ -37,6 +37,8 @@ const String PASSWORD = "pfi2025uade";        /*!< Wi-Fi network password */
 extern float ws_requested_value;    /*!< Last requested value from WebSocket */
 extern bool ws_value_updated;      /*!< Flag indicating a WebSocket value update */
 
+#define BROADCAST_INTERVAL 1000 // Interval for broadcasting state updates (in milliseconds)
+
 /* -- Function Declarations -- */
 /**
  * @brief Displays and handles the main menu interface

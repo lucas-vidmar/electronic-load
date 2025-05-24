@@ -43,7 +43,8 @@ body {
 }
 
 h1 {
-    margin: 10px 0 ;
+    margin: 10px 0;
+    margin-top: 20px;
     color: var(--text-primary);
     font-weight: bolder;
     padding: 15px;

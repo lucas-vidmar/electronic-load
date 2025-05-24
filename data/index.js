@@ -422,8 +422,6 @@ function updateValueFromNumber(number) {
         }
     });
     
-    // Validate the updated value and show/hide warning
-    validateCurrentValue();
 }
 
 // Send current value to ESP32

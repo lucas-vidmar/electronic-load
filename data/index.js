@@ -56,10 +56,10 @@ const maxValues = {
 
 // Warning message templates (matching C++ error messages)
 const warningMessages = {
-    'CC': 'Current out of range: {value}A (Max: {max}A)',
-    'CV': 'Voltage out of range: {value}V (Max: {max}V)', 
-    'CR': 'Resistance out of range: {value}kΩ (Max: {max}kΩ)',
-    'CW': 'Power out of range: {value}W (Max: {max}W)'
+    'CC': 'Max: {max}A',
+    'CV': 'Max: {max}V', 
+    'CR': 'Max: {max}kΩ',
+    'CW': 'Max: {max}W'
 };
 
 // Initialize WebSocket connection
@@ -324,16 +324,19 @@ function selectDigit(digitElement) {
 // Show warning banner with formatted message
 function showWarning(mode, value, maxValue) {
     const template = warningMessages[mode];
-    const message = template.replace('{value}', value.toFixed(modeConfig[mode].decimals))
-                           .replace('{max}', maxValue.toFixed(modeConfig[mode].decimals));
+    const message = template.replace('{max}', maxValue.toFixed(modeConfig[mode].decimals));
     
     warningMessage.textContent = message;
-    warningBanner.classList.remove('hidden');
+    warningBanner.classList.remove('hidden', 'fade-out');
 }
 
 // Hide warning banner
 function hideWarning() {
-    warningBanner.classList.add('hidden');
+    warningBanner.classList.add('fade-out');
+    setTimeout(() => {
+        warningBanner.classList.add('hidden');
+        warningBanner.classList.remove('fade-out');
+    }, 300); // Match the CSS transition duration
 }
 
 // Modify selected digit
@@ -359,7 +362,7 @@ function modifyDigit(sign) {
     }
     else if (newValue > maxValues[currentMode]) {
         newValue = maxValues[currentMode]; // Prevent exceeding max value
-        // Show warning for 2 seconds
+        // Show warning for 2 seconds with fade effect
         showWarning(currentMode, newValue, maxValues[currentMode]);
         setTimeout(hideWarning, 2000);
     }

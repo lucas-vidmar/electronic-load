@@ -52,6 +52,7 @@ h1 {
     box-shadow: 0 8px 8px var(--shadow);
     margin-bottom: 10px;
     font-size: 2.5em;
+    border: 1px solid var(--border-primary);
 }
 
 h2 {
@@ -158,7 +159,8 @@ h2 {
 }
 
 .value-btn {
-    padding: 5px 10px; /* Remove padding if using line-height/flex for centering */
+    width: 60px;
+    height: 60px;
     display: flex; /* Use flexbox for centering */
     align-items: center; /* Center icon vertically */
     justify-content: center; /* Center icon horizontally */
@@ -384,6 +386,15 @@ footer {
 
 #warning-banner.hidden {
     display: none;
+}
+
+#warning-banner {
+    transition: opacity 0.3s ease-in-out;
+    opacity: 1;
+}
+
+#warning-banner.fade-out {
+    opacity: 0;
 }
 
 #warning-message {

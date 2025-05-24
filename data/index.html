@@ -14,7 +14,7 @@
                 <button class="mode-btn" data-mode="CC">CC</button>
                 <button class="mode-btn" data-mode="CV">CV</button>
                 <button class="mode-btn" data-mode="CR">CR</button>
-                <button class="mode-btn" data-mode="CW">CW</button>
+                <button class="mode-btn" data-mode="CW">CP</button>
             </div>
             
             <div id="value-display" class="hidden">
@@ -23,6 +23,10 @@
                         <!-- Digits will be dynamically inserted here -->
                     </div>
                     <span class="unit" id="current-unit">A</span>
+                </div>
+
+                <div class="hidden" id="warning-banner">
+                    <span id="warning-message">Error Message!</span>
                 </div>
                 
                 <div class="controls">

@@ -41,6 +41,27 @@ const fanSpeedEl = document.getElementById('fan-speed');
 const fanIconEl = document.getElementById('fan-icon'); // Added fan icon element
 const uptimeEl = document.getElementById('uptime-timer'); // Added uptime element
 
+
+// Warning banner elements
+const warningBanner = document.getElementById('warning-banner');
+const warningMessage = document.getElementById('warning-message');
+
+// Maximum values for each mode (matching C++ DAC limits)
+const maxValues = {
+    'CC': 20.0,    // 20A
+    'CV': 100.0,   // 100V 
+    'CR': 20.475,  // 20475kΩ / 1000 = 20.475kΩ (UI shows kΩ)
+    'CW': 200.0    // 200W
+};
+
+// Warning message templates (matching C++ error messages)
+const warningMessages = {
+    'CC': 'Current out of range: {value}A (Max: {max}A)',
+    'CV': 'Voltage out of range: {value}V (Max: {max}V)', 
+    'CR': 'Resistance out of range: {value}kΩ (Max: {max}kΩ)',
+    'CW': 'Power out of range: {value}W (Max: {max}W)'
+};
+
 // Initialize WebSocket connection
 function connectWebSocket() {
     // Clear any existing timeout before attempting connection
@@ -300,6 +321,21 @@ function selectDigit(digitElement) {
     selectedDigit = digitElement;
 }
 
+// Show warning banner with formatted message
+function showWarning(mode, value, maxValue) {
+    const template = warningMessages[mode];
+    const message = template.replace('{value}', value.toFixed(modeConfig[mode].decimals))
+                           .replace('{max}', maxValue.toFixed(modeConfig[mode].decimals));
+    
+    warningMessage.textContent = message;
+    warningBanner.classList.remove('hidden');
+}
+
+// Hide warning banner
+function hideWarning() {
+    warningBanner.classList.add('hidden');
+}
+
 // Modify selected digit
 function modifyDigit(sign) {
     if (!selectedDigit) return; // No digit selected
@@ -318,9 +354,15 @@ function modifyDigit(sign) {
     // Calculate new value by adding/subtracting the place value
     let newValue = currentValue + (sign * digitPlaceValue);
     
-    // Clamp to reasonable bounds (0 to max possible value for this mode)
-    const maxValue = Math.pow(10, config.beforeDecimal) - Math.pow(10, -config.decimals);
-    newValue = Math.max(0, Math.min(newValue, maxValue));
+    if (newValue < 0) {
+        newValue = 0; // Prevent negative values
+    }
+    else if (newValue > maxValues[currentMode]) {
+        newValue = maxValues[currentMode]; // Prevent exceeding max value
+        // Show warning for 2 seconds
+        showWarning(currentMode, newValue, maxValues[currentMode]);
+        setTimeout(hideWarning, 2000);
+    }
     
     // Update all digits from the new value
     updateValueFromNumber(newValue);
@@ -376,6 +418,9 @@ function updateValueFromNumber(number) {
             digit.textContent = '0';
         }
     });
+    
+    // Validate the updated value and show/hide warning
+    validateCurrentValue();
 }
 
 // Send current value to ESP32
@@ -408,6 +453,9 @@ function setMode(mode) {
 
     // Show the value display container
     valueDisplay.classList.remove('hidden');
+    
+    // Hide warning banner when switching modes
+    hideWarning();
 
     // Note: Resetting value to 0 is handled in the mode button click listener
     // for UI clicks. WS updates will call updateValueFromNumber directly.

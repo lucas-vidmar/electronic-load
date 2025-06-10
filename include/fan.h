@@ -16,6 +16,7 @@
 #define PID_KP                      240.0f        /*!< Proportional gain */
 #define PID_KI                      16.0f         /*!< Integral gain */
 #define PID_KD                      900.0f         /*!< Derivative gain */
+#define PID_DEADBAND                0.25f          /*!< Deadband in degrees Celsius - no control action within this range */
 #define PID_SAFETY_MARGIN           10.0f    /*!< Safety margin for temperature control */
 #define PID_SETPOINT_BEFORE_MARGIN  56.0f /*!< Setpoint before applying safety margin */
 #define PID_SETPOINT                (PID_SETPOINT_BEFORE_MARGIN - PID_SAFETY_MARGIN) /*!< Target temperature in degrees Celsius */

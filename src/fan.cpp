@@ -121,6 +121,17 @@ void PIDFanController::compute(float currentTemperature) {
     // For cooling: if current temp > target temp, we need more cooling (positive error)
     error = -error;  // Invert the error for cooling application
     
+    // Apply deadband logic  
+    if (abs(currentTemperature - targetTemp) <= PID_DEADBAND) {
+        // Within deadband - hold integral term but don't update output
+        // This prevents oscillation around the setpoint
+        lastError = error;
+        lastTime = now;
+        return;
+    }
+    
+    // Outside deadband - apply normal PID control
+    
     // Calculate integral term with anti-windup
     integral += (kI * error * timeChange);
     

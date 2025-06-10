@@ -39,6 +39,12 @@ extern bool ws_value_updated;      /*!< Flag indicating a WebSocket value update
 
 #define BROADCAST_INTERVAL 1000 // Interval for broadcasting state updates (in milliseconds)
 
+/* -- Safety Limits -- */
+#define SAFETY_MAX_VOLTAGE 110.0    /*!< Maximum safe DUT voltage in volts */
+#define SAFETY_MAX_CURRENT 22.0     /*!< Maximum safe DUT current in amperes */
+#define SAFETY_MAX_POWER 220.0      /*!< Maximum safe DUT power in watts */
+#define SAFETY_MAX_TEMPERATURE 65.0 /*!< Maximum safe temperature in degrees Celsius */
+
 /* -- Function Declarations -- */
 /**
  * @brief Displays and handles the main menu interface
@@ -117,3 +123,9 @@ String get_current_state_json();
  * @brief Sends the current state to all WebSocket clients.
  */
 void broadcast_state();
+
+/**
+ * @brief Monitors DUT safety levels and automatically disconnects if limits are exceeded.
+ * @return true if safety limits are exceeded and DUT was disconnected, false otherwise
+ */
+bool check_safety_limits();

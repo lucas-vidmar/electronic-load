@@ -134,6 +134,9 @@ void loop() {
   dutPower = dutVoltage * dutCurrent; // Calculate DUT power
   dutResistance = (dutCurrent != 0) ? (dutVoltage / dutCurrent) : 0; // Calculate DUT resistance
 
+  // Safety monitoring - check if DUT readings exceed safe levels
+  check_safety_limits();
+
   lcd.update();
   lcd.update_header(temperature, fanSpeed, uptimeString.c_str()); // Update header with temperature, fan speed, and uptime
 
@@ -512,4 +515,59 @@ String get_current_state_json() {
 
 void broadcast_state() {
   webServer.notifyClients(get_current_state_json());
+}
+
+// --- Safety Monitoring ---
+bool check_safety_limits() {
+  bool limitExceeded = false;
+  String alertMessage = "";
+
+  // Check voltage limit
+  if (dutVoltage > SAFETY_MAX_VOLTAGE) {
+    limitExceeded = true;
+    alertMessage = "VOLTAGE LIMIT EXCEEDED: " + String(dutVoltage, 3) + "V > " + String(SAFETY_MAX_VOLTAGE, 1) + "V";
+  }
+  
+  // Check current limit
+  if (dutCurrent > SAFETY_MAX_CURRENT) {
+    limitExceeded = true;
+    alertMessage = "CURRENT LIMIT EXCEEDED: " + String(dutCurrent, 3) + "A > " + String(SAFETY_MAX_CURRENT, 1) + "A";
+  }
+  
+  // Check power limit
+  if (dutPower > SAFETY_MAX_POWER) {
+    limitExceeded = true;
+    alertMessage = "POWER LIMIT EXCEEDED: " + String(dutPower, 3) + "W > " + String(SAFETY_MAX_POWER, 1) + "W";
+  }
+  
+  // Check temperature limit
+  if (temperature > SAFETY_MAX_TEMPERATURE) {
+    limitExceeded = true;
+    alertMessage = "TEMPERATURE LIMIT EXCEEDED: " + String(temperature, 1) + "°C > " + String(SAFETY_MAX_TEMPERATURE, 1) + "°C";
+  }
+
+  if (limitExceeded && outputActive) {
+    Serial.println("[SAFETY] " + alertMessage);
+    Serial.println("[SAFETY] Emergency disconnect - DUT disabled for safety");
+    
+    // Immediately disable output and relay
+    outputActive = false;
+    analogSws.relay_dut_disable();
+    
+    // Set input to zero for safety
+    input = 0.0;
+    dac.cc_mode_set_current(0.0);
+    
+    // Show warning on LCD if in CX mode
+    if (fsm.get_current_state() >= FSM_MAIN_STATES::CC && fsm.get_current_state() <= FSM_MAIN_STATES::CW) {
+      lcd.show_warning_popup("SAFETY: " + alertMessage.substring(0, 20), 5000);
+    }
+    
+    // Broadcast updated state
+    broadcast_state();
+    
+    return true;
+  }
+  
+  return false;
 }

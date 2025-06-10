@@ -577,10 +577,12 @@ void LVGL_LCD::close_settings_menu() {
 }
 
 void LVGL_LCD::show_warning_popup(const String& message, uint32_t timeout_ms) {
-    // Create a modal container (centered, small, rounded)
+    // Create a modal container (centered, with adaptive height)
     lv_obj_t* popup = lv_obj_create(lv_scr_act());
-    lv_obj_set_size(popup, 180, 60);
-    lv_obj_center(popup);
+    
+    // Set fixed width but let height adapt
+    int popup_width = 200;
+    lv_obj_set_width(popup, popup_width);
     lv_obj_set_style_radius(popup, ROUNDED_CORNER_CURVE, 0);
     lv_obj_set_style_bg_color(popup, lv_color_hex(COLOR4_DARK), 0);
     lv_obj_set_style_bg_opa(popup, LV_OPA_COVER, 0);
@@ -588,11 +590,22 @@ void LVGL_LCD::show_warning_popup(const String& message, uint32_t timeout_ms) {
     lv_obj_set_style_border_color(popup, lv_color_hex(COLOR4_LIGHT), 0);
     lv_obj_set_style_pad_all(popup, PADDING, 0);
 
-    // Add warning label
+    // Add warning label with text wrapping
     lv_obj_t* label = lv_label_create(popup);
     lv_label_set_text(label, message.c_str());
     lv_obj_set_style_text_color(label, lv_color_white(), 0);
     lv_obj_set_style_text_font(label, FONT_S, 0);
+    lv_obj_set_width(label, popup_width - (PADDING * 2)); // Account for padding
+    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP); // Enable text wrapping
+    
+    // Let LVGL calculate the label height, then adjust popup height
+    lv_obj_update_layout(label);
+    int label_height = lv_obj_get_height(label);
+    int popup_height = label_height + (PADDING * 2) + 4; // Add padding and small margin
+    
+    // Set the final popup size and center it
+    lv_obj_set_height(popup, popup_height);
+    lv_obj_center(popup);
     lv_obj_center(label);
 
     // Timer callback to delete popup

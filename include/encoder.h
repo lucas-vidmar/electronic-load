@@ -22,7 +22,7 @@
 #define ENCODER_SW GPIO_NUM_25
 
 // Timing constants for debouncing and button handling
-#define ENCODER_ROTATION_DEBOUNCE 5 // milliseconds (Reduced from 15)
+#define ENCODER_ROTATION_DEBOUNCE 15 // milliseconds (Increased for better stability)
 #define ENCODER_BUTTON_DEBOUNCE 200 // miliseconds
 #define ENCODER_BUTTON_LONG_PRESS 1000 // milliseconds for long button press detection
 
@@ -140,4 +140,5 @@ private:
     volatile bool buttonPressed;      // Button press status (marked volatile)
     int encoderMaxPosition;           // Maximum position value for the encoder
     int encoderMinPosition;           // Minimum position value for the encoder
+    volatile int lastStateDT;         // State of the DT pin for better direction detection
 };

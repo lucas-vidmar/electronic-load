@@ -22,7 +22,8 @@
 #define ENCODER_SW GPIO_NUM_25
 
 // Timing constants for debouncing and button handling
-#define ENCODER_ROTATION_DEBOUNCE 15 // milliseconds (Increased for better stability)
+#define ENCODER_ROTATION_DEBOUNCE_CW 12  // milliseconds for clockwise rotation
+#define ENCODER_ROTATION_DEBOUNCE_CCW 8 // milliseconds for counter-clockwise rotation
 #define ENCODER_BUTTON_DEBOUNCE 200 // miliseconds
 #define ENCODER_BUTTON_LONG_PRESS 1000 // milliseconds for long button press detection
 

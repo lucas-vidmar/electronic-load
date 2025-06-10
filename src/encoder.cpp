@@ -25,46 +25,49 @@ void Encoder::init() {
 }
 
 void IRAM_ATTR Encoder::handle_interrupt() {
-    static unsigned long lastInterruptTime = 0;
+    static unsigned long lastCWInterruptTime = 0;
+    static unsigned long lastCCWInterruptTime = 0;
     unsigned long interruptTime = millis();
 
-    // Increased debounce time for more stability
-    if (interruptTime - lastInterruptTime > ENCODER_ROTATION_DEBOUNCE) {
-        if (instance) {
-            int currentStateCLK = digitalRead(ENCODER_CLK);
-            int currentStateDT = digitalRead(ENCODER_DT);
-            
-            // Check if CLK state actually changed (additional bounce protection)
-            if (currentStateCLK != instance->lastState) {
-                // Only process on CLK falling edge for one pulse per detent
-                if (instance->lastState == HIGH && currentStateCLK == LOW) {
-                    // Add small delay to let signals stabilize
-                    delayMicroseconds(50);
-                    
-                    // Re-read DT to ensure stable reading
-                    currentStateDT = digitalRead(ENCODER_DT);
-                    
-                    // Check direction based on DT state when CLK goes low
-                    if (currentStateDT == HIGH) {
-                        // Clockwise rotation
+    if (instance) {
+        int currentStateCLK = digitalRead(ENCODER_CLK);
+        int currentStateDT = digitalRead(ENCODER_DT);
+        
+        // Check if CLK state actually changed (additional bounce protection)
+        if (currentStateCLK != instance->lastState) {
+            // Only process on CLK falling edge for one pulse per detent
+            if (instance->lastState == HIGH && currentStateCLK == LOW) {
+                // Add small delay to let signals stabilize
+                delayMicroseconds(50);
+                
+                // Re-read DT to ensure stable reading
+                currentStateDT = digitalRead(ENCODER_DT);
+                
+                // Check direction and apply appropriate debounce timing
+                if (currentStateDT == HIGH) {
+                    // Clockwise rotation - check CW debounce
+                    if (interruptTime - lastCWInterruptTime > ENCODER_ROTATION_DEBOUNCE_CW) {
                         if (instance->position < instance->encoderMaxPosition) {
                             instance->position++;
                             Serial.printf("[ENCODER] CW - Position: %d\n", instance->position);
                         }
-                    } else {
-                        // Counter-clockwise rotation
+                        lastCWInterruptTime = interruptTime;
+                    }
+                } else {
+                    // Counter-clockwise rotation - check CCW debounce
+                    if (interruptTime - lastCCWInterruptTime > ENCODER_ROTATION_DEBOUNCE_CCW) {
                         if (instance->position > instance->encoderMinPosition) {
                             instance->position--;
                             Serial.printf("[ENCODER] CCW - Position: %d\n", instance->position);
                         }
+                        lastCCWInterruptTime = interruptTime;
                     }
                 }
-                
-                instance->lastState = currentStateCLK;
-                instance->lastStateDT = currentStateDT;
             }
+            
+            instance->lastState = currentStateCLK;
+            instance->lastStateDT = currentStateDT;
         }
-        lastInterruptTime = interruptTime;
     }
 }
 

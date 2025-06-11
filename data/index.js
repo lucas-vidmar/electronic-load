@@ -57,10 +57,10 @@ const maxValues = {
 
 // Warning message templates (matching C++ error messages)
 const warningMessages = {
-    'CC': 'Max: {max}A',
-    'CV': 'Max: {max}V', 
-    'CR': 'Max: {max}kΩ',
-    'CW': 'Max: {max}W'
+    'CC': 'Input limit: {max}A',
+    'CV': 'Input limit: {max}V', 
+    'CR': 'Input limit: {max}kΩ',
+    'CW': 'Input limit: {max}W'
 };
 
 // Initialize WebSocket connection
@@ -153,16 +153,16 @@ function handleMessage(message) {
 
             // Check if maximum values have been exceeded
             if (data.measurements.voltage > maxValues.CV * 1.1) {
-                showWarning("Voltage exceeds max limit of " + maxValues.CV.toFixed(0) + " V");
+                showWarning("Safety limit: " + maxValues.CV.toFixed(1) + "V");
                 setTimeout(hideWarning, 2000);
             } else if (data.measurements.current > maxValues.CC * 1.1) {
-                showWarning("Current exceeds max limit of " + maxValues.CC.toFixed(0) + " A");
+                showWarning("Safety limit: " + maxValues.CC.toFixed(1) + "A");
                 setTimeout(hideWarning, 2000);
             } else if (data.measurements.power > maxValues.CW * 1.1) {
-                showWarning("Power exceeds max limit of " + maxValues.CW.toFixed(0) + " W");
+                showWarning("Safety limit: " + maxValues.CW.toFixed(1) + "W");
                 setTimeout(hideWarning, 2000);
             } else if (data.measurements.temperature > maxValues.T * 1.1) {
-                showWarning("Temperature exceeds max limit of " + maxValues.T.toFixed(0) + " °C");
+                showWarning("Safety limit: " + maxValues.T.toFixed(1) + "°C");
                 setTimeout(hideWarning, 2000);
             }
         }

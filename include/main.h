@@ -40,10 +40,10 @@ extern bool ws_value_updated;      /*!< Flag indicating a WebSocket value update
 #define BROADCAST_INTERVAL 1000 // Interval for broadcasting state updates (in milliseconds)
 
 /* -- Safety Limits -- */
-#define SAFETY_MAX_VOLTAGE 110.0    /*!< Maximum safe DUT voltage in volts */
-#define SAFETY_MAX_CURRENT 22.0     /*!< Maximum safe DUT current in amperes */
-#define SAFETY_MAX_POWER 220.0      /*!< Maximum safe DUT power in watts */
-#define SAFETY_MAX_TEMPERATURE 66.0 /*!< Maximum safe temperature in degrees Celsius */
+#define SAFETY_MAX_VOLTAGE 100.0    /*!< Maximum safe DUT voltage in volts */
+#define SAFETY_MAX_CURRENT 20.0     /*!< Maximum safe DUT current in amperes */
+#define SAFETY_MAX_POWER 200.0      /*!< Maximum safe DUT power in watts */
+#define SAFETY_MAX_TEMPERATURE 60.0 /*!< Maximum safe temperature in degrees Celsius */
 
 /* -- Function Declarations -- */
 /**

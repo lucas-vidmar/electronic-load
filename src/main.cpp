@@ -364,7 +364,7 @@ void constant_x(String unit, int digitsBeforeDecimal, int digitsAfterDecimal, in
   if (input > maxInputValue) {
     input = maxInputValue;
     Serial.println("[CX_MODE] Input clamped to max value: " + String(maxInputValue));
-    lcd.show_warning_popup("Limit: " + String(maxInputValue) + unit, 2000);
+    lcd.show_warning_popup("Input limit: " + String(maxInputValue) + unit, 2000);
   }
 
   lcd.update_cx_screen(input, selected_item, unit, dutVoltage, dutCurrent, digitsBeforeDecimal, totalDigits, String(input, digitsAfterDecimal), outputActive, (edit_state == CX_EDIT_STATES::MODIFYING_DIGIT), temperature, dutEnergy);
@@ -523,27 +523,27 @@ bool check_safety_limits() {
   String alertMessage = "";
 
   // Check voltage limit
-  if (dutVoltage > SAFETY_MAX_VOLTAGE) {
+  if (dutVoltage > SAFETY_MAX_VOLTAGE * 1.1) { // 10% margin
     limitExceeded = true;
-    alertMessage = "VOLTAGE LIMIT EXCEEDED: " + String(dutVoltage, 3) + "V > " + String(SAFETY_MAX_VOLTAGE, 1) + "V";
+    alertMessage = String(SAFETY_MAX_VOLTAGE, 1) + "V";
   }
   
   // Check current limit
-  if (dutCurrent > SAFETY_MAX_CURRENT) {
+  if (dutCurrent > SAFETY_MAX_CURRENT * 1.1) { // 10% margin
     limitExceeded = true;
-    alertMessage = "CURRENT LIMIT EXCEEDED: " + String(dutCurrent, 3) + "A > " + String(SAFETY_MAX_CURRENT, 1) + "A";
+    alertMessage = String(SAFETY_MAX_CURRENT, 1) + "A";
   }
   
   // Check power limit
-  if (dutPower > SAFETY_MAX_POWER) {
+  if (dutPower > SAFETY_MAX_POWER * 1.1) { // 10% margin
     limitExceeded = true;
-    alertMessage = "POWER LIMIT EXCEEDED: " + String(dutPower, 3) + "W > " + String(SAFETY_MAX_POWER, 1) + "W";
+    alertMessage = String(SAFETY_MAX_POWER, 1) + "W";
   }
   
   // Check temperature limit
-  if (temperature > SAFETY_MAX_TEMPERATURE) {
+  if (temperature > SAFETY_MAX_TEMPERATURE * 1.1) { // 10% margin
     limitExceeded = true;
-    alertMessage = "TEMPERATURE LIMIT EXCEEDED: " + String(temperature, 1) + "°C > " + String(SAFETY_MAX_TEMPERATURE, 1) + "°C";
+    alertMessage = String(SAFETY_MAX_TEMPERATURE, 1) + "°C";
   }
 
   if (limitExceeded && outputActive) {
@@ -560,7 +560,7 @@ bool check_safety_limits() {
     
     // Show warning on LCD if in CX mode
     if (fsm.get_current_state() >= FSM_MAIN_STATES::CC && fsm.get_current_state() <= FSM_MAIN_STATES::CW) {
-      lcd.show_warning_popup("SAFETY: " + alertMessage.substring(0, 20), 5000);
+      lcd.show_warning_popup("Safety limit: " + alertMessage, 5000);
     }
     
     // Broadcast updated state

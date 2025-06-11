@@ -581,7 +581,7 @@ void LVGL_LCD::show_warning_popup(const String& message, uint32_t timeout_ms) {
     lv_obj_t* popup = lv_obj_create(lv_scr_act());
     
     // Set fixed width but let height adapt
-    int popup_width = 200;
+    int popup_width = 240;
     lv_obj_set_width(popup, popup_width);
     lv_obj_set_style_radius(popup, ROUNDED_CORNER_CURVE, 0);
     lv_obj_set_style_bg_color(popup, lv_color_hex(COLOR4_DARK), 0);
@@ -589,6 +589,9 @@ void LVGL_LCD::show_warning_popup(const String& message, uint32_t timeout_ms) {
     lv_obj_set_style_border_width(popup, 2, 0);
     lv_obj_set_style_border_color(popup, lv_color_hex(COLOR4_LIGHT), 0);
     lv_obj_set_style_pad_all(popup, PADDING, 0);
+    
+    // Disable scrolling to prevent scrollbars
+    lv_obj_clear_flag(popup, LV_OBJ_FLAG_SCROLLABLE);
 
     // Add warning label with text wrapping
     lv_obj_t* label = lv_label_create(popup);
@@ -596,7 +599,7 @@ void LVGL_LCD::show_warning_popup(const String& message, uint32_t timeout_ms) {
     lv_obj_set_style_text_color(label, lv_color_white(), 0);
     lv_obj_set_style_text_font(label, FONT_S, 0);
     lv_obj_set_width(label, popup_width - (PADDING * 2)); // Account for padding
-    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP); // Enable text wrapping
+    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP); // Enable word wrapping at spaces
     
     // Let LVGL calculate the label height, then adjust popup height
     lv_obj_update_layout(label);

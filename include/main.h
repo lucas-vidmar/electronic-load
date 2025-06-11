@@ -43,7 +43,7 @@ extern bool ws_value_updated;      /*!< Flag indicating a WebSocket value update
 #define SAFETY_MAX_VOLTAGE 110.0    /*!< Maximum safe DUT voltage in volts */
 #define SAFETY_MAX_CURRENT 22.0     /*!< Maximum safe DUT current in amperes */
 #define SAFETY_MAX_POWER 220.0      /*!< Maximum safe DUT power in watts */
-#define SAFETY_MAX_TEMPERATURE 65.0 /*!< Maximum safe temperature in degrees Celsius */
+#define SAFETY_MAX_TEMPERATURE 66.0 /*!< Maximum safe temperature in degrees Celsius */
 
 /* -- Function Declarations -- */
 /**

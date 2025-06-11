@@ -51,7 +51,8 @@ const maxValues = {
     'CC': 20.0,    // 20A
     'CV': 100.0,   // 100V 
     'CR': 20.475,  // 20475kΩ / 1000 = 20.475kΩ (UI shows kΩ)
-    'CW': 200.0    // 200W
+    'CW': 200.0,    // 200W
+    'T': 60        // 60 °C
 };
 
 // Warning message templates (matching C++ error messages)
@@ -149,6 +150,21 @@ function handleMessage(message) {
             }
             // Update Uptime display
             uptimeEl.textContent = data.measurements.uptime;
+
+            // Check if maximum values have been exceeded
+            if (data.measurements.voltage > maxValues.CV * 1.1) {
+                showWarning("Voltage exceeds max limit of " + maxValues.CV.toFixed(0) + " V");
+                setTimeout(hideWarning, 2000);
+            } else if (data.measurements.current > maxValues.CC * 1.1) {
+                showWarning("Current exceeds max limit of " + maxValues.CC.toFixed(0) + " A");
+                setTimeout(hideWarning, 2000);
+            } else if (data.measurements.power > maxValues.CW * 1.1) {
+                showWarning("Power exceeds max limit of " + maxValues.CW.toFixed(0) + " W");
+                setTimeout(hideWarning, 2000);
+            } else if (data.measurements.temperature > maxValues.T * 1.1) {
+                showWarning("Temperature exceeds max limit of " + maxValues.T.toFixed(0) + " °C");
+                setTimeout(hideWarning, 2000);
+            }
         }
 
         // Update state
@@ -175,12 +191,12 @@ function handleMessage(message) {
             // Or if the value received is significantly different from the current display
             const currentValueDisplayed = convertDigitsToNumber();
             if (data.state.value !== undefined && data.state.mode === currentMode) {
-                 // Update digits if value changed significantly or if output is off
-                 // (prevents minor fluctuations during active output from resetting digits)
-                 // Also check if digits array is populated for the current mode
-                 if (digits.length > 0 && (!relayEnabled || Math.abs(data.state.value - currentValueDisplayed) > 1e-4)) {
+                // Update digits if value changed significantly or if output is off
+                // (prevents minor fluctuations during active output from resetting digits)
+                // Also check if digits array is populated for the current mode
+                if (digits.length > 0 && (!relayEnabled || Math.abs(data.state.value - currentValueDisplayed) > 1e-4)) {
                     updateValueFromNumber(data.state.value);
-                 }
+                }
             }
         }
     } catch (e) {
@@ -322,10 +338,7 @@ function selectDigit(digitElement) {
 }
 
 // Show warning banner with formatted message
-function showWarning(mode, value, maxValue) {
-    const template = warningMessages[mode];
-    const message = template.replace('{max}', maxValue.toFixed(modeConfig[mode].decimals));
-    
+function showWarning(message) {
     warningMessage.textContent = message;
     warningBanner.classList.remove('hidden', 'fade-out');
 }
@@ -363,7 +376,8 @@ function modifyDigit(sign) {
     else if (newValue > maxValues[currentMode]) {
         newValue = maxValues[currentMode]; // Prevent exceeding max value
         // Show warning for 2 seconds with fade effect
-        showWarning(currentMode, newValue, maxValues[currentMode]);
+        const message = warningMessages[currentMode].replace('{max}', maxValues[currentMode].toFixed(modeConfig[currentMode].decimals));
+        showWarning(message);
         setTimeout(hideWarning, 2000);
     }
     

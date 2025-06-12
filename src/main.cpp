@@ -56,6 +56,7 @@ void setup() {
   Serial.begin(115200);
 
   Serial.println("[MAIN] Starting Electronic Load System...");
+  Serial.println("[MAIN] Firmware Version: " + String(FIRMWARE_VERSION));
 
   // I2C Scanner
   Serial.println("[MAIN] Initializing I2C Scanner...");

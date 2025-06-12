@@ -29,6 +29,9 @@
 #include "rtc.h"
 #include <ArduinoJson.h> // Include ArduinoJson
 
+/* -- Version Information -- */
+#define FIRMWARE_VERSION "5.1"        /*!< Current firmware version */
+
 /* -- Wi-Fi Credentials -- */
 const String SSID = "Electronic Load";        /*!< Wi-Fi network SSID */
 const String PASSWORD = "pfi2025uade";        /*!< Wi-Fi network password */
